@@ -5,17 +5,17 @@
 // =========================
 const CAL = {
   enabled: false,
-  points: [],   // [{x,y}]
+  points: [],   // נקודות שמחכות להשלים רביעייה
+  boxes: [],    // כל המרובעים שנוצרו
   panelEl: null,
 };
-
 function toggleCalibration(){
   CAL.enabled = !CAL.enabled;
   CAL.points = [];
+  CAL.boxes = [];
   ensureCalPanel();
   updateCalPanel();
 }
-
 window.addEventListener("keydown", (e) => {
   if (e.ctrlKey && (e.key === "k" || e.key === "K")) {
     e.preventDefault();
@@ -37,51 +37,71 @@ function ensureCalPanel(){
   panel.innerHTML = `
     <div class="muted" id="calState"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button type="button" id="calClear" class="secondary" style="width:auto;margin-top:0">נקה נקודות</button>
-      <button type="button" id="calUndo" class="secondary" style="width:auto;margin-top:0">בטל אחרון</button>
-      <button type="button" id="calCopy" class="secondary" style="width:auto;margin-top:0">העתק BOX</button>
+      <button type="button" id="calUndo" class="secondary" style="width:auto;margin-top:0">בטל נקודה</button>
+      <button type="button" id="calClearPts" class="secondary" style="width:auto;margin-top:0">נקה נקודות (רביעייה)</button>
+      <button type="button" id="calClearAll" class="secondary" style="width:auto;margin-top:0">נקה הכל</button>
+      <button type="button" id="calCopyLast" class="secondary" style="width:auto;margin-top:0">העתק מרובע אחרון</button>
+      <button type="button" id="calCopyAll" class="secondary" style="width:auto;margin-top:0">העתק ALL BOXES</button>
     </div>
     <pre id="calOut" style="margin:0;direction:ltr;text-align:left;white-space:pre-wrap;background:#f8fafc;border:1px solid var(--border);padding:10px;border-radius:10px"></pre>
-    <div class="muted">כיול פעיל רק לשאלות hotspot. 4 לחיצות יוצרות מרובע. Toggle: Ctrl+K</div>
+    <div class="muted">כיול פעיל רק לשאלות hotspot. כל 4 לחיצות = מרובע. Toggle: Ctrl+K</div>
   `;
 
   el.hotspotWrap.appendChild(panel);
   CAL.panelEl = panel;
 
-  panel.querySelector("#calClear").onclick = () => {
-    CAL.points = [];
-    clearCalMarkers();
-    updateCalPanel();
-  };
   panel.querySelector("#calUndo").onclick = () => {
     CAL.points.pop();
     removeLastCalMarker();
     updateCalPanel();
   };
-  panel.querySelector("#calCopy").onclick = async () => {
-    const box = buildBoxFromPoints(CAL.points);
-    if (!box) return;
-    const txt = `{ x1: ${box.x1}, y1: ${box.y1}, x2: ${box.x2}, y2: ${box.y2} }`;
+
+  panel.querySelector("#calClearPts").onclick = () => {
+    CAL.points = [];
+    clearCalMarkers();
+    updateCalPanel();
+  };
+
+  panel.querySelector("#calClearAll").onclick = () => {
+    CAL.points = [];
+    CAL.boxes = [];
+    clearCalMarkers();
+    updateCalPanel();
+  };
+
+  panel.querySelector("#calCopyLast").onclick = async () => {
+    const last = CAL.boxes[CAL.boxes.length - 1];
+    if (!last) return;
+    const txt = `{ x1: ${last.x1}, y1: ${last.y1}, x2: ${last.x2}, y2: ${last.y2} }`;
+    try { await navigator.clipboard.writeText(txt); } catch {}
+    updateCalPanel("הועתק ✅");
+  };
+
+  panel.querySelector("#calCopyAll").onclick = async () => {
+    const txt = renderBoxesArray(CAL.boxes);
+    if (!txt) return;
     try { await navigator.clipboard.writeText(txt); } catch {}
     updateCalPanel("הועתק ✅");
   };
 }
-
 function updateCalPanel(statusText=""){
   if (!CAL.panelEl) return;
+
   const st = CAL.panelEl.querySelector("#calState");
   const out = CAL.panelEl.querySelector("#calOut");
 
   st.textContent = CAL.enabled
-    ? `כיול: פעיל ✅  | נקודות: ${CAL.points.length}/4 ${statusText ? " | " + statusText : ""}`
+    ? `כיול: פעיל ✅ | נקודות ברביעייה: ${CAL.points.length}/4 | מרובעים: ${CAL.boxes.length}${statusText ? " | " + statusText : ""}`
     : `כיול: כבוי`;
 
-  const box = buildBoxFromPoints(CAL.points);
-  out.textContent = box
-    ? `{ x1: ${box.x1}, y1: ${box.y1}, x2: ${box.x2}, y2: ${box.y2} }`
-    : "לחץ/י 4 נקודות על התמונה…";
-}
+  const boxesTxt = renderBoxesArray(CAL.boxes);
+  const pending = buildBoxFromPoints(CAL.points);
 
+  out.textContent =
+    (boxesTxt ? `boxes:\n${boxesTxt}\n\n` : "boxes: []\n\n") +
+    (pending ? `pending box (from current 4):\n{ x1: ${pending.x1}, y1: ${pending.y1}, x2: ${pending.x2}, y2: ${pending.y2} }`
+             : "לחץ/י נקודות… כל 4 נקודות ייצרו מרובע חדש.");
+}
 function buildBoxFromPoints(points){
   if (!points || points.length < 4) return null;
   const xs = points.map(p => p.x);
@@ -93,6 +113,11 @@ function buildBoxFromPoints(points){
   return { x1, y1, x2, y2 };
 }
 function round2(n){ return Math.round(n * 100) / 100; }
+function renderBoxesArray(boxes){
+  if (!boxes || boxes.length === 0) return "";
+  const lines = boxes.map(b => `  { x1: ${b.x1}, y1: ${b.y1}, x2: ${b.x2}, y2: ${b.y2} }`);
+  return `[\n${lines.join(",\n")}\n]`;
+}
 
 // markers (calibration)
 function addCalMarker(xPct, yPct){
@@ -556,60 +581,69 @@ const TYPE = {
       updateHotspotUI(q);
 
       el.hotspotOverlay.onclick = (ev) => {
-        const rect = el.hotspotOverlay.getBoundingClientRect();
-        const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
-        const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
-      
-        // ✅ CALIBRATION MODE
-        if (CAL.enabled){
-          ensureCalPanel();
-          if (CAL.points.length >= 4){
-            // אם כבר יש 4 נקודות – מתחילים סט חדש אוטומטית
-            CAL.points = [];
-            clearCalMarkers();
-          }
-          CAL.points.push({ x: xPct, y: yPct });
-          addCalMarker(xPct, yPct);
-          updateCalPanel();
-          return;
+      const rect = el.hotspotOverlay.getBoundingClientRect();
+      const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
+    
+      // =========================
+      // CALIBRATION MODE (MULTI BOXES)
+      // =========================
+      if (CAL.enabled){
+        ensureCalPanel();
+    
+        CAL.points.push({ x: xPct, y: yPct });
+        addCalMarker(xPct, yPct);
+    
+        // כל 4 נקודות -> מרובע חדש
+        if (CAL.points.length === 4){
+          const box = buildBoxFromPoints(CAL.points);
+          CAL.boxes.push(box);
+          CAL.points = [];
+          clearCalMarkers(); // מתחילים רביעייה חדשה
         }
-      
-        // ===== רגיל (מבחן) =====
-        const rt = state.runtime.hotspot;
-      
-        if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
-          el.feedback.hidden = false;
-          el.feedback.textContent = "הגעת ל־5 לחיצות. מחק/י סימון כדי לנסות מחדש.";
-          return;
-        }
-      
-        const marker = document.createElement("div");
-        marker.className = "hotspot-marker";
-        marker.style.left = `${xPct}%`;
-        marker.style.top = `${yPct}%`;
-        el.hotspotOverlay.appendChild(marker);
-      
-        const boxes = q.boxes || [];
-        let hitIndex = null;
-      
-        for (let i = 0; i < boxes.length; i++){
-          if (rt.hit[i]) continue;
-          const b = boxes[i];
-          if (xPct >= b.x1 && xPct <= b.x2 && yPct >= b.y1 && yPct <= b.y2){
-            hitIndex = i;
-            rt.hit[i] = true;
-            break;
-          }
-        }
-      
-        rt.attempts.push({ hitIndex, markerEl: marker });
-      
+    
+        updateCalPanel();
+        return;
+      }
+    
+      // =========================
+      // NORMAL QUIZ MODE
+      // =========================
+      const rt = state.runtime.hotspot;
+    
+      if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
         el.feedback.hidden = false;
-        el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
-      
-        el.btnNext.disabled = rt.attempts.length === 0;
-        updateHotspotUI(q);
-      };
+        el.feedback.textContent = "הגעת למספר הלחיצות המקסימלי.";
+        return;
+      }
+    
+      const marker = document.createElement("div");
+      marker.className = "hotspot-marker";
+      marker.style.left = `${xPct}%`;
+      marker.style.top = `${yPct}%`;
+      el.hotspotOverlay.appendChild(marker);
+    
+      const boxes = q.boxes || [];
+      let hitIndex = null;
+    
+      for (let i = 0; i < boxes.length; i++){
+        if (rt.hit[i]) continue;
+        const b = boxes[i];
+        if (xPct >= b.x1 && xPct <= b.x2 && yPct >= b.y1 && yPct <= b.y2){
+          hitIndex = i;
+          rt.hit[i] = true;
+          break;
+        }
+      }
+    
+      rt.attempts.push({ hitIndex, markerEl: marker });
+    
+      el.feedback.hidden = false;
+      el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
+    
+      el.btnNext.disabled = rt.attempts.length === 0;
+      updateHotspotUI(q);
+    };
 
     },
     validate(q){
