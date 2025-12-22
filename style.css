@@ -184,6 +184,10 @@ button:disabled{
   box-shadow: 0 0 0 6px rgba(217,45,32,0.15);
   pointer-events: none;
 }
+.hotspot-marker.cal{
+  background: rgba(11,116,222,0.95);
+  box-shadow: 0 0 0 6px rgba(11,116,222,0.15);
+}
 
 .hotspot-bottom{ margin-top: 10px; }
 .marks{ margin-top: 10px; display: grid; gap: 8px; }
