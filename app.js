@@ -97,8 +97,8 @@ const QUESTIONS = [
   {
     type: "mc_single",
     title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
-    leadImg: "images/mc_intro.jpg",
-    leadCaption: "תסתכל/י על הסיטואציה ואז ענה/י",
+    //leadImg: "images/mc_intro.jpg",
+    //leadCaption: "תסתכל/י על הסיטואציה ואז ענה/י",
     options: [
       "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]",
       "על עגלה [B]בשרית[/B] בלבד",
@@ -112,7 +112,7 @@ const QUESTIONS = [
   {
     type: "mc_multi",
     title: "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?",
-    leadImg: "images/fridge.png",
+    //leadImg: "images/fridge.png",
     options: [
       "לא, אסור בשום אופן",
       "לא אלא אם כן המשגיח אישר",
@@ -337,6 +337,19 @@ function hideAllQuestionUIs(){
   el.dragZones.innerHTML = "";
   el.dragFeedback.hidden = true;
   el.dragFeedback.innerHTML = "";
+
+  // Force hide & wipe (aggressive)
+  [el.twoWrap, el.hotspotWrap, el.mcWrap, el.imgMultiWrap, el.dragWrap].forEach(w => {
+    w.hidden = true;
+    w.style.display = "none";
+    requestAnimationFrame(() => { w.style.display = ""; }); // חוזר לברירת המחדל של CSS
+  });
+  
+  // wipe images (prevents old frames flashing)
+  [el.leadImg, el.imgA, el.imgB, el.hotspotImg, el.dragIntroImg, el.dragBg, el.dragItemImg].forEach(im => {
+    if (im) im.removeAttribute("src");
+  });
+
 }
 
 function renderLead(q){
