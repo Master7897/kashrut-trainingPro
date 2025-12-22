@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>לומדת כשרות – צוות מטבח</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+
+  <section id="screen-start" class="card">
+    <h1>הדרכת כשרות צוות מטבח</h1>
+
+    <label>שם מלא</label>
+    <input id="fullName" />
+
+    <label>תעודת זהות / מספר אישי</label>
+    <input id="personalId" inputmode="numeric"/>
+
+    <label>מטבח</label>
+    <select id="kitchen">
+      <option value="">בחר/י</option>
+      <option>מרלו״ג</option>
+      <option>בסיס ציוד</option>
+    </select>
+
+    <button id="btnStart" class="primary">התחל</button>
+    <p id="startError" class="error" hidden></p>
+  </section>
+
+  <section id="screen-quiz" class="card" hidden>
+    <div id="progress" class="muted"></div>
+    <h2 id="questionTitle"></h2>
+    <div id="questionBody"></div>
+
+    <button id="btnNext" class="primary" disabled>המשך</button>
+    <div id="feedback" class="feedback" hidden></div>
+  </section>
+
+  <section id="screen-result" class="card" hidden>
+    <h2>סיום</h2>
+    <p>ההדרכה הושלמה בהצלחה</p>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
 
