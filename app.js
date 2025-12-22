@@ -1,3 +1,114 @@
+// =========================
+// HOTSPOT CALIBRATION MODE
+// Toggle: Ctrl+K
+// In calibration: 4 clicks => box {x1,y1,x2,y2} (percent)
+// =========================
+const CAL = {
+  enabled: false,
+  points: [],   // [{x,y}]
+  panelEl: null,
+};
+
+function toggleCalibration(){
+  CAL.enabled = !CAL.enabled;
+  CAL.points = [];
+  ensureCalPanel();
+  updateCalPanel();
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && (e.key === "k" || e.key === "K")) {
+    e.preventDefault();
+    toggleCalibration();
+    // אם אנחנו כרגע במסך שאלה - נרנדר מחדש כדי לראות את מצב הכיול
+    if (!el.screenQuiz.hidden) renderQuestion();
+  }
+});
+
+function ensureCalPanel(){
+  if (CAL.panelEl) return;
+
+  const panel = document.createElement("div");
+  panel.id = "calPanel";
+  panel.style.cssText = `
+    margin-top:10px;padding:10px;border:1px solid var(--border);
+    border-radius:12px;background:#fff;display:grid;gap:8px
+  `;
+  panel.innerHTML = `
+    <div class="muted" id="calState"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" id="calClear" class="secondary" style="width:auto;margin-top:0">נקה נקודות</button>
+      <button type="button" id="calUndo" class="secondary" style="width:auto;margin-top:0">בטל אחרון</button>
+      <button type="button" id="calCopy" class="secondary" style="width:auto;margin-top:0">העתק BOX</button>
+    </div>
+    <pre id="calOut" style="margin:0;direction:ltr;text-align:left;white-space:pre-wrap;background:#f8fafc;border:1px solid var(--border);padding:10px;border-radius:10px"></pre>
+    <div class="muted">כיול פעיל רק לשאלות hotspot. 4 לחיצות יוצרות מרובע. Toggle: Ctrl+K</div>
+  `;
+
+  el.hotspotWrap.appendChild(panel);
+  CAL.panelEl = panel;
+
+  panel.querySelector("#calClear").onclick = () => {
+    CAL.points = [];
+    clearCalMarkers();
+    updateCalPanel();
+  };
+  panel.querySelector("#calUndo").onclick = () => {
+    CAL.points.pop();
+    removeLastCalMarker();
+    updateCalPanel();
+  };
+  panel.querySelector("#calCopy").onclick = async () => {
+    const box = buildBoxFromPoints(CAL.points);
+    if (!box) return;
+    const txt = `{ x1: ${box.x1}, y1: ${box.y1}, x2: ${box.x2}, y2: ${box.y2} }`;
+    try { await navigator.clipboard.writeText(txt); } catch {}
+    updateCalPanel("הועתק ✅");
+  };
+}
+
+function updateCalPanel(statusText=""){
+  if (!CAL.panelEl) return;
+  const st = CAL.panelEl.querySelector("#calState");
+  const out = CAL.panelEl.querySelector("#calOut");
+
+  st.textContent = CAL.enabled
+    ? `כיול: פעיל ✅  | נקודות: ${CAL.points.length}/4 ${statusText ? " | " + statusText : ""}`
+    : `כיול: כבוי`;
+
+  const box = buildBoxFromPoints(CAL.points);
+  out.textContent = box
+    ? `{ x1: ${box.x1}, y1: ${box.y1}, x2: ${box.x2}, y2: ${box.y2} }`
+    : "לחץ/י 4 נקודות על התמונה…";
+}
+
+function buildBoxFromPoints(points){
+  if (!points || points.length < 4) return null;
+  const xs = points.map(p => p.x);
+  const ys = points.map(p => p.y);
+  const x1 = round2(Math.min(...xs));
+  const x2 = round2(Math.max(...xs));
+  const y1 = round2(Math.min(...ys));
+  const y2 = round2(Math.max(...ys));
+  return { x1, y1, x2, y2 };
+}
+function round2(n){ return Math.round(n * 100) / 100; }
+
+// markers (calibration)
+function addCalMarker(xPct, yPct){
+  const m = document.createElement("div");
+  m.className = "hotspot-marker cal";
+  m.style.left = `${xPct}%`;
+  m.style.top = `${yPct}%`;
+  el.hotspotOverlay.appendChild(m);
+}
+function clearCalMarkers(){
+  el.hotspotOverlay.querySelectorAll(".hotspot-marker.cal").forEach(n => n.remove());
+}
+function removeLastCalMarker(){
+  const all = el.hotspotOverlay.querySelectorAll(".hotspot-marker.cal");
+  if (all.length) all[all.length - 1].remove();
+}
 
 // =========================
 // CONFIG
@@ -349,6 +460,12 @@ function hideAllQuestionUIs(){
   [el.leadImg, el.imgA, el.imgB, el.hotspotImg, el.dragIntroImg, el.dragBg, el.dragItemImg].forEach(im => {
     if (im) im.removeAttribute("src");
   });
+  // calibration panel visibility + markers
+  if (CAL.enabled) ensureCalPanel();
+  if (CAL.panelEl) CAL.panelEl.style.display = (CAL.enabled ? "" : "none");
+  clearCalMarkers();
+  CAL.points = [];
+  updateCalPanel();
 
 }
 
@@ -439,25 +556,42 @@ const TYPE = {
       updateHotspotUI(q);
 
       el.hotspotOverlay.onclick = (ev) => {
+        const rect = el.hotspotOverlay.getBoundingClientRect();
+        const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
+        const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
+      
+        // ✅ CALIBRATION MODE
+        if (CAL.enabled){
+          ensureCalPanel();
+          if (CAL.points.length >= 4){
+            // אם כבר יש 4 נקודות – מתחילים סט חדש אוטומטית
+            CAL.points = [];
+            clearCalMarkers();
+          }
+          CAL.points.push({ x: xPct, y: yPct });
+          addCalMarker(xPct, yPct);
+          updateCalPanel();
+          return;
+        }
+      
+        // ===== רגיל (מבחן) =====
         const rt = state.runtime.hotspot;
-
+      
         if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
           el.feedback.hidden = false;
           el.feedback.textContent = "הגעת ל־5 לחיצות. מחק/י סימון כדי לנסות מחדש.";
           return;
         }
-
-        const rect = el.hotspotOverlay.getBoundingClientRect();
-        const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
-        const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
-
+      
         const marker = document.createElement("div");
         marker.className = "hotspot-marker";
         marker.style.left = `${xPct}%`;
         marker.style.top = `${yPct}%`;
         el.hotspotOverlay.appendChild(marker);
-
+      
+        const boxes = q.boxes || [];
         let hitIndex = null;
+      
         for (let i = 0; i < boxes.length; i++){
           if (rt.hit[i]) continue;
           const b = boxes[i];
@@ -467,15 +601,16 @@ const TYPE = {
             break;
           }
         }
-
+      
         rt.attempts.push({ hitIndex, markerEl: marker });
-
+      
         el.feedback.hidden = false;
         el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
-
+      
         el.btnNext.disabled = rt.attempts.length === 0;
         updateHotspotUI(q);
       };
+
     },
     validate(q){
       const boxes = q.boxes || [];
