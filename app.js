@@ -143,13 +143,13 @@ const GOOGLE_SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzQxCa
 const HOTSPOT_MAX_CLICKS = 5;
 
 // דוגמה: איזורי hotspot (אם לכל שאלה יש boxes משלה – אפשר להכניס בתוך השאלה ולהפסיק להשתמש בקבוע)
-const HOTSPOT_BOXES = [
+/*const HOTSPOT_BOXES = [
   { x1: 37.01, y1: 21.68, x2: 77.71, y2: 27.35 },
   { x1: 16.45, y1: 58.05, x2: 52.63, y2: 68.11 },
   { x1: 12.54, y1: 67.92, x2: 48.93, y2: 77.40 },
   { x1: 46.88, y1: 53.70, x2: 83.47, y2: 64.68 },
   { x1: 49.14, y1: 72.66, x2: 83.68, y2: 83.06 }
-];
+];*/
 
 const DRAG_ZONES_4x2 = [
   { side:"L", left: 6,  top: 24, w: 22, h: 9 },
@@ -188,6 +188,34 @@ function formatSpecial(text) {
 // =========================
 const QUESTIONS = [
   {
+    type: "hotspot5",
+    title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
+    img: "images/q3_hotspot.jpeg",
+    boxes: [
+      { 
+        x1: 37.01, y1: 21.68, x2: 77.71, y2: 27.35 
+        label: "מוצר [H]חלבי[/H] על עגלה [B]בשרית[/B] 1111"
+      },
+      { 
+        x1: 16.45, y1: 58.05, x2: 52.63, y2: 68.11
+        label: "מדף [P]פרווה[/P] ללא הפרדה 2222"
+      },
+      { 
+        x1: 12.54, y1: 67.92, x2: 48.93, y2: 77.40
+        label: "מדף [P]פרווה[/P] ללא הפרדה 3333"
+      },
+      {
+        x1: 46.88, y1: 53.70, x2: 83.47, y2: 64.68
+        label: "מדף [P]פרווה[/P] ללא הפרדה 4444"
+      },
+      { 
+        x1: 49.14, y1: 72.66, x2: 83.68, y2: 83.06
+        label: "מדף [P]פרווה[/P] ללא הפרדה 5555"
+      }
+    ],
+    wrongMsg: "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?"
+  },
+  {
     type: "mc_single",
     title: "מצאת תבנית כזו, מה תעשה איתה?",
     leadImg: "images/tavnit.jpg",
@@ -217,14 +245,14 @@ const QUESTIONS = [
     bgImg: "images/roomshelves.png",
     zones: DRAG_ZONES_4x2,
     items: [
-      { img:"images/prod1.jpg", caption:"חלב", side:"R", wrongMsg:"❌ מוצר 1 הוא [H]חלבי[/H]. צריך לשים בצד ימין." },
-      { img:"images/prod2.jpg", caption:"שתיה", side:"L", wrongMsg:"❌ מוצר 2 הוא [P]פרווה[/P]. צריך לשים בצד שמאל." },
-      { img:"images/prod3.jpg", caption:"חומוס", side:"L", wrongMsg:"❌ מוצר 3 הוא [P]פרווה[/P]. שמאל." },
-      { img:"images/prod4.jpg", caption:"קוטג'", side:"R", wrongMsg:"❌ מוצר 4 הוא [H]חלבי[/H]. ימין." },
-      { img:"images/prod5.jpg", caption:"חלב סויה", side:"L", wrongMsg:"❌ מוצר 5 הוא [P]פרווה[/P]. שמאל." },
-      { img:"images/prod6.jpg", caption:"מילקי", side:"R", wrongMsg:"❌ מוצר 6 הוא [H]חלבי[/H]. ימין." },
-      { img:"images/prod7.jpg", caption:"גבינה צהובה", side:"R", wrongMsg:"❌ מוצר 7 הוא [H]חלבי[/H]. ימין." },
-      { img:"images/prod8.jpg", caption:"מעדן סויה", side:"L", wrongMsg:"❌ מוצר 8 הוא [P]פרווה[/P]. שמאל." },
+      { img:"images/prod1.jpg", caption:"חלב", side:"R", wrongMsg:"❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין." },
+      { img:"images/prod2.jpg", caption:"שתיה", side:"L", wrongMsg:"❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל." },
+      { img:"images/prod3.jpg", caption:"חומוס", side:"L", wrongMsg:"❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל." },
+      { img:"images/prod4.jpg", caption:"קוטג'", side:"R", wrongMsg:"❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין." },
+      { img:"images/prod5.jpg", caption:"חלב סויה", side:"L", wrongMsg:"❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל." },
+      { img:"images/prod6.jpg", caption:"מילקי", side:"R", wrongMsg:"❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין." },
+      { img:"images/prod7.jpg", caption:"גבינה צהובה", side:"R", wrongMsg:"❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין." },
+      { img:"images/prod8.jpg", caption:"מעדן סויה", side:"L", wrongMsg:"❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל." },
     ]
   },
   {
@@ -235,15 +263,7 @@ const QUESTIONS = [
     correct: "B",
     wrongMsg: "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1)."
   },
-  {
-    type: "hotspot5",
-    title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
-    img: "images/q3_hotspot.jpeg",
-    boxes: HOTSPOT_BOXES,
-    wrongMsg: "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?"
-  },
-
-  // ✅ דוגמה: תמונה לפני רב-ברירה
+    // ✅ דוגמה: תמונה לפני רב-ברירה
   {
     type: "mc_single",
     title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
@@ -892,9 +912,16 @@ function updateHotspotUI(q){
 
     const txt = document.createElement("div");
     txt.className = "txt";
-    const label = (a.hitIndex !== null) ? `תקלה ${a.hitIndex + 1}` : "לא תקלה";
     const s = (a.hitIndex !== null) ? "✅" : "❌";
-    txt.textContent = `${idx + 1}) ${s} ${label}`;
+
+    let label = "לא תקלה";
+    if (a.hitIndex !== null) {
+      const box = (q.boxes || [])[a.hitIndex];
+      label = box?.label || `תקלה ${a.hitIndex + 1}`;
+    }
+    
+    txt.innerHTML = `${idx + 1}) ${s} ${formatSpecial(label)}`;
+
 
     const del = document.createElement("button");
     del.className = "btn-del";
