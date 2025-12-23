@@ -388,6 +388,8 @@ const el = {
   feedback: document.getElementById("feedback"),
 
   sendStatus: document.getElementById("sendStatus"),
+  btnResend: document.getElementById("btnResend"),
+
 };
 
 // =========================
@@ -1169,6 +1171,10 @@ window.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => preloadAllQuestionImages(), 300);
   }
 });
+el.btnResend.addEventListener("click", async () => {
+  await sendResult(true);
+});
+
 
 // =========================
 // START
@@ -1261,19 +1267,37 @@ async function finish(){
   el.screenQuiz.hidden = true;
   el.screenResult.hidden = false;
 
-  el.sendStatus.textContent = "ההדרכה הושלמה בהצלחה!!!";
+  // כפתור שליחה חוזרת - נעלם כברירת מחדל
+  if (el.btnResend) {
+    el.btnResend.hidden = true;
+    el.btnResend.disabled = true;
+    el.btnResend.onclick = async () => {
+      await sendResult(true);
+    };
+  }
 
-  if (state.sentThisRun){
-    el.sendStatus.textContent = "הציון כבר נשלח בניסיון הזה.";
+  await sendResult(false);
+}
+
+async function sendResult(force){
+  // אם כבר נשלח בהצלחה באותו ריצה ולא ביקשו force — לא שולחים שוב
+  if (state.sentThisRun && !force){
+    el.sendStatus.textContent = "התוצאה כבר נשלחה בניסיון הזה ✅";
+    if (el.btnResend) el.btnResend.hidden = true;
     return;
   }
 
   if (!GOOGLE_SHEETS_WEBAPP_URL){
     el.sendStatus.textContent = "לא הוגדרה כתובת של Google Sheets Web App עדיין.";
+    if (el.btnResend) el.btnResend.hidden = true;
     return;
   }
 
   el.sendStatus.textContent = "שולח תוצאה…";
+  if (el.btnResend){
+    el.btnResend.hidden = true;
+    el.btnResend.disabled = true;
+  }
 
   try {
     const payload = {
@@ -1292,8 +1316,19 @@ async function finish(){
 
     state.sentThisRun = true;
     el.sendStatus.textContent = "התוצאה נשלחה בהצלחה ✅";
+    if (el.btnResend) el.btnResend.hidden = true;
   } catch (e) {
-    el.sendStatus.textContent = "שליחה נכשלה ❌ (בדוק הרשאות Deploy / Anyone)";
+    state.sentThisRun = false; // מאפשר ניסיון חוזר
     console.error(e);
+
+    // אם יש לנו סטטוס HTTP — נציג אותו כדי להבין למה
+    const msg = (e && e.message) ? e.message : "";
+    el.sendStatus.textContent =
+      "שליחה נכשלה ❌ " + (msg ? `(${msg})` : "(בדוק הרשאות Deploy / Anyone)");
+
+    if (el.btnResend){
+      el.btnResend.hidden = false;
+      el.btnResend.disabled = false;
+    }
   }
 }
