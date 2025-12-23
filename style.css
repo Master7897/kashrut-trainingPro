@@ -234,7 +234,16 @@ button:disabled{
   height: 18px;
   margin-top: 2px;
 }
-.mc-option .txt{ font-size: 15px; }
+.mc-option .txt{
+  font-size: 18px;
+  line-height: 1.4;
+}
+#mcHint{
+  font-size: 18px;
+  line-height: 1.4;
+  margin-top: 6px;
+  font-weight: 700;
+}
 
 /* special tags */
 .hl-parve{ color:#d9a821; font-weight:700; }
