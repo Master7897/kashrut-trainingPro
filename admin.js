@@ -120,6 +120,13 @@ function showTab(name){
   clearActiveTabs();
   hideAllPanels();
 
+  state.activeTab = name;
+
+  // נועל את הטאב הפעיל – לא לחיץ עד מעבר לטאב אחר
+  el.tabKitchens.disabled = (name === "kitchens");
+  el.tabSubmissions.disabled = (name === "subs");
+  el.tabFeedback.disabled = (name === "fb");
+
   if (name === "kitchens"){
     el.tabKitchens.classList.add("active");
     el.panelKitchens.hidden = false;
@@ -190,12 +197,6 @@ const { rid, token } = getParams();
 const state = {
   profile: { fullName: "", email: "" }
 };
-state.kitchens = {
-  loading: false,
-  reqId: 0,
-  dirty: false,
-};
-
 async function loadProfile(){
   if (!rid || !token) return;
 
@@ -205,38 +206,33 @@ async function loadProfile(){
     state.profile.fullName = r.profile.fullName || "";
     state.profile.email = r.profile.email || "";
 
-    const nameEl = document.getElementById("rabbiName");
-    if (nameEl) nameEl.textContent = state.profile.fullName || "";
-
+        const meta = document.getElementById("adminMeta");
+    if (meta){
+      meta.textContent = `שלום הרב ${state.profile.fullName || ""}`;
+      meta.hidden = false;
+    }
     // אם עדיין יש לך שדה מייל ב-HTML (בינתיים) אפשר להשאיר שקט:
     if (el.fbEmail) el.fbEmail.value = state.profile.email || "";
   }
 }
 async function loadKitchens(){
-  // אם כבר טוען — לא עושים כלום (מונע כפילויות)
-  if (state.kitchens.loading) return;
-
-  const myReq = ++state.kitchens.reqId;
-  state.kitchens.dirty = false;
-  beginKitchensLoading();
-
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
   el.kitchensGrid.innerHTML = "";
 
-  if (!rid || !token){
-    endKitchensLoading();
-    return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
-  }
+  // בזמן טעינה: מסתירים הוספה+שמירה
+  el.btnAddKitchen.hidden = true;
+  el.btnAddKitchen.disabled = true;
+  el.btnSaveKitchens.hidden = true;
+  el.btnSaveKitchens.disabled = true;
+
+  if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
 
   setInfo(el.kitchensInfo, "טוען מטבחים…");
+
   const r = await apiCall("admin/getKitchens", { rid, token });
 
-  // אם בינתיים התחילה טעינה חדשה — מתעלמים מהתוצאה הישנה
-  if (myReq !== state.kitchens.reqId) return;
-
   if (!r.ok){
-    endKitchensLoading();
     setInfo(el.kitchensInfo, "");
     return setErr(el.kitchensError, "טעינת מטבחים נכשלה.");
   }
@@ -246,19 +242,22 @@ async function loadKitchens(){
   if (kitchens.length === 0){
     el.kitchensGrid.appendChild(createKitchenRow(""));
     el.kitchensGrid.appendChild(createKitchenRow(""));
-    setInfo(el.kitchensInfo, "לא נמצאו מטבחים — ניתן להוסיף ולשמור.");
-    endKitchensLoading();
-    setKitchensDirty(false);
-    return;
+  } else {
+    kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
   }
 
-  kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
+  // סוף טעינה מוצלחת: מעלימים "טוען..."
+  setInfo(el.kitchensInfo, "");
 
-  endKitchensLoading();
-  setKitchensDirty(false); // נטען נקי, בלי שינוי עדיין
+  // מציגים כפתורים אחרי טעינה
+  el.btnAddKitchen.hidden = false;
+  el.btnAddKitchen.disabled = false;
+
+  el.btnSaveKitchens.hidden = false;
+  el.btnSaveKitchens.disabled = true; // יופעל רק אחרי שינוי
+
+  setKitchensDirty(false);
 }
-
-
 async function refreshSubmissions(){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
