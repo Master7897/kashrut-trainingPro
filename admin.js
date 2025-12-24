@@ -3,7 +3,7 @@
 // =========================
 
 // ✅ הדבק כאן את כתובת ה-Web App (…/exec)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBen-H8xo8Xk0udXW2K9Ivpa8iP7ygVrWZX0pnFglU6FAi9cAMkZuSFirU00J6PEnLew/exec"; // TODO: paste your GAS Web App URL
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // TODO: paste your GAS Web App URL
 
 const $ = (id) => document.getElementById(id);
 
