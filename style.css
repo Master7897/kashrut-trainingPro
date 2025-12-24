@@ -359,3 +359,25 @@ button:disabled{
   color: var(--muted);
 }
 
+
+/* table grid lines */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+tbody td {
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+th, td {
+  padding: 10px 12px;
+}
+
+th:not(:last-child), td:not(:last-child) {
+  border-left: 1px solid rgba(255,255,255,0.10);
+}
