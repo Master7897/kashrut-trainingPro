@@ -159,12 +159,17 @@ async function loadProfile(){
   if (!rid || !token) return;
 
   const r = await apiCall("admin/getProfile", { rid, token });
+  document.getElementById("rabbiName").textContent = state.profile.fullName || "";
+
   if (r && r.ok && r.profile){
     el.fbEmail.value = r.profile.email || "";
   }
 }
 
 async function loadKitchens(){
+  el.btnAddKitchen.hidden = true;
+  el.btnAddKitchen.disabled = true;
+
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
   el.kitchensGrid.innerHTML = "";
@@ -189,7 +194,8 @@ async function loadKitchens(){
   }
 
   kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
-  setInfo(el.kitchensInfo, "נטען ✅");
+  el.btnAddKitchen.hidden = true;
+  el.btnAddKitchen.disabled = true;
 }
 
 async function refreshSubmissions(){
@@ -238,18 +244,20 @@ async function sendFeedback(){
   if (!rid || !token) return setErr(el.fbError, "קישור ניהול לא תקין (חסר rid/token).");
 
   const subject = el.fbSubject.value.trim();
-  const email = el.fbEmail.value.trim();
   const message = el.fbMessage.value.trim();
 
   if (!subject) return setErr(el.fbError, "נא למלא נושא.");
-  if (!email) return setErr(el.fbError, "נא למלא אימייל.");
   if (!message) return setErr(el.fbError, "נא למלא תוכן פנייה.");
 
   el.btnSendFeedback.disabled = true;
   el.btnSendFeedback.textContent = "שולח…";
 
-  const r = await apiCall("admin/sendFeedback", { rid, token, subject, email, message });
-
+  const r = await apiCall("admin/sendFeedback", {
+    rid, token,
+    subject,
+    email: state.profile.email,   // ← נמשך אוטומטית מהטבלה
+    message
+  });
   el.btnSendFeedback.disabled = false;
   el.btnSendFeedback.textContent = "שלח משוב";
 
@@ -306,9 +314,6 @@ el.btnRefreshSubs.onclick = refreshSubmissions;
 el.btnSendFeedback.onclick = sendFeedback;
 
 // ====== INIT ======
-el.adminNote.textContent = rid
-  ? `מזהה רב: ${rid} | קישור זה אישי – שמרו עליו.`
-  : `חסר rid בקישור. צריך לפתוח דרך קישור הניהול שנשלח במייל.`;
 
 hideAllPanels();       // ✅ אין ברירת מחדל
 clearActiveTabs();     // ✅ אין כפתור לחוץ
