@@ -358,26 +358,32 @@ button:disabled{
   font-size: 14px;
   color: var(--muted);
 }
-
-
-/* table grid lines */
-table {
-  width: 100%;
-  border-collapse: collapse;
+#adminMeta {
+  margin-top: 12px;   /* אפשר 8 / 16 לפי הטעם */
 }
 
-thead th {
-  border-bottom: 1px solid rgba(255,255,255,0.15);
+/* ===== Admin submissions table lines ===== */
+
+#subsBody {
+  border-top: 1px solid #e0e0e0;
 }
 
-tbody td {
-  border-bottom: 1px solid rgba(255,255,255,0.10);
+#subsBody tr {
+  border-bottom: 1px solid #e0e0e0;
 }
 
-th, td {
+#subsBody td {
   padding: 10px 12px;
 }
 
-th:not(:last-child), td:not(:last-child) {
-  border-left: 1px solid rgba(255,255,255,0.10);
+/* קווים אנכיים */
+#subsBody td:not(:last-child),
+thead th:not(:last-child) {
+  border-left: 1px solid #e0e0e0;
+}
+
+/* כותרת */
+thead th {
+  padding: 10px 12px;
+  border-bottom: 2px solid #cfcfcf;
 }
