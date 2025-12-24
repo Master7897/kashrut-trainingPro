@@ -1,9 +1,9 @@
 // =========================
-// ADMIN FRONTEND (Step 1)
-// Backend will be added next step (Apps Script)
+// ADMIN FRONTEND (Connected)
 // =========================
 
-const APPS_SCRIPT_URL = ""; // TODO next step
+// ✅ הדבק כאן את כתובת ה-Web App (…/exec)
+const APPS_SCRIPT_URL = ""; // TODO: paste your GAS Web App URL
 
 const $ = (id) => document.getElementById(id);
 
@@ -49,6 +49,35 @@ function getParams(){
   };
 }
 
+// ---------- JSONP API (works on GitHub Pages) ----------
+function apiCall(path, payload){
+  return new Promise((resolve) => {
+    if (!APPS_SCRIPT_URL){
+      resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
+      return;
+    }
+    const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    window[cb] = (data) => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve(data);
+    };
+
+    const req = encodeURIComponent(JSON.stringify({ path, payload }));
+    const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.onerror = () => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve({ ok:false, error:"NETWORK_ERROR" });
+    };
+    document.body.appendChild(script);
+  });
+}
+// -----------------------------------------------------
+
 function createKitchenRow(value=""){
   const wrap = document.createElement("div");
   wrap.className = "kitchen-item";
@@ -74,13 +103,19 @@ function listKitchens(){
     .filter(Boolean);
 }
 
-function showTab(name){
-  // buttons
+function clearActiveTabs(){
   [el.tabKitchens, el.tabSubmissions, el.tabFeedback].forEach(b => b.classList.remove("active"));
-  // panels
+}
+
+function hideAllPanels(){
   el.panelKitchens.hidden = true;
   el.panelSubmissions.hidden = true;
   el.panelFeedback.hidden = true;
+}
+
+function showTab(name){
+  clearActiveTabs();
+  hideAllPanels();
 
   if (name === "kitchens"){
     el.tabKitchens.classList.add("active");
@@ -88,24 +123,10 @@ function showTab(name){
   } else if (name === "subs"){
     el.tabSubmissions.classList.add("active");
     el.panelSubmissions.hidden = false;
-  } else {
+  } else if (name === "fb"){
     el.tabFeedback.classList.add("active");
     el.panelFeedback.hidden = false;
   }
-}
-
-async function apiCall(path, payload){
-  if (!APPS_SCRIPT_URL){
-    return { ok:false, error:"SERVER_NOT_CONFIGURED" };
-  }
-  const res = await fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify({ path, payload })
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return { ok:false, error:`HTTP_${res.status}`, data };
-  return data;
 }
 
 function msFromFilter(v){
@@ -122,50 +143,56 @@ function msFromFilter(v){
   return n(24*60*60);
 }
 
-// -------- init note
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+// ====== LOADERS ======
 const { rid, token } = getParams();
-el.adminNote.textContent = rid
-  ? `מזהה רב: ${rid}  |  קישור זה אישי – שמרו עליו.`
-  : `חסר rid בקישור. צריך לפתוח דרך קישור הניהול שנשלח במייל.`;
 
-// -------- tabs
-el.tabKitchens.onclick = () => showTab("kitchens");
-el.tabSubmissions.onclick = () => showTab("subs");
-el.tabFeedback.onclick = () => showTab("fb");
+async function loadProfile(){
+  if (!rid || !token) return;
 
-// -------- kitchens
-el.btnAddKitchen.onclick = () => el.kitchensGrid.appendChild(createKitchenRow(""));
+  const r = await apiCall("admin/getProfile", { rid, token });
+  if (r && r.ok && r.profile){
+    el.fbEmail.value = r.profile.email || "";
+  }
+}
 
-el.btnSaveKitchens.onclick = async () => {
+async function loadKitchens(){
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
+  el.kitchensGrid.innerHTML = "";
 
   if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
 
-  const kitchens = listKitchens();
-  if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
+  setInfo(el.kitchensInfo, "טוען מטבחים…");
+  const r = await apiCall("admin/getKitchens", { rid, token });
 
-  el.btnSaveKitchens.disabled = true;
-  el.btnSaveKitchens.textContent = "שומר…";
-
-  const result = await apiCall("admin/updateKitchens", { rid, token, kitchens });
-
-  el.btnSaveKitchens.disabled = false;
-  el.btnSaveKitchens.textContent = "שמור מטבחים";
-
-  if (!result.ok){
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      setInfo(el.kitchensInfo, "מצב בדיקה: אין שרת מחובר עדיין (שלב הבא נחבר).");
-      return;
-    }
-    return setErr(el.kitchensError, "שמירה נכשלה.");
+  if (!r.ok){
+    setInfo(el.kitchensInfo, "");
+    return setErr(el.kitchensError, "טעינת מטבחים נכשלה.");
   }
 
-  setInfo(el.kitchensInfo, "נשמר ✅");
-};
+  const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
+  if (kitchens.length === 0){
+    // fallback - allow start empty
+    el.kitchensGrid.appendChild(createKitchenRow(""));
+    el.kitchensGrid.appendChild(createKitchenRow(""));
+    setInfo(el.kitchensInfo, "לא נמצאו מטבחים — ניתן להוסיף ולשמור.");
+    return;
+  }
 
-// -------- submissions
-el.btnRefreshSubs.onclick = async () => {
+  kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
+  setInfo(el.kitchensInfo, "נטען ✅");
+}
+
+async function refreshSubmissions(){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
   el.subsBody.innerHTML = "";
@@ -177,39 +204,34 @@ el.btnRefreshSubs.onclick = async () => {
   el.btnRefreshSubs.disabled = true;
   el.btnRefreshSubs.textContent = "טוען…";
 
-  const result = await apiCall("admin/listSubmissions", { rid, token, sinceMs });
+  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs });
 
   el.btnRefreshSubs.disabled = false;
   el.btnRefreshSubs.textContent = "רענן";
 
-  if (!result.ok){
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      setInfo(el.subsInfo, "מצב בדיקה: אין שרת מחובר עדיין (שלב הבא נחבר).");
-      return;
-    }
+  if (!r.ok){
     return setErr(el.subsError, "טעינה נכשלה.");
   }
 
-  const rows = Array.isArray(result.rows) ? result.rows : [];
+  const rows = Array.isArray(r.rows) ? r.rows : [];
   if (rows.length === 0){
     setInfo(el.subsInfo, "אין תשובות בטווח הזמן שנבחר.");
     return;
   }
 
-  for (const r of rows){
+  for (const row of rows){
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${escapeHtml(r.fullName || "")}</td>
-      <td>${escapeHtml(r.personalId || "")}</td>
-      <td>${escapeHtml(r.kitchen || "")}</td>
-      <td>${escapeHtml(r.dateStr || "")}</td>
+      <td>${escapeHtml(row.fullName || "")}</td>
+      <td>${escapeHtml(row.personalId || "")}</td>
+      <td>${escapeHtml(row.kitchen || "")}</td>
+      <td>${escapeHtml(row.dateStr || "")}</td>
     `;
     el.subsBody.appendChild(tr);
   }
-};
+}
 
-// -------- feedback
-el.btnSendFeedback.onclick = async () => {
+async function sendFeedback(){
   setErr(el.fbError, "");
   setInfo(el.fbInfo, "");
 
@@ -226,39 +248,69 @@ el.btnSendFeedback.onclick = async () => {
   el.btnSendFeedback.disabled = true;
   el.btnSendFeedback.textContent = "שולח…";
 
-  const result = await apiCall("admin/sendFeedback", { rid, token, subject, email, message });
+  const r = await apiCall("admin/sendFeedback", { rid, token, subject, email, message });
 
   el.btnSendFeedback.disabled = false;
   el.btnSendFeedback.textContent = "שלח משוב";
 
-  if (!result.ok){
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      setInfo(el.fbInfo, "מצב בדיקה: אין שרת מחובר עדיין (שלב הבא נחבר).");
-      return;
-    }
-    return setErr(el.fbError, "שליחה נכשלה.");
-  }
+  if (!r.ok) return setErr(el.fbError, "שליחה נכשלה.");
 
   el.fbSubject.value = "";
   el.fbMessage.value = "";
   setInfo(el.fbInfo, "נשלח ✅");
-};
-
-function escapeHtml(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
 }
 
-// initial UI
-showTab("kitchens");
+// ====== EVENTS ======
+el.tabKitchens.onclick = async () => {
+  showTab("kitchens");
+  await loadKitchens();
+};
 
-// prefill kitchens grid with 4 rows for now (server will load later)
-el.kitchensGrid.innerHTML = "";
-el.kitchensGrid.appendChild(createKitchenRow(""));
-el.kitchensGrid.appendChild(createKitchenRow(""));
-el.kitchensGrid.appendChild(createKitchenRow(""));
-el.kitchensGrid.appendChild(createKitchenRow(""));
+el.tabSubmissions.onclick = async () => {
+  showTab("subs");
+  // לא טוען אוטומטית בלי רענן? אפשר כן/לא.
+  // אני משאיר קל: נטען מיד.
+  await refreshSubmissions();
+};
+
+el.tabFeedback.onclick = async () => {
+  showTab("fb");
+  // email נטען בפתיחה בכל מקרה
+};
+
+el.btnAddKitchen.onclick = () => el.kitchensGrid.appendChild(createKitchenRow(""));
+
+el.btnSaveKitchens.onclick = async () => {
+  setErr(el.kitchensError, "");
+  setInfo(el.kitchensInfo, "");
+
+  if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
+
+  const kitchens = listKitchens();
+  if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
+
+  el.btnSaveKitchens.disabled = true;
+  el.btnSaveKitchens.textContent = "שומר…";
+
+  const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
+
+  el.btnSaveKitchens.disabled = false;
+  el.btnSaveKitchens.textContent = "שמור מטבחים";
+
+  if (!r.ok) return setErr(el.kitchensError, "שמירה נכשלה.");
+
+  setInfo(el.kitchensInfo, "נשמר ✅");
+};
+
+el.btnRefreshSubs.onclick = refreshSubmissions;
+el.btnSendFeedback.onclick = sendFeedback;
+
+// ====== INIT ======
+el.adminNote.textContent = rid
+  ? `מזהה רב: ${rid} | קישור זה אישי – שמרו עליו.`
+  : `חסר rid בקישור. צריך לפתוח דרך קישור הניהול שנשלח במייל.`;
+
+hideAllPanels();       // ✅ אין ברירת מחדל
+clearActiveTabs();     // ✅ אין כפתור לחוץ
+
+loadProfile();         // ✅ ימלא אימייל בטופס משוב
