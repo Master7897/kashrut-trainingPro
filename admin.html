@@ -98,13 +98,13 @@
       <div class="note" id="adminNote"></div>
 
       <div class="tabs">
-        <button class="tabbtn active" id="tabKitchens" type="button">1) עדכון רשימת מטבחים</button>
-        <button class="tabbtn" id="tabSubmissions" type="button">2) צפייה בתשובות</button>
-        <button class="tabbtn" id="tabFeedback" type="button">3) משוב</button>
+        <button class="tabbtn" id="tabKitchens" type="button">עדכון רשימת מטבחים</button>
+        <button class="tabbtn" id="tabSubmissions" type="button">צפייה בתשובות</button>
+        <button class="tabbtn" id="tabFeedback" type="button">משוב</button>
       </div>
 
       <!-- Kitchens -->
-      <div class="panel" id="panelKitchens">
+      <div class="panel" id="panelKitchens" hidden>
         <div id="kitchensGrid"></div>
         <button class="btn-add" id="btnAddKitchen" type="button">+ הוסף מטבח חדש</button>
 
@@ -156,7 +156,7 @@
         <input id="fbSubject" placeholder="נושא קצר" />
 
         <label>אימייל שלך</label>
-        <input id="fbEmail" placeholder="יימשך מהמערכת (readonly בהמשך)" />
+        <input id="fbEmail" placeholder="נטען אוטומטית" />
 
         <label>תוכן הפנייה</label>
         <input id="fbMessage" placeholder="כתוב/י כאן…" />
@@ -171,6 +171,6 @@
     </section>
   </div>
 
-  <script src="admin.js?v=1"></script>
+  <script src="admin.js?v=2"></script>
 </body>
 </html>
