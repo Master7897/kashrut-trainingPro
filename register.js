@@ -1,11 +1,9 @@
 // =========================
-// REGISTER FRONTEND (Step 1)
-// Backend will be added next step (Apps Script)
+// REGISTER FRONTEND (Connected)
 // =========================
 
-// ✅ בשלב הזה ה-UI עובד.
-// כדי לחבר לשרת: נגדיר APPS_SCRIPT_URL בהמשך.
-const APPS_SCRIPT_URL = ""; // TODO: נשים כאן Web App URL של Apps Script
+// ✅ הדבק כאן את כתובת ה-Web App (…/exec)
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBen-H8xo8Xk0udXW2K9Ivpa8iP7ygVrWZX0pnFglU6FAi9cAMkZuSFirU00J6PEnLew/exec"; // TODO: paste your GAS Web App URL
 
 const $ = (id) => document.getElementById(id);
 
@@ -44,22 +42,14 @@ const el = {
 };
 
 const state = {
-  // server will return these later:
   rid: "",
   token: "",
   otpSession: "",
-
   verified: false,
 };
 
-function setErr(node, msg){
-  node.hidden = !msg;
-  node.textContent = msg || "";
-}
-function setInfo(node, msg){
-  node.hidden = !msg;
-  node.textContent = msg || "";
-}
+function setErr(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
+function setInfo(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
 
 function isEmailValid(email){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -67,13 +57,40 @@ function isEmailValid(email){
 function isDigitsOnly(s){ return /^[0-9]+$/.test(s); }
 
 function getBaseUrl(){
-  // e.g. https://master7897.github.io/kashrut-trainingPro/
   const { origin, pathname } = window.location;
   const parts = pathname.split("/").filter(Boolean);
-  // last part is file name (register.html), so remove it
-  parts.pop();
+  parts.pop(); // remove register.html
   return `${origin}/${parts.join("/")}/`;
 }
+
+// ---------- JSONP API ----------
+function apiCall(path, payload){
+  return new Promise((resolve) => {
+    if (!APPS_SCRIPT_URL){
+      resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
+      return;
+    }
+    const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    window[cb] = (data) => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve(data);
+    };
+
+    const req = encodeURIComponent(JSON.stringify({ path, payload }));
+    const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.onerror = () => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve({ ok:false, error:"NETWORK_ERROR" });
+    };
+    document.body.appendChild(script);
+  });
+}
+// ------------------------------
 
 function createKitchenRow(value=""){
   const wrap = document.createElement("div");
@@ -96,11 +113,7 @@ function createKitchenRow(value=""){
 
 function initKitchenGrid(){
   el.kitchensGrid.innerHTML = "";
-  // 4 שדות התחלתיים
-  el.kitchensGrid.appendChild(createKitchenRow(""));
-  el.kitchensGrid.appendChild(createKitchenRow(""));
-  el.kitchensGrid.appendChild(createKitchenRow(""));
-  el.kitchensGrid.appendChild(createKitchenRow(""));
+  for (let i = 0; i < 4; i++) el.kitchensGrid.appendChild(createKitchenRow(""));
 }
 
 function listKitchens(){
@@ -119,23 +132,6 @@ function showStep(step){
   el.step3.hidden = step !== 3;
 }
 
-// ---------- Backend stubs (will be real next step) ----------
-async function apiCall(path, payload){
-  if (!APPS_SCRIPT_URL){
-    // demo mode (no server)
-    return { ok:false, error:"SERVER_NOT_CONFIGURED" };
-  }
-  const res = await fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify({ path, payload })
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return { ok:false, error:`HTTP_${res.status}`, data };
-  return data;
-}
-// ----------------------------------------------------------
-
 // Step 1: Send OTP
 el.btnSendOtp.onclick = async () => {
   setErr(el.step1Error, "");
@@ -144,7 +140,7 @@ el.btnSendOtp.onclick = async () => {
   const fullName = el.fullName.value.trim();
   const personalId = el.personalId.value.trim();
   const unit = el.unit.value.trim();
-  const email = el.email.value.trim();
+  const email = el.email.value.trim().toLowerCase();
   const phone = el.phone.value.trim();
 
   if (!fullName) return setErr(el.step1Error, "נא למלא שם מלא.");
@@ -156,24 +152,16 @@ el.btnSendOtp.onclick = async () => {
   lockStep1(true);
   setInfo(el.step1Info, "שולח קוד אימות למייל…");
 
-  const result = await apiCall("register/sendOtp", { fullName, personalId, unit, email, phone });
+  const r = await apiCall("register/sendOtp", { email, otpSession: state.otpSession });
 
-  if (!result.ok){
-    lockStep1(false);
+  lockStep1(false);
 
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      // Demo: allow continue
-      setInfo(el.step1Info, "מצב בדיקה: השרת עדיין לא מחובר. ניתן לדלג לאימות כדי להמשיך בניית UI.");
-      showStep(2);
-      return;
-    }
-
-    setErr(el.step1Error, "שליחת קוד נכשלה. נסה שוב.");
+  if (!r.ok){
     setInfo(el.step1Info, "");
-    return;
+    return setErr(el.step1Error, "שליחת קוד נכשלה (בדוק APPS_SCRIPT_URL / Deploy).");
   }
 
-  state.otpSession = result.otpSession || "";
+  state.otpSession = r.otpSession;
   setInfo(el.step1Info, "הקוד נשלח. בדוק/י את המייל.");
   showStep(2);
 };
@@ -199,24 +187,16 @@ el.btnVerifyOtp.onclick = async () => {
   el.btnResendOtp.disabled = true;
   setInfo(el.step2Info, "מאמת קוד…");
 
-  const email = el.email.value.trim();
+  const email = el.email.value.trim().toLowerCase();
 
-  const result = await apiCall("register/verifyOtp", { email, otpSession: state.otpSession, code });
+  const r = await apiCall("register/verifyOtp", { email, otpSession: state.otpSession, code });
 
   el.btnVerifyOtp.disabled = false;
   el.btnResendOtp.disabled = false;
 
-  if (!result.ok){
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      // demo mode: accept any code
-      state.verified = true;
-      initKitchenGrid();
-      showStep(3);
-      return;
-    }
-    setErr(el.step2Error, "קוד שגוי או פג תוקף. נסה שוב.");
+  if (!r.ok){
     setInfo(el.step2Info, "");
-    return;
+    return setErr(el.step2Error, "קוד שגוי או פג תוקף. נסה שוב.");
   }
 
   state.verified = true;
@@ -229,21 +209,16 @@ el.btnVerifyOtp.onclick = async () => {
 el.btnResendOtp.onclick = async () => {
   setErr(el.step2Error, "");
   setInfo(el.step2Info, "שולח קוד שוב…");
-  const email = el.email.value.trim();
 
-  const result = await apiCall("register/resendOtp", { email, otpSession: state.otpSession });
+  const email = el.email.value.trim().toLowerCase();
+  const r = await apiCall("register/resendOtp", { email, otpSession: state.otpSession });
 
-  if (!result.ok){
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      setInfo(el.step2Info, "מצב בדיקה: אין שרת מחובר.");
-      return;
-    }
-    setErr(el.step2Error, "שליחת קוד שוב נכשלה.");
+  if (!r.ok){
     setInfo(el.step2Info, "");
-    return;
+    return setErr(el.step2Error, "שליחת קוד שוב נכשלה.");
   }
-
-  setInfo(el.step2Info, "הקוד נשלח שוב.");
+  state.otpSession = r.otpSession || state.otpSession;
+  setInfo(el.step2Info, "נשלח ✅");
 };
 
 // Step 3: Add kitchen
@@ -261,41 +236,32 @@ el.btnFinishRegister.onclick = async () => {
   const kitchens = listKitchens();
   if (kitchens.length === 0) return setErr(el.step3Error, "נא להזין לפחות מטבח אחד.");
 
-  // Demo link generation (real rid/token will come from server)
-  const base = getBaseUrl();
-
-  // If server connected, request rid/token + save kitchens
   const fullName = el.fullName.value.trim();
   const personalId = el.personalId.value.trim();
   const unit = el.unit.value.trim();
-  const email = el.email.value.trim();
+  const email = el.email.value.trim().toLowerCase();
   const phone = el.phone.value.trim();
+  const baseUrl = getBaseUrl();
 
   el.btnFinishRegister.disabled = true;
   el.btnFinishRegister.textContent = "שומר…";
 
-  const result = await apiCall("register/finish", {
-    fullName, personalId, unit, email, phone, kitchens
+  const r = await apiCall("register/finish", {
+    fullName, personalId, unit, email, phone, kitchens, baseUrl
   });
 
   el.btnFinishRegister.disabled = false;
   el.btnFinishRegister.textContent = "שמירה והרשמה";
 
-  if (!result.ok){
-    if (result.error === "SERVER_NOT_CONFIGURED"){
-      // demo fallback
-      state.rid = "DEMO_RID";
-      state.token = "DEMO_TOKEN";
-    } else {
-      return setErr(el.step3Error, "שמירה נכשלה. נסה שוב.");
-    }
-  } else {
-    state.rid = result.rid;
-    state.token = result.token;
+  if (!r.ok){
+    return setErr(el.step3Error, "שמירה נכשלה (בדוק Deploy/ID של השיטס).");
   }
 
-  const adminLink = `${base}admin.html?rid=${encodeURIComponent(state.rid)}&token=${encodeURIComponent(state.token)}`;
-  const quizLink  = `${base}index.html?rid=${encodeURIComponent(state.rid)}`;
+  state.rid = r.rid;
+  state.token = r.token;
+
+  const adminLink = `${baseUrl}admin.html?rid=${encodeURIComponent(state.rid)}&token=${encodeURIComponent(state.token)}`;
+  const quizLink  = `${baseUrl}index.html?rid=${encodeURIComponent(state.rid)}`;
 
   el.adminLinkBox.textContent = adminLink;
   el.quizLinkBox.textContent = quizLink;
