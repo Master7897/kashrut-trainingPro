@@ -231,7 +231,7 @@ const QUESTIONS = [
   },
   {
     type: "mc_multi",
-    title: "אילו סימונים חייבים להיות בתבנית [B]בשרית[/B]??",
+    title: "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?",
     //leadImg: "images/fridge.png",
     options: [
       "שכל התחתית תהיה צבועה באדום",
@@ -241,7 +241,7 @@ const QUESTIONS = [
       "מדבקה עם כיתוב '[B]בשרי[/B]'"
     ],
     correctIndexes: [1, 4],
-    wrongMsg: "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע."
+    wrongMsg: "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'."
   },
   {
     type: "two",
@@ -298,7 +298,7 @@ const QUESTIONS = [
     items: [
       { img: "images/pp1.jpg", alt: "מילקי", caption: "מילקי"},
       { img: "images/pp2.jpg", alt: "מלפפונים", caption: "מלפפונים" },
-      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה" },
+      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה" fit: "contain"thi kh cghv },
       { img: "images/pp4.jpg", alt: "קוטג'", caption: "קוטג'" },
       { img: "images/pp5.jpg", alt: "גבינה צהובה", caption: "גבינה צהובה" },
       { img: "images/pp6.jpg", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
@@ -324,7 +324,7 @@ const QUESTIONS = [
       "לא, אסור בשום אופן",
       "לא אלא אם כן המשגיח אישר",
       "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.",
-      "גם במדפים באותו צד, אם ה[P]פרווה[/P] תמיד למעלה וסגור היטב."
+      "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב."
     ],
     correctIndexes: [2, 3],
     wrongMsg: "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע."
@@ -383,6 +383,7 @@ const el = {
   dragItemImg: document.getElementById("dragItemImg"),
   dragItemCap: document.getElementById("dragItemCap"),
   dragFeedback: document.getElementById("dragFeedback"),
+  btnShowChart: document.getElementById("btnShowChart"),
 
   btnNext: document.getElementById("btnNext"),
   feedback: document.getElementById("feedback"),
@@ -806,6 +807,11 @@ const TYPE = {
         const im = document.createElement("img");
         im.src = it.img;
         im.alt = it.alt || `תמונה ${idx+1}`;
+        if (it.fit === "contain") {
+          im.style.objectFit = "contain";
+          im.style.background = "#fff";
+        }
+
 
         const cap = document.createElement("div");
         cap.className = "img-multi-caption";
@@ -1173,6 +1179,17 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 el.btnResend.addEventListener("click", async () => {
   await sendResult(true);
+});
+el.btnShowChart.addEventListener("click", () => {
+  // toggle chart view while staying on the same question
+  const showing = !el.dragIntro.hidden;
+  if (showing) {
+    el.dragIntro.hidden = true;
+    el.dragPlay.hidden = false;
+  } else {
+    el.dragIntro.hidden = false;
+    el.dragPlay.hidden = true;
+  }
 });
 
 
