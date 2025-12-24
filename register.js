@@ -2,8 +2,7 @@
 // REGISTER FRONTEND (Connected)
 // =========================
 
-// ✅ הדבק כאן את כתובת ה-Web App (…/exec)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBen-H8xo8Xk0udXW2K9Ivpa8iP7ygVrWZX0pnFglU6FAi9cAMkZuSFirU00J6PEnLew/exec"; // TODO: paste your GAS Web App URL
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // TODO: paste your GAS Web App URL
 
 const $ = (id) => document.getElementById(id);
 
@@ -55,6 +54,7 @@ function isEmailValid(email){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 function isDigitsOnly(s){ return /^[0-9]+$/.test(s); }
+function isRabbiIdValid7(s){ return /^[0-9]{7}$/.test(s); }
 
 function getBaseUrl(){
   const { origin, pathname } = window.location;
@@ -146,6 +146,7 @@ el.btnSendOtp.onclick = async () => {
   if (!fullName) return setErr(el.step1Error, "נא למלא שם מלא.");
   if (!personalId) return setErr(el.step1Error, "נא למלא מספר אישי.");
   if (!isDigitsOnly(personalId)) return setErr(el.step1Error, "מספר אישי חייב להיות ספרות בלבד.");
+  if (!isRabbiIdValid7(personalId)) return setErr(el.step1Error, "מספר אישי חייב להיות בדיוק 7 ספרות.");
   if (!unit) return setErr(el.step1Error, "נא למלא יחידה.");
   if (!email || !isEmailValid(email)) return setErr(el.step1Error, "נא להזין אימייל תקין.");
 
@@ -242,6 +243,8 @@ el.btnFinishRegister.onclick = async () => {
   const email = el.email.value.trim().toLowerCase();
   const phone = el.phone.value.trim();
   const baseUrl = getBaseUrl();
+
+  if (!isRabbiIdValid7(personalId)) return setErr(el.step3Error, "מספר אישי חייב להיות בדיוק 7 ספרות.");
 
   el.btnFinishRegister.disabled = true;
   el.btnFinishRegister.textContent = "שומר…";
