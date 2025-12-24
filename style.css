@@ -320,7 +320,7 @@ button:disabled{
   position: absolute;
   border-radius: 10px;
   pointer-events: auto;
-  outline: 2px dashed rgba(11,116,222,0.55);
+  outline: 4px dashed rgba(11,116,222,0.95);
   background: rgba(255,255,255,0.02);
 }
 .drag-zone.over{ outline: 3px solid rgba(11,116,222,0.85); }
