@@ -154,18 +154,25 @@ function escapeHtml(s){
 
 // ====== LOADERS ======
 const { rid, token } = getParams();
-
+const state = {
+  profile: { fullName: "", email: "" }
+};
 async function loadProfile(){
   if (!rid || !token) return;
 
   const r = await apiCall("admin/getProfile", { rid, token });
-  document.getElementById("rabbiName").textContent = state.profile.fullName || "";
 
   if (r && r.ok && r.profile){
-    el.fbEmail.value = r.profile.email || "";
+    state.profile.fullName = r.profile.fullName || "";
+    state.profile.email = r.profile.email || "";
+
+    const nameEl = document.getElementById("rabbiName");
+    if (nameEl) nameEl.textContent = state.profile.fullName || "";
+
+    // אם עדיין יש לך שדה מייל ב-HTML (בינתיים) אפשר להשאיר שקט:
+    if (el.fbEmail) el.fbEmail.value = state.profile.email || "";
   }
 }
-
 async function loadKitchens(){
   el.btnAddKitchen.hidden = true;
   el.btnAddKitchen.disabled = true;
@@ -190,12 +197,15 @@ async function loadKitchens(){
     el.kitchensGrid.appendChild(createKitchenRow(""));
     el.kitchensGrid.appendChild(createKitchenRow(""));
     setInfo(el.kitchensInfo, "לא נמצאו מטבחים — ניתן להוסיף ולשמור.");
+    el.btnAddKitchen.hidden = false;
+    el.btnAddKitchen.disabled = false;
     return;
   }
 
   kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
-  el.btnAddKitchen.hidden = true;
-  el.btnAddKitchen.disabled = true;
+  el.btnAddKitchen.hidden = false;
+  el.btnAddKitchen.disabled = false;
+  setInfo(el.kitchensInfo, "");
 }
 
 async function refreshSubmissions(){
@@ -231,7 +241,7 @@ async function refreshSubmissions(){
       <td>${escapeHtml(row.fullName || "")}</td>
       <td>${escapeHtml(row.personalId || "")}</td>
       <td>${escapeHtml(row.kitchen || "")}</td>
-      <td>${escapeHtml(row.dateStr || "")}</td>
+      <td>${escapeHtml((row.dateStr || "").split(" ")[0])}</td>
     `;
     el.subsBody.appendChild(tr);
   }
