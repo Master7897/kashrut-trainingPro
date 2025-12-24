@@ -92,10 +92,10 @@
 <body>
   <div class="container">
     <section class="card">
-      <h1>דף ניהול לרב</h1>
+      <h1>דף ניהול</h1>
       <p class="muted subtitle">עדכון מטבחים · צפייה בתשובות · משוב</p>
 
-      <div class="note" id="adminNote"></div>
+      <div id="adminMeta" class="meta">שלום הרב <span id="rabbiName"></span></div>
 
       <div class="tabs">
         <button class="tabbtn" id="tabKitchens" type="button">עדכון רשימת מטבחים</button>
@@ -154,9 +154,6 @@
       <div class="panel" id="panelFeedback" hidden>
         <label>נושא הפנייה</label>
         <input id="fbSubject" placeholder="נושא קצר" />
-
-        <label>אימייל שלך</label>
-        <input id="fbEmail" placeholder="נטען אוטומטית" />
 
         <label>תוכן הפנייה</label>
         <input id="fbMessage" placeholder="כתוב/י כאן…" />
