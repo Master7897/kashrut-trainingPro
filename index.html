@@ -107,6 +107,10 @@
         </div>
 
         <div id="dragPlay" hidden>
+          <div class="drag-tools">
+            <button id="btnShowChart" type="button" class="secondary">הצג תרשים</button>
+          </div>
+
           <div class="drag-stage" id="dragStage">
             <img id="dragBg" alt="מדפים" />
             <div id="dragZones"></div>
@@ -130,6 +134,7 @@
     <section id="screen-result" class="card" hidden>
       <h2>סיום</h2>
       <p id="sendStatus" class="muted"></p>
+      <button id="btnResend" class="secondary" hidden>שלח שוב</button>
     </section>
   </div>
   <script src="app.js"></script>
