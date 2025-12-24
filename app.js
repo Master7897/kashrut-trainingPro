@@ -378,7 +378,7 @@ const QUESTIONS = [
     items: [
       { img: "images/pp1.jpg", alt: "מילקי", caption: "מילקי"},
       { img: "images/pp2.jpg", alt: "מלפפונים", caption: "מלפפונים" },
-      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה" fit: "contain"},
+      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה", fit: "contain"},
       { img: "images/pp4.jpg", alt: "קוטג'", caption: "קוטג'" },
       { img: "images/pp5.jpg", alt: "גבינה צהובה", caption: "גבינה צהובה" },
       { img: "images/pp6.jpg", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
