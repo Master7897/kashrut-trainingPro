@@ -85,12 +85,15 @@ function createKitchenRow(value=""){
   const inp = document.createElement("input");
   inp.placeholder = "שם מטבח";
   inp.value = value;
-
+  inp.addEventListener("input", () => setKitchensDirty(true));
   const del = document.createElement("button");
   del.type = "button";
   del.className = "btn-del";
   del.textContent = "מחק";
-  del.onclick = () => wrap.remove();
+  del.onclick = () => {
+  wrap.remove();
+  setKitchensDirty(true);
+};
 
   wrap.appendChild(inp);
   wrap.appendChild(del);
@@ -151,12 +154,48 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+function setKitchensDirty(on){
+  state.kitchens.dirty = !!on;
+  // שמור מופיע רק אחרי טעינה, ומופעל רק אם יש שינוי
+  el.btnSaveKitchens.hidden = false;
+  el.btnSaveKitchens.disabled = !state.kitchens.dirty;
+}
+
+function beginKitchensLoading(){
+  state.kitchens.loading = true;
+  el.btnAddKitchen.hidden = true;
+  el.btnAddKitchen.disabled = true;
+
+  el.btnSaveKitchens.hidden = true;      // לא מציגים בזמן טעינה
+  el.btnSaveKitchens.disabled = true;
+
+  el.tabKitchens.disabled = true;        // מונע ספאם קליקים בטאב עצמו
+}
+
+function endKitchensLoading(){
+  state.kitchens.loading = false;
+
+  el.btnAddKitchen.hidden = false;
+  el.btnAddKitchen.disabled = false;
+
+  // שמור מופיע אחרי טעינה אבל נשאר disabled עד שינוי
+  el.btnSaveKitchens.hidden = false;
+  el.btnSaveKitchens.disabled = !state.kitchens.dirty;
+
+  el.tabKitchens.disabled = false;
+}
 
 // ====== LOADERS ======
 const { rid, token } = getParams();
 const state = {
   profile: { fullName: "", email: "" }
 };
+state.kitchens = {
+  loading: false,
+  reqId: 0,
+  dirty: false,
+};
+
 async function loadProfile(){
   if (!rid || !token) return;
 
@@ -174,39 +213,51 @@ async function loadProfile(){
   }
 }
 async function loadKitchens(){
-  el.btnAddKitchen.hidden = true;
-  el.btnAddKitchen.disabled = true;
+  // אם כבר טוען — לא עושים כלום (מונע כפילויות)
+  if (state.kitchens.loading) return;
+
+  const myReq = ++state.kitchens.reqId;
+  state.kitchens.dirty = false;
+  beginKitchensLoading();
 
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
   el.kitchensGrid.innerHTML = "";
 
-  if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
+  if (!rid || !token){
+    endKitchensLoading();
+    return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
+  }
 
   setInfo(el.kitchensInfo, "טוען מטבחים…");
   const r = await apiCall("admin/getKitchens", { rid, token });
 
+  // אם בינתיים התחילה טעינה חדשה — מתעלמים מהתוצאה הישנה
+  if (myReq !== state.kitchens.reqId) return;
+
   if (!r.ok){
+    endKitchensLoading();
     setInfo(el.kitchensInfo, "");
     return setErr(el.kitchensError, "טעינת מטבחים נכשלה.");
   }
 
   const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
+
   if (kitchens.length === 0){
-    // fallback - allow start empty
     el.kitchensGrid.appendChild(createKitchenRow(""));
     el.kitchensGrid.appendChild(createKitchenRow(""));
     setInfo(el.kitchensInfo, "לא נמצאו מטבחים — ניתן להוסיף ולשמור.");
-    el.btnAddKitchen.hidden = false;
-    el.btnAddKitchen.disabled = false;
+    endKitchensLoading();
+    setKitchensDirty(false);
     return;
   }
 
   kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
-  el.btnAddKitchen.hidden = false;
-  el.btnAddKitchen.disabled = false;
-  setInfo(el.kitchensInfo, "");
+
+  endKitchensLoading();
+  setKitchensDirty(false); // נטען נקי, בלי שינוי עדיין
 }
+
 
 async function refreshSubmissions(){
   setErr(el.subsError, "");
@@ -296,8 +347,10 @@ el.tabFeedback.onclick = async () => {
   // email נטען בפתיחה בכל מקרה
 };
 
-el.btnAddKitchen.onclick = () => el.kitchensGrid.appendChild(createKitchenRow(""));
-
+el.btnAddKitchen.onclick = () => {
+  el.kitchensGrid.appendChild(createKitchenRow(""));
+  setKitchensDirty(true);
+};
 el.btnSaveKitchens.onclick = async () => {
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
@@ -318,6 +371,8 @@ el.btnSaveKitchens.onclick = async () => {
   if (!r.ok) return setErr(el.kitchensError, "שמירה נכשלה.");
 
   setInfo(el.kitchensInfo, "נשמר ✅");
+  setKitchensDirty(false);
+
 };
 
 el.btnRefreshSubs.onclick = refreshSubmissions;
