@@ -174,7 +174,7 @@ function formatSpecial(text) {
 
   // מחיקת רווח אחרי אות יחס לפני תגית
   s = s.replace(
-    /(^|[^\u0590-\u05FF])([הלבכמוש])\s+(<span class="hl-(?:parve|dairy|meat)">)/g,
+    /(^|[^\u0590-\u05FF])([הכמוש])\s+(<span class="hl-(?:parve|dairy|meat)">)/g,
     "$1$2$3"
   );
 
@@ -747,7 +747,7 @@ const TYPE = {
       state.runtime.mc.selected = [];
       el.btnNext.disabled = true;
 
-      el.mcHint.textContent = "שימו לב: יש יותר מתשובה אחת נכונה.";
+      el.mcHint.textContent = "שימו ❤️: יש יותר מתשובה אחת נכונה.";
       el.mcOptions.innerHTML = "";
 
       q.options.forEach((opt, i) => {
