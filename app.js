@@ -207,9 +207,13 @@ async function initKitchenList(){
   // יש rid? טוען מהמערכת החדשה
   const r = await apiCall("quiz/getKitchens", { rid: RID });
 
-  if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
-    // נפילה שקטה: אם משהו לא עבד, לא שוברים את הדף (יש עדיין רשימת HTML)
-    console.warn("quiz/getKitchens failed, fallback to HTML list");
+   if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
+    console.warn("quiz/getKitchens failed", r);
+
+    // אם יש rid ולא הצלחנו להביא מטבחים – לא נותנים להתחיל בטעות עם הרשימה הישנה
+    el.startError.hidden = false;
+    el.startError.textContent = "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.";
+    el.btnStart.disabled = true;
     return;
   }
 
