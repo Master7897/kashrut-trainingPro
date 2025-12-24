@@ -138,7 +138,83 @@ function removeLastCalMarker(){
 // =========================
 // CONFIG
 // =========================
+
+// (ישן) שליחה ישנה לשיטס – נשארת לגיבוי כשאין rid
 const GOOGLE_SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzQxCavHELnbrTkeRRV-cmVEENZXW8eKhySjmmttu-QyM9ZsPT5M6JOyhaHnYo4TVhGCg/exec";
+
+// (חדש) Backend של המערכת (אותו URL שהדבקת ב-admin/register)
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // ← הדבק כאן את ה-…/exec של Apps Script החדש
+
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const RID = (URL_PARAMS.get("rid") || "").trim();
+
+// ---------- JSONP API (works on GitHub Pages) ----------
+function apiCall(path, payload){
+  return new Promise((resolve) => {
+    if (!APPS_SCRIPT_URL){
+      resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
+      return;
+    }
+    const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    window[cb] = (data) => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve(data);
+    };
+
+    const req = encodeURIComponent(JSON.stringify({ path, payload }));
+    const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.onerror = () => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve({ ok:false, error:"NETWORK_ERROR" });
+    };
+    document.body.appendChild(script);
+  });
+}
+// -----------------------------------------------------
+
+function setKitchenOptions(names){
+  // שומר את האופציה הראשונה: "בחר/י מטבח"
+  const first = el.kitchen.querySelector("option[value='']") || el.kitchen.options[0];
+  el.kitchen.innerHTML = "";
+  if (first){
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = first.textContent || "בחר/י מטבח";
+    el.kitchen.appendChild(opt0);
+  } else {
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "בחר/י מטבח";
+    el.kitchen.appendChild(opt0);
+  }
+
+  names.forEach(name => {
+    const opt = document.createElement("option");
+    opt.textContent = name;
+    el.kitchen.appendChild(opt);
+  });
+}
+
+async function initKitchenList(){
+  // אין rid? משאיר את רשימת ה-HTML הקיימת כמו היום
+  if (!RID) return;
+
+  // יש rid? טוען מהמערכת החדשה
+  const r = await apiCall("quiz/getKitchens", { rid: RID });
+
+  if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
+    // נפילה שקטה: אם משהו לא עבד, לא שוברים את הדף (יש עדיין רשימת HTML)
+    console.warn("quiz/getKitchens failed, fallback to HTML list");
+    return;
+  }
+
+  setKitchenOptions(r.kitchens);
+}
 
 const HOTSPOT_MAX_CLICKS = 5;
 
@@ -298,7 +374,7 @@ const QUESTIONS = [
     items: [
       { img: "images/pp1.jpg", alt: "מילקי", caption: "מילקי"},
       { img: "images/pp2.jpg", alt: "מלפפונים", caption: "מלפפונים" },
-      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה" fit: "contain"thi kh cghv },
+      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה" fit: "contain"},
       { img: "images/pp4.jpg", alt: "קוטג'", caption: "קוטג'" },
       { img: "images/pp5.jpg", alt: "גבינה צהובה", caption: "גבינה צהובה" },
       { img: "images/pp6.jpg", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
@@ -1169,7 +1245,10 @@ el.twoWrap.addEventListener("click", (e) => {
 
 el.btnNext.addEventListener("click", onNext);
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
+  // קודם כל: אם יש rid – להביא מטבחים מהשיטס ולהחליף את ה-HTML
+  try { await initKitchenList(); } catch(e){ console.warn(e); }
+
   // preload בזמן טעינת דף (לא חוסם)
   if ("requestIdleCallback" in window) {
     requestIdleCallback(() => preloadAllQuestionImages(), { timeout: 2000 });
@@ -1177,6 +1256,7 @@ window.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => preloadAllQuestionImages(), 300);
   }
 });
+
 el.btnResend.addEventListener("click", async () => {
   await sendResult(true);
 });
@@ -1323,13 +1403,20 @@ async function sendResult(force){
       kitchen: state.user.kitchen,
     };
 
-    const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
+        // אם יש rid – שולחים למערכת החדשה (שיטס מרכזי)
+    if (RID){
+      const r = await apiCall("quiz/submit", { rid: RID, ...payload });
+      if (!r || !r.ok) throw new Error("SUBMIT_FAILED");
+    } else {
+      // אין rid – ממשיכים בשיטה הישנה (כמו היום)
+      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+    }
 
-    if (!res.ok) throw new Error("HTTP " + res.status);
 
     state.sentThisRun = true;
     el.sendStatus.textContent = "התוצאה נשלחה בהצלחה ✅";
