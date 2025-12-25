@@ -1,218 +1,97 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>הרשמת רב - מערכת כשרות</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Register/Admin shared tweaks (kept minimal) */
-    h1{ font-size: 34px !important; text-align:center; }
-    .subtitle{ text-align:center; margin-top:6px; }
-    .row{ display:grid; gap:10px; }
-    .two-col{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width:520px){ .two-col{ grid-template-columns: 1fr; } }
-
-    .card-mini{
-      border:1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      background:#fff;
-    }
-
-    .kitchens-head{
-      display:flex;
-      justify-content: space-between;
-      align-items: center;
-      gap:10px;
-      margin-top: 10px;
-    }
-    .kitchens-grid{ display:grid; gap:10px; margin-top: 10px; }
-
-    .btn-add{
-      background: rgba(11,116,222,0.10);
-      color: var(--primary);
-      border: 2px solid rgba(11,116,222,0.25);
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor:pointer;
-      width: 100%;
-    }
-    .btn-add:focus{ outline: 3px solid rgba(11,116,222,0.25); }
-
-    .kitchen-item{
-      display:flex;
-      gap:10px;
-      align-items: center;
-    }
-    .kitchen-item input{ flex:1; }
-    .btn-del{
-      width:auto;
-      margin-top:0;
-      background:#fff1f0;
-      color: var(--danger);
-      border: 1px solid #ffd5d2;
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor:pointer;
-      font-weight:700;
-    }
-
-    .pill{
-      display:inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background:#f8fafc;
-      font-size: 13px;
-      color: var(--muted);
-      font-weight:700;
-    }
-
-    .success{
-      border: 1px solid rgba(18,183,106,0.25);
-      background: rgba(18,183,106,0.08);
-      padding: 10px;
-      border-radius: 12px;
-      margin-top: 10px;
-    }
-
-    .actions-row{
-      display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;
-    }
-    .actions-row button{ width:auto; margin-top:0; }
-
-    .note{
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 12px;
-      background:#f8fafc;
-      border:1px solid var(--border);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      font-weight:700;
-    }
-
-    .linkbox{
-      direction:ltr;
-      text-align:left;
-      background:#0b1220;
-      color:#e5e7eb;
-      padding: 12px;
-      border-radius: 12px;
-      overflow:auto;
-      font-size: 13px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,0.12);
-      user-select: all;
-    }
-  </style>
+  <title>רישום רב – לומדת כשרות</title>
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <div class="container">
-    <section class="card" id="screen-register">
-      <h1>הרשמת רב חדש</h1>
-      <p class="muted subtitle">ממלאים פרטים, מאמתים במייל, ומגדירים רשימת מטבחים.</p>
+    <section class="card">
+      <h1>רישום רב / יצירת מערכת</h1>
+      <p class="muted">אימות במייל + יצירת קישור ניהול אישי.</p>
 
-      <div class="card-mini" id="step1">
-        <div class="kitchens-head">
-          <div class="pill">שלב 1 מתוך 3</div>
-          <div class="muted">פרטי הרב</div>
+      <div id="step1">
+        <label>שם מלא</label>
+        <input id="rabbiFullName" placeholder="שם ושם משפחה" />
+
+        <div class="two-col">
+          <div>
+            <label>מספר אישי (7 ספרות)</label>
+            <input id="rabbiPersonalId" placeholder="ספרות בלבד" inputmode="numeric" />
+          </div>
+          <div>
+            <label>יחידה</label>
+            <input id="rabbiUnit" placeholder="לדוגמה: מרכז הובלה" />
+          </div>
         </div>
 
-        <div class="row" style="margin-top:10px;">
-          <label>שם מלא</label>
-          <input id="rabbiFullName" placeholder="שם ושם משפחה" />
-
-          <div class="two-col">
-            <div>
-              <label>מספר אישי</label>
-              <input id="rabbiPersonalId" placeholder="ספרות בלבד" inputmode="numeric" />
-            </div>
-            <div>
-              <label>יחידה</label>
-              <input id="rabbiUnit" placeholder="לדוגמה: מרכז הובלה" />
-            </div>
+        <div class="two-col">
+          <div>
+            <label>אימייל</label>
+            <input id="rabbiEmail" placeholder="name@example.com" inputmode="email" />
           </div>
-
-          <div class="two-col">
-            <div>
-              <label>אימייל</label>
-              <input id="rabbiEmail" placeholder="name@example.com" inputmode="email" />
-            </div>
-            <div>
-              <label>טלפון (אופציונלי)</label>
-              <input id="rabbiPhone" placeholder="05xxxxxxxx" inputmode="tel" />
-            </div>
+          <div>
+            <label>טלפון (אופציונלי)</label>
+            <input id="rabbiPhone" placeholder="05xxxxxxxx" inputmode="tel" />
           </div>
-
-          <div class="actions-row">
-            <button class="primary" id="btnSendOtp" type="button">שלח קוד אימות למייל</button>
-            <button class="secondary" id="btnSkipOtp" type="button" title="לבדיקות מקומיות בלבד">דילוג (בדיקה)</button>
-          </div>
-
-          <p class="error" id="step1Error" hidden></p>
-          <p class="muted" id="step1Info" hidden></p>
         </div>
+
+        <div class="actions">
+          <button class="primary" id="btnSendOtp" type="button">שלח קוד אימות למייל</button>
+        </div>
+
+        <p class="error" id="step1Error" hidden></p>
+        <p class="muted" id="step1Info" hidden></p>
       </div>
 
-      <div class="card-mini" id="step2" hidden>
-        <div class="kitchens-head">
-          <div class="pill">שלב 2 מתוך 3</div>
-          <div class="muted">אימות במייל</div>
+      <div id="step2" hidden>
+        <label>הזן/י את הקוד שקיבלת במייל</label>
+        <input id="otpCode" placeholder="000000" inputmode="numeric" />
+
+        <div class="actions">
+          <button class="primary" id="btnVerifyOtp" type="button">אמת קוד</button>
+          <button class="secondary" id="btnResendOtp" type="button">שלח קוד שוב</button>
         </div>
 
-        <div class="row" style="margin-top:10px;">
-          <label>הזן/י את הקוד שקיבלת במייל</label>
-          <input id="otpCode" placeholder="000000" inputmode="numeric" />
-
-          <div class="actions-row">
-            <button class="primary" id="btnVerifyOtp" type="button">אמת קוד</button>
-            <button class="secondary" id="btnResendOtp" type="button">שלח קוד שוב</button>
-          </div>
-
-          <p class="error" id="step2Error" hidden></p>
-          <p class="muted" id="step2Info" hidden></p>
-        </div>
+        <p class="error" id="step2Error" hidden></p>
+        <p class="muted" id="step2Info" hidden></p>
       </div>
 
-      <div class="card-mini" id="step3" hidden>
-        <div class="kitchens-head">
-          <div class="pill">שלב 3 מתוך 3</div>
-          <div class="muted">רשימת מטבחים</div>
-        </div>
-
-        <div class="note">
-          הוסף/י את שמות המטבחים שלך. אפשר ללא הגבלה. בסיום תקבל/י במייל קישור ניהול אישי — חשוב לשמור אותו.
-        </div>
-
+      <div id="step3" hidden>
+        <p class="muted">הוסף/י את שמות המטבחים שלך. בסיום תקבל/י קישור ניהול אישי.</p>
         <div class="kitchens-grid" id="kitchensGrid"></div>
+        <button class="secondary" id="btnAddKitchen" type="button">+ הוסף מטבח חדש</button>
 
-        <button class="btn-add" id="btnAddKitchen" type="button">+ הוסף מטבח חדש</button>
-
-        <div class="actions-row">
-          <button class="primary" id="btnFinishRegister" type="button">שמירה והרשמה</button>
+        <div class="actions">
+          <button class="primary" id="btnFinishRegister" type="button" disabled>שמירה והרשמה</button>
         </div>
 
         <p class="error" id="step3Error" hidden></p>
+
         <div class="success" id="step3Success" hidden>
-          <div style="font-weight:700;">נרשמת בהצלחה ✅</div>
-          <div class="muted" style="margin-top:6px;">קישורי גישה (בדיקה/תצוגה):</div>
-          <div style="margin-top:8px;">
+          <div style="font-weight:900;">נרשמת בהצלחה ✅</div>
+          <div class="muted" style="margin-top:6px;">קישורים:</div>
+
+          <div style="margin-top:10px;">
             <div class="muted">קישור ניהול:</div>
-            <div class="linkbox" id="adminLinkBox"></div>
+            <div class="feedback" id="adminLinkBox"></div>
           </div>
-          <div style="margin-top:8px;">
+
+          <div style="margin-top:10px;">
             <div class="muted">קישור שאלון לטבחים:</div>
-            <div class="linkbox" id="quizLinkBox"></div>
+            <div class="feedback" id="quizLinkBox"></div>
+          </div>
+
+          <div class="mini-links">
+            <a class="link" href="./">חזרה לדף הראשי</a>
           </div>
         </div>
       </div>
     </section>
   </div>
 
-  <script src="register.js?v=1"></script>
+  <script src="register.js?v=5"></script>
 </body>
 </html>
