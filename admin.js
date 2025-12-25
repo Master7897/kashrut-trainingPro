@@ -1,325 +1,437 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // TODO: paste your GAS Web App URL
-const $ = (id)=>document.getElementById(id);
+// =========================
+// ADMIN FRONTEND (Connected)
+// =========================
+
+// ✅ הדבק כאן את כתובת ה-Web App (…/exec)
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec";
+
+const $ = (id) => document.getElementById(id);
+
 const el = {
-  hello: $("adminHello"),
+  adminNote: $("adminNote"),
+
   tabKitchens: $("tabKitchens"),
-  tabSubs: $("tabSubs"),
-  tabFb: $("tabFb"),
+  tabSubmissions: $("tabSubmissions"),
+  tabFeedback: $("tabFeedback"),
+
   panelKitchens: $("panelKitchens"),
-  panelSubs: $("panelSubs"),
-  panelFb: $("panelFb"),
+  panelSubmissions: $("panelSubmissions"),
+  panelFeedback: $("panelFeedback"),
+
   kitchensGrid: $("kitchensGrid"),
   btnAddKitchen: $("btnAddKitchen"),
   btnSaveKitchens: $("btnSaveKitchens"),
   kitchensError: $("kitchensError"),
   kitchensInfo: $("kitchensInfo"),
+
   timeFilter: $("timeFilter"),
   btnRefreshSubs: $("btnRefreshSubs"),
   subsBody: $("subsBody"),
   subsError: $("subsError"),
   subsInfo: $("subsInfo"),
+
   fbSubject: $("fbSubject"),
+  fbEmail: $("fbEmail"),
   fbMessage: $("fbMessage"),
   btnSendFeedback: $("btnSendFeedback"),
-  btnCopyQuizLink: $("btnCopyQuizLink"),
   fbError: $("fbError"),
   fbInfo: $("fbInfo"),
 };
-const qs = new URLSearchParams(location.search);
-const rid = qs.get("rid") || "";
-const token = qs.get("token") || "";
-const state = {
-  profile: null,
-  kitchens: { dirty:false, saving:false }
-};
-function setErr(node,msg){ node.hidden=!msg; node.textContent=msg||""; }
-function setInfo(node,msg){ node.hidden=!msg; node.textContent=msg||""; }
-function apiCall(path,payload){
-  return new Promise((resolve)=>{
-    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("PASTE_")){
-      resolve({ok:false,error:"SERVER_NOT_CONFIGURED"}); return;
-    }
+
+function setErr(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
+function setInfo(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
+
+function getParams(){
+  const p = new URLSearchParams(window.location.search);
+  return { rid: p.get("rid") || "", token: p.get("token") || "" };
+}
+
+// ---------- JSONP API (works on GitHub Pages) ----------
+function apiCall(path, payload){
+  return new Promise((resolve) => {
+    if (!APPS_SCRIPT_URL) return resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
+
     const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     const script = document.createElement("script");
-    window[cb] = (data)=>{
-      try{ delete window[cb]; }catch{}
+
+    const cleanup = (data) => {
+      try { delete window[cb]; } catch {}
       script.remove();
-      resolve(data||{ok:false});
+      resolve(data);
     };
+
+    window[cb] = (data) => cleanup(data);
+
     const req = encodeURIComponent(JSON.stringify({ path, payload }));
     script.src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
-    script.onerror = ()=>{
-      try{ delete window[cb]; }catch{}
-      script.remove();
-      resolve({ok:false,error:"NETWORK_ERROR"});
-    };
+    script.onerror = () => cleanup({ ok:false, error:"NETWORK_ERROR" });
+
     document.body.appendChild(script);
   });
 }
-function baseUrl(){
-  const { origin, pathname } = window.location;
-  const parts = pathname.split("/").filter(Boolean);
-  parts.pop(); // admin.html
-  return `${origin}/${parts.join("/")}/`;
+// -----------------------------------------------------
+
+const { rid, token } = getParams();
+
+const state = {
+  profile: { fullName: "", email: "" },
+  kitchens: { dirty: false, saving: false },
+  activeTab: null,
+};
+
+function clearActiveTabs(){
+  [el.tabKitchens, el.tabSubmissions, el.tabFeedback].forEach(b => b.classList.remove("active"));
 }
-function quizLink(){
-  return `${baseUrl()}?rid=${encodeURIComponent(rid)}`;
+function hideAllPanels(){
+  el.panelKitchens.hidden = true;
+  el.panelSubmissions.hidden = true;
+  el.panelFeedback.hidden = true;
 }
 function showTab(name){
-  el.panelKitchens.hidden = name!=="k";
-  el.panelSubs.hidden = name!=="s";
-  el.panelFb.hidden = name!=="f";
+  clearActiveTabs();
+  hideAllPanels();
+  state.activeTab = name;
+
+  el.tabKitchens.disabled = (name === "kitchens");
+  el.tabSubmissions.disabled = (name === "subs");
+  el.tabFeedback.disabled = (name === "fb");
+
+  if (name === "kitchens"){
+    el.tabKitchens.classList.add("active");
+    el.panelKitchens.hidden = false;
+  } else if (name === "subs"){
+    el.tabSubmissions.classList.add("active");
+    el.panelSubmissions.hidden = false;
+  } else {
+    el.tabFeedback.classList.add("active");
+    el.panelFeedback.hidden = false;
+  }
 }
-function normalizeKitchenName(s){
-  return String(s ?? "").trim().replace(/\s+/g," ").toLowerCase();
-}
+
+// =========================
+// Kitchens logic (FIX #1)
+// =========================
+
 function kitchenInputs(){
   return Array.from(el.kitchensGrid.querySelectorAll("input"));
 }
 function kitchensAllFilled(){
-  const ins = kitchenInputs();
-  return ins.length>0 && ins.every(i=>i.value.trim().length>0);
+  const inputs = kitchenInputs();
+  return inputs.length > 0 && inputs.every(i => i.value.trim().length > 0);
 }
-function kitchensNoDuplicates(){
-  const names = kitchenInputs().map(i=>normalizeKitchenName(i.value)).filter(Boolean);
-  const set = new Set();
-  for (const n of names){ if (set.has(n)) return false; set.add(n); }
-  return true;
+function listKitchensTrimmed(){
+  return kitchenInputs().map(i => i.value.trim());
 }
-function listKitchens(){
-  return kitchenInputs().map(i=>i.value.trim()).filter(Boolean);
-}
-function updateSaveEnabled(){
-  if (state.kitchens.saving) return (el.btnSaveKitchens.disabled = true);
-  if (!kitchensNoDuplicates()) setErr(el.kitchensError,"יש כפילות בשמות המטבחים.");
-  else if (el.kitchensError.textContent==="יש כפילות בשמות המטבחים.") setErr(el.kitchensError,"");
-  el.btnSaveKitchens.disabled = !(state.kitchens.dirty && kitchensAllFilled() && kitchensNoDuplicates());
-}
-function setDirty(on){
+function setKitchensDirty(on){
   state.kitchens.dirty = !!on;
   updateSaveEnabled();
 }
-function createKitchenRow(val=""){
+function updateSaveEnabled(){
+  const canSave = !state.kitchens.saving && state.kitchens.dirty && kitchensAllFilled();
+  el.btnSaveKitchens.disabled = !canSave;
+}
+
+function createKitchenRow(value=""){
   const wrap = document.createElement("div");
-  wrap.style.display="flex";
-  wrap.style.gap="10px";
-  wrap.style.marginTop="10px";
+  wrap.className = "kitchen-item";
+
   const inp = document.createElement("input");
-  inp.placeholder="שם מטבח";
-  inp.value = val;
-  inp.addEventListener("input", ()=>{
-    setInfo(el.kitchensInfo,"");
-    setErr(el.kitchensError,"");
-    setDirty(true);
+  inp.placeholder = "שם מטבח";
+  inp.value = value;
+
+  inp.addEventListener("input", () => {
+    setKitchensDirty(true);      // יש שינוי
+    // updateSaveEnabled() נקרא מבפנים
   });
+
   const del = document.createElement("button");
-  del.type="button";
-  del.className="secondary";
-  del.textContent="מחק";
-  del.onclick = ()=>{
+  del.type = "button";
+  del.className = "btn-del";
+  del.textContent = "מחק";
+  del.onclick = () => {
     wrap.remove();
-    setDirty(true);
+    setKitchensDirty(true);
   };
+
   wrap.appendChild(inp);
   wrap.appendChild(del);
   return wrap;
 }
-// ---------- quarters ----------
-function getQuarterKey(d){
-  const y = d.getFullYear();
-  const q = Math.floor(d.getMonth()/3)+1;
-  return { y,q };
-}
-function quarterLabel(y,q){
-  const map={1:"א׳",2:"ב׳",3:"ג׳",4:"ד׳"};
-  return `${y} רבעון ${map[q]}`;
-}
-function quarterStartMs(y,q){
-  const m=(q-1)*3;
-  return new Date(y,m,1,0,0,0,0).getTime();
-}
-function nextQuarter(y,q){ return (q===4)?{y:y+1,q:1}:{y,q:q+1}; }
-function quarterEndMs(y,q){
-  const nq = nextQuarter(y,q);
-  return quarterStartMs(nq.y,nq.q);
-}
-function buildQuarterOptions(){
-  const prev = el.timeFilter.value || "";
-  const now = new Date();
-  let { y, q } = getQuarterKey(now);
-  const opts=[];
-  for (let i=0;i<8;i++){
-    opts.push({ y,q, label:quarterLabel(y,q), start:quarterStartMs(y,q), end:quarterEndMs(y,q) });
-    q--; if (q===0){ q=4; y--; }
-  }
-  el.timeFilter.innerHTML="";
-  for (const o of opts){
-    const op=document.createElement("option");
-    op.value=String(o.start);
-    op.dataset.endMs=String(o.end);
-    op.textContent=o.label;
-    el.timeFilter.appendChild(op);
-  }
-  if (prev && Array.from(el.timeFilter.options).some(o=>o.value===prev)) el.timeFilter.value=prev;
-  else el.timeFilter.value=String(opts[0].start);
-}
-function escapeHtml(s){
-  return String(s??"")
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-}
-function formatDateDDMMYYYY(s){
-  const str = String(s||"").trim();
-  const part = str.split(" ")[0];
-  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(part);
-  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-  m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(part);
-  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
-  return part;
-}
-function rowToDateMs(row){
-  if (Number.isFinite(row?.dateMs)) return +row.dateMs;
-  const iso = String(row?.dateISO||"").trim();
-  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-  if (m) return new Date(+m[1],+m[2]-1,+m[3],0,0,0,0).getTime();
-  const s = String(row?.dateStr||"").trim();
-  const part = s.split(" ")[0];
-  m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(part);
-  if (m) return new Date(+m[1],+m[2]-1,+m[3],0,0,0,0).getTime();
-  m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(part);
-  if (m) return new Date(+m[3],+m[2]-1,+m[1],0,0,0,0).getTime();
-  return NaN;
-}
-// ---------- API actions ----------
+
+// =========================
+// Load profile
+// =========================
 async function loadProfile(){
-  if (!rid || !token) return setErr(el.kitchensError,"קישור ניהול לא תקין (חסר rid/token).");
+  if (!rid || !token) return;
+
   const r = await apiCall("admin/getProfile", { rid, token });
-  if (!r?.ok) return;
-  state.profile = r.profile || null;
-  if (state.profile?.fullName) el.hello.textContent = `שלום, ${state.profile.fullName}`;
-}
-function getRidFromUrl(){
-  const qs = new URLSearchParams(location.search);
-  return (qs.get("rid") || "").trim();
+  if (r && r.ok && r.profile){
+    state.profile.fullName = r.profile.fullName || "";
+    state.profile.email = r.profile.email || "";
+
+    const meta = $("adminMeta");
+    if (meta){
+      meta.textContent = `שלום הרב ${state.profile.fullName || ""}`;
+      meta.hidden = false;
+    }
+    if (el.fbEmail) el.fbEmail.value = state.profile.email || "";
+  }
 }
 
+// =========================
+// Kitchens load/save
+// =========================
 async function loadKitchens(){
-  const rid = getRidFromUrl();
-  const r = await apiCall("public/getKitchens", { rid });
+  setErr(el.kitchensError, "");
+  setInfo(el.kitchensInfo, "");
+  el.kitchensGrid.innerHTML = "";
+
+  // בזמן טעינה: מסתירים הוספה+שמירה
+  el.btnAddKitchen.hidden = true;
+  el.btnAddKitchen.disabled = true;
+  el.btnSaveKitchens.hidden = true;
+  el.btnSaveKitchens.disabled = true;
+
+  if (!rid || !token){
+    el.btnAddKitchen.hidden = false;
+    el.btnAddKitchen.disabled = true;
+    el.btnSaveKitchens.hidden = false;
+    el.btnSaveKitchens.disabled = true;
+    return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
+  }
+
+  const r = await apiCall("admin/getKitchens", { rid, token });
   if (!r || !r.ok){
-    el.kitchen.innerHTML = `<option value="">שגיאה בטעינת מטבחים</option>`;
-    return;
+    el.btnAddKitchen.hidden = false;
+    el.btnAddKitchen.disabled = false;
+    el.btnSaveKitchens.hidden = false;
+    el.btnSaveKitchens.disabled = true;
+    return setErr(el.kitchensError, "טעינת מטבחים נכשלה.");
   }
-  setKitchenOptions(r.kitchens);
+
+  const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
+  if (kitchens.length){
+    kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(String(k || ""))));
+  } else {
+    el.kitchensGrid.appendChild(createKitchenRow(""));
+  }
+
+  state.kitchens.dirty = false;
+  state.kitchens.saving = false;
+
+  el.btnAddKitchen.hidden = false;
+  el.btnAddKitchen.disabled = false;
+
+  el.btnSaveKitchens.hidden = false;
+  el.btnSaveKitchens.textContent = "שמור מטבחים";
+  updateSaveEnabled(); // <- יישאר disabled עד שינוי + הכל מלא
 }
-el.btnAddKitchen.onclick = ()=>{
-  el.kitchensGrid.appendChild(createKitchenRow(""));
-  setDirty(true);
-};
-el.btnSaveKitchens.onclick = async ()=>{
-  setErr(el.kitchensError,""); setInfo(el.kitchensInfo,"");
-  if (!rid || !token) return setErr(el.kitchensError,"קישור ניהול לא תקין (חסר rid/token).");
-  if (!kitchensAllFilled()) return setErr(el.kitchensError,"יש שדה מטבח ריק.");
-  if (!kitchensNoDuplicates()) return setErr(el.kitchensError,"יש כפילות בשמות המטבחים.");
-  const kitchens = listKitchens();
-  if (!kitchens.length) return setErr(el.kitchensError,"נא להזין לפחות מטבח אחד.");
-  state.kitchens.saving = true;
-  el.btnSaveKitchens.textContent="שומר…";
-  updateSaveEnabled();
-  try{
-    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
-    if (!r?.ok) throw new Error("SAVE_FAILED");
-    setInfo(el.kitchensInfo,"נשמר ✅");
-    state.kitchens.dirty = false;
-  }catch{
-    setErr(el.kitchensError,"שמירה נכשלה.");
-  }finally{
-    state.kitchens.saving = false;
-    el.btnSaveKitchens.textContent="שמור מטבחים";
-    updateSaveEnabled();
+
+async function saveKitchens(){
+  setErr(el.kitchensError, "");
+  setInfo(el.kitchensInfo, "");
+
+  if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
+
+  // חובה: כל השדות מלאים
+  if (!kitchensAllFilled()){
+    el.btnSaveKitchens.disabled = true;
+    return setErr(el.kitchensError, "יש למלא את כל שמות המטבחים לפני שמירה.");
   }
-};
+
+  const kitchens = listKitchensTrimmed();
+  if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
+
+  state.kitchens.saving = true;
+  el.btnSaveKitchens.disabled = true;
+  el.btnSaveKitchens.textContent = "שומר…";
+
+  try {
+    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
+    if (!r || !r.ok){
+      state.kitchens.saving = false;
+      el.btnSaveKitchens.textContent = "שמור מטבחים";
+      updateSaveEnabled(); // מאפשר ניסיון חוזר רק אם עדיין עומד בתנאים
+      return setErr(el.kitchensError, "שמירה נכשלה.");
+    }
+
+    setInfo(el.kitchensInfo, "נשמר ✅");
+    state.kitchens.dirty = false;
+    state.kitchens.saving = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
+    updateSaveEnabled(); // יישאר disabled עד שינוי הבא
+  } catch (e){
+    state.kitchens.saving = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
+    updateSaveEnabled();
+    setErr(el.kitchensError, "שמירה נכשלה.");
+  }
+}
+
+// =========================
+// Submissions
+// =========================
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, (m) => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[m]);
+}
+function rowToDateMs(row){
+  // מנסה dateISO (YYYY-MM-DD...) או dateStr
+  const raw = row && (row.dateISO || row.dateStr || "");
+  const d = new Date(String(raw));
+  const ms = d.getTime();
+  return Number.isFinite(ms) ? ms : NaN;
+}
+function formatDateDDMMYYYY(raw){
+  // raw יכול להיות YYYY-MM-DD או תאריך מלא; נשמור על DD-MM-YYYY
+  const d = new Date(String(raw));
+  if (!Number.isFinite(d.getTime())) return String(raw || "");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = d.getFullYear();
+  return `${dd}-${mm}-${yy}`;
+}
+
+function buildQuarterOptions(){
+  const sel = el.timeFilter;
+  if (!sel) return;
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth(); // 0..11
+  const q = Math.floor(m/3) + 1;
+
+  sel.innerHTML = "";
+  // 8 רבעונים אחרונים
+  for (let i=0;i<8;i++){
+    const idx = (q-1) - i;
+    const yy = y + Math.floor(idx/4);
+    const qq = ((idx%4)+4)%4 + 1;
+    const opt = document.createElement("option");
+    opt.value = `${yy}-Q${qq}`;
+    opt.textContent = `${qq}/${yy}`;
+    sel.appendChild(opt);
+  }
+}
+
+function quarterRangeMs(quarterValue){
+  // "2025-Q3"
+  const m = /^(\d{4})-Q([1-4])$/.exec(String(quarterValue||""));
+  if (!m) return { startMs: NaN, endMs: NaN };
+  const yy = +m[1];
+  const qq = +m[2];
+  const startMonth = (qq-1)*3;
+  const start = new Date(yy, startMonth, 1, 0,0,0,0).getTime();
+  const end = new Date(yy, startMonth+3, 1, 0,0,0,0).getTime();
+  return { startMs: start, endMs: end };
+}
+
 async function refreshSubmissions(){
-  setErr(el.subsError,""); setInfo(el.subsInfo,""); el.subsBody.innerHTML="";
-  if (!rid || !token) return setErr(el.subsError,"קישור ניהול לא תקין (חסר rid/token).");
-  const opt = el.timeFilter.selectedOptions[0];
-  const startMs = Number(el.timeFilter.value);
-  const endMs = Number(opt?.dataset?.endMs || 0);
-  el.btnRefreshSubs.disabled = true;
-  el.btnRefreshSubs.textContent="טוען…";
-  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: startMs });
-  el.btnRefreshSubs.disabled = false;
-  el.btnRefreshSubs.textContent="רענן";
-  if (!r?.ok) return setErr(el.subsError,"טעינה נכשלה.");
+  setErr(el.subsError, "");
+  setInfo(el.subsInfo, "");
+  el.subsBody.innerHTML = "";
+
+  if (!rid || !token) return setErr(el.subsError, "קישור ניהול לא תקין (חסר rid/token).");
+
+  const qv = el.timeFilter ? el.timeFilter.value : "";
+  const { startMs, endMs } = quarterRangeMs(qv);
+
+  const r = await apiCall("admin/getSubmissions", { rid, token });
+  if (!r || !r.ok){
+    return setErr(el.subsError, "טעינת תשובות נכשלה.");
+  }
+
   let rows = Array.isArray(r.rows) ? r.rows : [];
-  if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs>startMs){
-    rows = rows.filter(row=>{
+  if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs){
+    rows = rows.filter(row => {
       const ms = rowToDateMs(row);
-      return Number.isFinite(ms) && ms>=startMs && ms<endMs;
+      return Number.isFinite(ms) && ms >= startMs && ms < endMs;
     });
   }
-  if (!rows.length) return setInfo(el.subsInfo,"אין תשובות ברבעון שנבחר.");
+
+  if (rows.length === 0){
+    setInfo(el.subsInfo, "אין תשובות ברבעון שנבחר.");
+    return;
+  }
+
   for (const row of rows){
-    const raw = row.dateISO ? row.dateISO : (String(row.dateStr||"").split(" ")[0] || "");
-    const ddmmyyyy = formatDateDDMMYYYY(raw);
+    const raw = row.dateISO ? row.dateISO : (String(row.dateStr || "").split(" ")[0] || "");
+    const dateDDMMYYYY = formatDateDDMMYYYY(raw);
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${escapeHtml(row.fullName||"")}</td>
-      <td>${escapeHtml(row.personalId||"")}</td>
-      <td>${escapeHtml(row.kitchen||"")}</td>
-      <td>${escapeHtml(ddmmyyyy)}</td>
+      <td>${escapeHtml(row.fullName || "")}</td>
+      <td>${escapeHtml(row.personalId || "")}</td>
+      <td>${escapeHtml(row.kitchen || "")}</td>
+      <td class="date-cell">${escapeHtml(dateDDMMYYYY)}</td>
     `;
     el.subsBody.appendChild(tr);
   }
 }
+
+// =========================
+// Feedback
+// =========================
 async function sendFeedback(){
-  setErr(el.fbError,""); setInfo(el.fbInfo,"");
-  if (!rid || !token) return setErr(el.fbError,"קישור ניהול לא תקין (חסר rid/token).");
+  setErr(el.fbError, "");
+  setInfo(el.fbInfo, "");
+
+  if (!rid || !token) return setErr(el.fbError, "קישור ניהול לא תקין (חסר rid/token).");
+
   const subject = el.fbSubject.value.trim();
   const message = el.fbMessage.value.trim();
-  if (!subject) return setErr(el.fbError,"נא למלא נושא.");
-  if (!message) return setErr(el.fbError,"נא למלא תוכן.");
+
+  if (!subject) return setErr(el.fbError, "נא למלא נושא.");
+  if (!message) return setErr(el.fbError, "נא למלא תוכן פנייה.");
+
   el.btnSendFeedback.disabled = true;
-  el.btnSendFeedback.textContent="שולח…";
+  el.btnSendFeedback.textContent = "שולח…";
+
   const r = await apiCall("admin/sendFeedback", {
     rid, token,
     subject,
-    email: state.profile?.email || "",
+    email: state.profile.email,
     message
   });
+
   el.btnSendFeedback.disabled = false;
-  el.btnSendFeedback.textContent="שלח משוב";
-  if (!r?.ok) return setErr(el.fbError,"שליחה נכשלה.");
-  el.fbSubject.value="";
-  el.fbMessage.value="";
-  setInfo(el.fbInfo,"נשלח ✅");
+  el.btnSendFeedback.textContent = "שלח משוב";
+
+  if (!r || !r.ok) return setErr(el.fbError, "שליחה נכשלה.");
+
+  el.fbSubject.value = "";
+  el.fbMessage.value = "";
+  setInfo(el.fbInfo, "נשלח ✅");
 }
+
+// =========================
+// Events
+// =========================
+el.tabKitchens.onclick = async () => { showTab("kitchens"); await loadKitchens(); };
+el.tabSubmissions.onclick = async () => { showTab("subs"); buildQuarterOptions(); await refreshSubmissions(); };
+el.tabFeedback.onclick = async () => { showTab("fb"); };
+
+el.btnAddKitchen.onclick = () => {
+  el.kitchensGrid.appendChild(createKitchenRow(""));
+  setKitchensDirty(true);
+};
+
+el.btnSaveKitchens.onclick = saveKitchens;
+
 el.btnRefreshSubs.onclick = refreshSubmissions;
-let subsRefreshing=false;
-el.timeFilter.onchange = async ()=>{
+
+// ✅ רענון אוטומטי כשמשנים רבעון
+let subsRefreshing = false;
+el.timeFilter.onchange = async () => {
   if (subsRefreshing) return;
-  subsRefreshing=true;
-  try{ await refreshSubmissions(); }finally{ subsRefreshing=false; }
+  subsRefreshing = true;
+  try { await refreshSubmissions(); } finally { subsRefreshing = false; }
 };
+
 el.btnSendFeedback.onclick = sendFeedback;
-el.btnCopyQuizLink.onclick = async ()=>{
-  setErr(el.fbError,""); setInfo(el.fbInfo,"");
-  const link = quizLink();
-  try{
-    await navigator.clipboard.writeText(link);
-    setInfo(el.fbInfo,"הקישור הועתק ✅");
-  }catch{
-    setInfo(el.fbInfo,link);
-  }
-};
-// tabs
-el.tabKitchens.onclick = async ()=>{ showTab("k"); await loadKitchens(); };
-el.tabSubs.onclick = async ()=>{ showTab("s"); buildQuarterOptions(); await refreshSubmissions(); };
-el.tabFb.onclick = ()=>{ showTab("f"); };
-// init
-(async ()=>{
-  buildQuarterOptions();
-  await loadProfile();
-  showTab("k");
-  await loadKitchens();
-})();
+
+// ====== INIT ======
+hideAllPanels();
+clearActiveTabs();
+buildQuarterOptions();
+loadProfile();
