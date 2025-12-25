@@ -198,22 +198,19 @@ async function loadProfile(){
   state.profile = r.profile || null;
   if (state.profile?.fullName) el.hello.textContent = `שלום, ${state.profile.fullName}`;
 }
+function getRidFromUrl(){
+  const qs = new URLSearchParams(location.search);
+  return (qs.get("rid") || "").trim();
+}
+
 async function loadKitchens(){
-  setErr(el.kitchensError,""); setInfo(el.kitchensInfo,"טוען…");
-  el.kitchensGrid.innerHTML="";
-  el.btnSaveKitchens.disabled = true;
-  state.kitchens.dirty = false;
-  const r = await apiCall("admin/getKitchens", { rid, token });
-  setInfo(el.kitchensInfo,"");
-  if (!r?.ok) return setErr(el.kitchensError,"טעינת מטבחים נכשלה.");
-  const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
-  if (!kitchens.length){
-    el.kitchensGrid.appendChild(createKitchenRow(""));
-    el.kitchensGrid.appendChild(createKitchenRow(""));
-  } else {
-    kitchens.forEach(k=>el.kitchensGrid.appendChild(createKitchenRow(k)));
+  const rid = getRidFromUrl();
+  const r = await apiCall("public/getKitchens", { rid });
+  if (!r || !r.ok){
+    el.kitchen.innerHTML = `<option value="">שגיאה בטעינת מטבחים</option>`;
+    return;
   }
-  setDirty(false);
+  setKitchenOptions(r.kitchens);
 }
 el.btnAddKitchen.onclick = ()=>{
   el.kitchensGrid.appendChild(createKitchenRow(""));
