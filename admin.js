@@ -140,17 +140,15 @@ function showTab(name){
 }
 function getQuarterKey(d){
   const y = d.getFullYear();
-  const q = Math.floor(d.getMonth() / 3) + 1;
+  const q = Math.floor(d.getMonth() / 3) + 1; // 1..4
   return { y, q };
 }
 
 function nextQuarter(y, q){
-  if (q === 4) return { y: y + 1, q: 1 };
-  return { y, q: q + 1 };
+  return (q === 4) ? { y: y + 1, q: 1 } : { y, q: q + 1 };
 }
 
 function quarterLabel(y, q){
-  // ✅ עם גרש אחרי האות (א׳ ב׳ ג׳ ד׳)
   const map = {1:"א׳",2:"ב׳",3:"ג׳",4:"ד׳"};
   return `${y} רבעון ${map[q]}`;
 }
@@ -165,8 +163,10 @@ function quarterEndMs(y, q){
   return quarterStartMs(nq.y, nq.q);
 }
 
+// ✅ בונה 8 רבעונים אחרונים, בלי לדרוס בחירה קיימת
 function buildQuarterOptions(){
-  // ✅ תמיד 8 רבעונים אחרונים (שנתיים) לפי התאריך הנוכחי
+  const prevValue = el.timeFilter.value || "";
+
   const now = new Date();
   const { y: nowY, q: nowQ } = getQuarterKey(now);
 
@@ -188,16 +188,20 @@ function buildQuarterOptions(){
   el.timeFilter.innerHTML = "";
   for (const o of opts){
     const op = document.createElement("option");
-    op.value = String(o.startMs);     // value = startMs
+    op.value = String(o.startMs);
     op.dataset.endMs = String(o.endMs);
     op.textContent = o.label;
     el.timeFilter.appendChild(op);
   }
 
-  // ✅ ברירת מחדל: הרבעון האחרון (הנוכחי) = האופציה הראשונה
-  el.timeFilter.value = String(opts[0].startMs);
+  // ✅ אם הבחירה הקודמת עדיין קיימת – נשמר אותה
+  if (prevValue && Array.from(el.timeFilter.options).some(o => o.value === prevValue)){
+    el.timeFilter.value = prevValue;
+  } else {
+    // ✅ ברירת מחדל: הרבעון האחרון (הנוכחי) = הראשון ברשימה
+    el.timeFilter.value = String(opts[0].startMs);
+  }
 }
-
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;")
@@ -335,7 +339,6 @@ function parseRowDateMs(row){
   const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
   return new Date(y, mo, d, 0, 0, 0, 0).getTime();
 }
-
 async function refreshSubmissions(){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
@@ -343,18 +346,15 @@ async function refreshSubmissions(){
 
   if (!rid || !token) return setErr(el.subsError, "קישור ניהול לא תקין (חסר rid/token).");
 
-  // ✅ מוודא שהרבעונים תמיד מעודכנים (אם נכנסנו אחרי מעבר רבעון)
-  buildQuarterOptions();
-
   const opt = el.timeFilter.selectedOptions[0];
-  const qStartMs = Number(el.timeFilter.value);
-  const qEndMs = Number(opt?.dataset?.endMs || 0);
+  const startMs = Number(el.timeFilter.value);
+  const endMs = Number(opt?.dataset?.endMs || 0);
 
   el.btnRefreshSubs.disabled = true;
   el.btnRefreshSubs.textContent = "טוען…";
 
-  // שולחים לשרת startMs (גם אם השרת לא מסנן, אנחנו נסנן בצד לקוח)
-  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: qStartMs });
+  // ✅ מבקשים מהשרת פילטר רבעוני מדויק
+  const r = await apiCall("admin/listSubmissions", { rid, token, startMs, endMs });
 
   el.btnRefreshSubs.disabled = false;
   el.btnRefreshSubs.textContent = "רענן";
@@ -363,32 +363,26 @@ async function refreshSubmissions(){
     return setErr(el.subsError, "טעינה נכשלה.");
   }
 
-  let rows = Array.isArray(r.rows) ? r.rows : [];
-
-  // ✅ סינון רבעון אמיתי בצד לקוח
-  if (Number.isFinite(qStartMs) && Number.isFinite(qEndMs) && qEndMs > qStartMs){
-    rows = rows.filter(row => {
-      const ms = parseRowDateMs(row);
-      return Number.isFinite(ms) && ms >= qStartMs && ms < qEndMs;
-    });
-  }
-
+  const rows = Array.isArray(r.rows) ? r.rows : [];
   if (rows.length === 0){
     setInfo(el.subsInfo, "אין תשובות ברבעון שנבחר.");
     return;
   }
 
   for (const row of rows){
+    const dateOnly = row.dateISO ? row.dateISO : (row.dateStr || "").split(" ")[0];
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(row.fullName || "")}</td>
       <td>${escapeHtml(row.personalId || "")}</td>
       <td>${escapeHtml(row.kitchen || "")}</td>
-      <td class="date-cell" dir="ltr">${escapeHtml((row.dateStr || "").split(" ")[0])}</td>
+      <td class="date-cell" dir="ltr">${escapeHtml(dateOnly)}</td>
     `;
     el.subsBody.appendChild(tr);
   }
 }
+
 async function sendFeedback(){
   setErr(el.fbError, "");
   setInfo(el.fbInfo, "");
@@ -425,10 +419,9 @@ el.tabKitchens.onclick = async () => {
   showTab("kitchens");
   await loadKitchens();
 };
-
 el.tabSubmissions.onclick = async () => {
   showTab("subs");
-  buildQuarterOptions();      // ✅ תמיד מעדכן רבעונים
+  buildQuarterOptions();       // ✅ תמיד מעדכן רבעונים, בלי לדרוס בחירה אם קיימת
   await refreshSubmissions();
 };
 el.tabFeedback.onclick = async () => {
@@ -449,29 +442,27 @@ el.btnSaveKitchens.onclick = async () => {
   const kitchens = listKitchens();
   if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
 
+  // ✅ נועל מיד, ולא משחרר אוטומטית אחרי הצלחה
   el.btnSaveKitchens.disabled = true;
   el.btnSaveKitchens.textContent = "שומר…";
 
   const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
 
-  el.btnSaveKitchens.disabled = false;
+  // לא מחזירים enabled פה!
   el.btnSaveKitchens.textContent = "שמור מטבחים";
 
-  if (!r.ok) return setErr(el.kitchensError, "שמירה נכשלה.");
+  if (!r || !r.ok){
+    // ✅ במקרה כשל – כן מאפשרים ניסיון חוזר (כי אין שינוי חדש)
+    el.btnSaveKitchens.disabled = false;
+    return setErr(el.kitchensError, "שמירה נכשלה.");
+  }
 
   setInfo(el.kitchensInfo, "נשמר ✅");
-  // verify: טוען שוב מהשרת כדי לוודא שזה נשמר באמת
-  const v = await apiCall("admin/getKitchens", { rid, token });
-  if (v && v.ok){
-    const serverList = (Array.isArray(v.kitchens) ? v.kitchens : []).join("||");
-    const localList = kitchens.join("||");
-    if (serverList !== localList){
-      setErr(el.kitchensError, "נשמר חלקית/לא עודכן בשרת. נסה שוב.");
-    }
-  }
-  setKitchensDirty(false);
-};
 
+  // ✅ אחרי הצלחה – נשאר נעול עד שינוי הבא
+  setKitchensDirty(false);
+  el.btnSaveKitchens.disabled = true;
+};
 el.btnRefreshSubs.onclick = refreshSubmissions;
 el.btnSendFeedback.onclick = sendFeedback;
 
