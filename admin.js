@@ -144,8 +144,14 @@ function getQuarterKey(d){
   return { y, q };
 }
 
+function nextQuarter(y, q){
+  if (q === 4) return { y: y + 1, q: 1 };
+  return { y, q: q + 1 };
+}
+
 function quarterLabel(y, q){
-  const map = {1:"א",2:"ב",3:"ג",4:"ד"};
+  // ✅ עם גרש אחרי האות (א׳ ב׳ ג׳ ד׳)
+  const map = {1:"א׳",2:"ב׳",3:"ג׳",4:"ד׳"};
   return `${y} רבעון ${map[q]}`;
 }
 
@@ -154,8 +160,13 @@ function quarterStartMs(y, q){
   return new Date(y, m, 1, 0, 0, 0, 0).getTime();
 }
 
+function quarterEndMs(y, q){
+  const nq = nextQuarter(y, q);
+  return quarterStartMs(nq.y, nq.q);
+}
+
 function buildQuarterOptions(){
-  // 8 רבעונים כולל הנוכחי (אחורה)
+  // ✅ תמיד 8 רבעונים אחרונים (שנתיים) לפי התאריך הנוכחי
   const now = new Date();
   const { y: nowY, q: nowQ } = getQuarterKey(now);
 
@@ -163,23 +174,30 @@ function buildQuarterOptions(){
   let y = nowY, q = nowQ;
 
   for (let i = 0; i < 8; i++){
-    opts.push({ y, q, label: quarterLabel(y, q), startMs: quarterStartMs(y, q) });
+    opts.push({
+      y, q,
+      label: quarterLabel(y, q),
+      startMs: quarterStartMs(y, q),
+      endMs: quarterEndMs(y, q),
+    });
+
     q--;
     if (q === 0){ q = 4; y--; }
   }
 
-  // ממלא select (האחרון = הרבעון האחרון? אצלך "ברירת מחדל - הרבעון האחרון" = הרבעון הנוכחי/האחרון שעדיין קיים)
   el.timeFilter.innerHTML = "";
   for (const o of opts){
     const op = document.createElement("option");
-    op.value = String(o.startMs); // נשמור startMs ב-value
+    op.value = String(o.startMs);     // value = startMs
+    op.dataset.endMs = String(o.endMs);
     op.textContent = o.label;
     el.timeFilter.appendChild(op);
   }
 
-  // ברירת מחדל: הרבעון האחרון (האופציה הראשונה ברשימה = הרבעון הנוכחי/האחרון)
+  // ✅ ברירת מחדל: הרבעון האחרון (הנוכחי) = האופציה הראשונה
   el.timeFilter.value = String(opts[0].startMs);
 }
+
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;")
@@ -221,7 +239,8 @@ function endKitchensLoading(){
 // ====== LOADERS ======
 const { rid, token } = getParams();
 const state = {
-  profile: { fullName: "", email: "" }
+  profile: { fullName: "", email: "" },
+  kitchens: { dirty: false },
 };
 async function loadProfile(){
   if (!rid || !token) return;
@@ -304,28 +323,58 @@ async function loadKitchens(){
 
   setKitchensDirty(false);
 }
+function parseRowDateMs(row){
+  // מצפה ל-dateStr כמו "2025-12-24 10:22" או "2025-12-24"
+  const s = String(row?.dateStr || "").trim();
+  if (!s) return NaN;
+
+  const datePart = s.split(" ")[0]; // yyyy-mm-dd
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (!m) return NaN;
+
+  const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+  return new Date(y, mo, d, 0, 0, 0, 0).getTime();
+}
+
 async function refreshSubmissions(){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
   el.subsBody.innerHTML = "";
 
   if (!rid || !token) return setErr(el.subsError, "קישור ניהול לא תקין (חסר rid/token).");
-  const sinceMs = Number(el.timeFilter.value) || quarterStartMs(new Date().getFullYear(), Math.floor(new Date().getMonth()/3)+1);
+
+  // ✅ מוודא שהרבעונים תמיד מעודכנים (אם נכנסנו אחרי מעבר רבעון)
+  buildQuarterOptions();
+
+  const opt = el.timeFilter.selectedOptions[0];
+  const qStartMs = Number(el.timeFilter.value);
+  const qEndMs = Number(opt?.dataset?.endMs || 0);
+
   el.btnRefreshSubs.disabled = true;
   el.btnRefreshSubs.textContent = "טוען…";
 
-  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs });
+  // שולחים לשרת startMs (גם אם השרת לא מסנן, אנחנו נסנן בצד לקוח)
+  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: qStartMs });
 
   el.btnRefreshSubs.disabled = false;
   el.btnRefreshSubs.textContent = "רענן";
 
-  if (!r.ok){
+  if (!r || !r.ok){
     return setErr(el.subsError, "טעינה נכשלה.");
   }
 
-  const rows = Array.isArray(r.rows) ? r.rows : [];
+  let rows = Array.isArray(r.rows) ? r.rows : [];
+
+  // ✅ סינון רבעון אמיתי בצד לקוח
+  if (Number.isFinite(qStartMs) && Number.isFinite(qEndMs) && qEndMs > qStartMs){
+    rows = rows.filter(row => {
+      const ms = parseRowDateMs(row);
+      return Number.isFinite(ms) && ms >= qStartMs && ms < qEndMs;
+    });
+  }
+
   if (rows.length === 0){
-    setInfo(el.subsInfo, "אין תשובות בטווח הזמן שנבחר.");
+    setInfo(el.subsInfo, "אין תשובות ברבעון שנבחר.");
     return;
   }
 
@@ -340,7 +389,6 @@ async function refreshSubmissions(){
     el.subsBody.appendChild(tr);
   }
 }
-
 async function sendFeedback(){
   setErr(el.fbError, "");
   setInfo(el.fbInfo, "");
@@ -380,11 +428,9 @@ el.tabKitchens.onclick = async () => {
 
 el.tabSubmissions.onclick = async () => {
   showTab("subs");
-  // לא טוען אוטומטית בלי רענן? אפשר כן/לא.
-  // אני משאיר קל: נטען מיד.
+  buildQuarterOptions();      // ✅ תמיד מעדכן רבעונים
   await refreshSubmissions();
 };
-
 el.tabFeedback.onclick = async () => {
   showTab("fb");
   // email נטען בפתיחה בכל מקרה
