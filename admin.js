@@ -215,19 +215,52 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
+function normalizeKitchenName(s){
+  return String(s ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 function kitchensAllFilled(){
   const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
   if (inputs.length === 0) return false;
   return inputs.every(i => i.value.trim().length > 0);
 }
 
-// ✅ מפעיל/מכבה שמירה רק אם גם dirty וגם הכל מלא
+function kitchensNoDuplicates(){
+  const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
+  const names = inputs.map(i => normalizeKitchenName(i.value));
+  const filled = names.filter(Boolean);
+  if (filled.length === 0) return true;
+
+  const set = new Set();
+  for (const n of filled){
+    if (set.has(n)) return false;
+    set.add(n);
+  }
+  return true;
+}
+
+// ✅ מפעיל/מכבה שמירה רק אם: יש שינוי + הכל מלא + אין כפילויות + לא באמצע שמירה
 function updateSaveEnabled(){
   if (state.kitchens.saving){
     el.btnSaveKitchens.disabled = true;
     return;
   }
-  const canSave = state.kitchens.dirty && kitchensAllFilled();
+
+  // מציג הודעה רק כשיש בעיה (UX נקי)
+  if (!kitchensNoDuplicates()){
+    setErr(el.kitchensError, "יש כפילות בשמות המטבחים. תקן/י לפני שמירה.");
+  } else if (el.kitchensError.textContent === "יש כפילות בשמות המטבחים. תקן/י לפני שמירה."){
+    setErr(el.kitchensError, "");
+  }
+
+  const canSave =
+    state.kitchens.dirty &&
+    kitchensAllFilled() &&
+    kitchensNoDuplicates();
+
   el.btnSaveKitchens.disabled = !canSave;
 }
 
@@ -238,13 +271,14 @@ function setKitchensDirty(on){
 
 function beginKitchensLoading(){
   state.kitchens.loading = true;
+
   el.btnAddKitchen.hidden = true;
   el.btnAddKitchen.disabled = true;
 
-  el.btnSaveKitchens.hidden = true;      // לא מציגים בזמן טעינה
+  el.btnSaveKitchens.hidden = true;
   el.btnSaveKitchens.disabled = true;
 
-  el.tabKitchens.disabled = true;        // מונע ספאם קליקים בטאב עצמו
+  el.tabKitchens.disabled = true;
 }
 
 function endKitchensLoading(){
@@ -253,12 +287,14 @@ function endKitchensLoading(){
   el.btnAddKitchen.hidden = false;
   el.btnAddKitchen.disabled = false;
 
-  // שמור מופיע אחרי טעינה אבל נשאר disabled עד שינוי
   el.btnSaveKitchens.hidden = false;
-  el.btnSaveKitchens.disabled = !state.kitchens.dirty;
+
+  // ✅ לא קובעים ידנית לפי dirty בלבד — תמיד דרך updateSaveEnabled
+  updateSaveEnabled();
 
   el.tabKitchens.disabled = false;
 }
+
 
 // ====== LOADERS ======
 const { rid, token } = getParams();
@@ -521,6 +557,9 @@ el.btnSaveKitchens.onclick = async () => {
 
   if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
 
+  if (!kitchensAllFilled()) return setErr(el.kitchensError, "יש שדה מטבח ריק. מלא/י את כולם לפני שמירה.");
+  if (!kitchensNoDuplicates()) return setErr(el.kitchensError, "יש כפילות בשמות המטבחים. תקן/י לפני שמירה.");
+  
   const kitchens = listKitchens();
   if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
 
@@ -537,7 +576,7 @@ el.btnSaveKitchens.onclick = async () => {
       // ✅ בכשל – מאפשרים ניסיון חוזר (בלי לחכות לשינוי)
       state.kitchens.saving = false;
       el.btnSaveKitchens.textContent = "שמור מטבחים";
-      el.btnSaveKitchens.disabled = false;
+      updateSaveEnabled();
       return;
     }
 
@@ -545,9 +584,10 @@ el.btnSaveKitchens.onclick = async () => {
 
     // ✅ הצלחה: נשאר נעול עד שינוי הבא
     state.kitchens.dirty = false;
-    el.btnSaveKitchens.textContent = "שמור מטבחים";
-    el.btnSaveKitchens.disabled = true;
     state.kitchens.saving = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
+    updateSaveEnabled();
+
 
   } catch (e){
     setErr(el.kitchensError, "שמירה נכשלה.");
