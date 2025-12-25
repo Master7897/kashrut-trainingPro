@@ -1,175 +1,70 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ניהול רב - מערכת כשרות</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    h1{ font-size: 34px !important; text-align:center; }
-    .subtitle{ text-align:center; margin-top:6px; }
-
-    .tabs{ display:grid; gap:10px; margin-top: 12px; }
-    .tabbtn{
-      width:100%;
-      background:#fff;
-      border:2px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
-      font-weight:700;
-      cursor:pointer;
-      text-align:center;
-    }
-    .tabbtn.active{
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(11,116,222,0.12);
-    }
-    .panel{ margin-top: 12px; }
-
-    .note{
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 12px;
-      background:#f8fafc;
-      border:1px solid var(--border);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      font-weight:700;
-    }
-
-    .kitchen-item{ display:flex; gap:10px; align-items:center; margin-top:10px; }
-    .kitchen-item input{ flex:1; }
-    .btn-del{
-      width:auto; margin-top:0;
-      background:#fff1f0; color: var(--danger);
-      border: 1px solid #ffd5d2;
-      padding: 10px 12px; border-radius: 10px;
-      cursor:pointer; font-weight:700;
-    }
-    .btn-add{
-      background: rgba(11,116,222,0.10);
-      color: var(--primary);
-      border: 2px solid rgba(11,116,222,0.25);
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor:pointer;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .actions-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
-    .actions-row button{ width:auto; margin-top:0; }
-
-    table{
-      width:100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius: 12px;
-      overflow:hidden;
-    }
-    th, td{
-      border-bottom:1px solid var(--border);
-      padding: 10px;
-      text-align:right;
-      font-size: 14px;
-      vertical-align: top;
-    }
-    th{ background:#f8fafc; }
-    .filters{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      margin-top: 10px;
-    }
-    .filters select{ width:auto; }
-
-    .error{ color: var(--danger); margin-top: 10px; }
-    .muted{ color: var(--muted); }
-  </style>
+  <title>ניהול רב – לומדת כשרות</title>
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <div class="container">
     <section class="card">
-      <h1>דף ניהול</h1>
-      <p class="muted subtitle">עדכון מטבחים · צפייה בתשובות · משוב</p>
-
-      <div id="adminMeta" class="meta" hidden></div>
-
-      <div class="tabs">
-        <button class="tabbtn" id="tabKitchens" type="button">עדכן מטבחים</button>
-        <button class="tabbtn" id="tabSubmissions" type="button">צפייה בתשובות</button>
-        <button class="tabbtn" id="tabFeedback" type="button">משוב למפתח</button>
-        <button id="btnCopyTraineeLink" type="button" class="secondary">העתק קישור לטבחים</button>
-        
+      <h1>מסך ניהול</h1>
+      <p class="muted" id="adminHello"></p>
+      <div class="actions" style="margin-top:10px">
+        <button id="tabKitchens" class="secondary" type="button">עדכון מטבחים</button>
+        <button id="tabSubs" class="secondary" type="button">צפייה בתשובות</button>
+        <button id="tabFb" class="secondary" type="button">משוב</button>
       </div>
-
-      <!-- Kitchens -->
-      <div class="panel" id="panelKitchens" hidden>
-        <div id="kitchensGrid"></div>
-        <button class="btn-add" id="btnAddKitchen" type="button">+ הוסף מטבח חדש</button>
-
-        <div class="actions-row">
-          <button class="primary" id="btnSaveKitchens" type="button">שמור מטבחים</button>
+      <div id="panelKitchens" style="margin-top:14px" hidden>
+        <div class="muted">עריכת רשימת המטבחים שלך.</div>
+        <div id="kitchensGrid" style="margin-top:10px"></div>
+        <div class="actions">
+          <button id="btnAddKitchen" class="secondary" type="button">+ הוסף מטבח חדש</button>
+          <button id="btnSaveKitchens" class="primary" type="button" disabled>שמור מטבחים</button>
         </div>
-
         <p class="error" id="kitchensError" hidden></p>
         <p class="muted" id="kitchensInfo" hidden></p>
       </div>
-
-      <!-- Submissions -->
-      <div class="panel" id="panelSubmissions" hidden>
-        <div class="filters">
-          <label class="muted" for="timeFilter">סינון לפי זמן:</label>
-          <select id="timeFilter">
-            <option value="1h">שעה</option>
-            <option value="2h">שעתיים</option>
-            <option value="4h">4 שעות</option>
-            <option value="8h">8 שעות</option>
-            <option value="1d" selected>יום</option>
-            <option value="2d">יומיים</option>
-            <option value="1w">שבוע</option>
-            <option value="1m">חודש</option>
-            <option value="1y">שנה</option>
-          </select>
+      <div id="panelSubs" style="margin-top:14px" hidden>
+        <label>רבעון</label>
+        <select id="timeFilter"></select>
+        <div class="actions" style="margin-top:10px">
           <button class="secondary" id="btnRefreshSubs" type="button">רענן</button>
         </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>שם מלא</th>
-              <th>מספר מזהה</th>
-              <th>מטבח</th>
-              <th>תאריך מילוי</th>
-            </tr>
-          </thead>
-          <tbody id="subsBody"></tbody>
-        </table>
-
+        <div style="overflow:auto;margin-top:10px">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th>שם מלא</th>
+                <th>ת.ז/מ.א</th>
+                <th>מטבח</th>
+                <th>תאריך ביצוע</th>
+              </tr>
+            </thead>
+            <tbody id="subsBody"></tbody>
+          </table>
+        </div>
         <p class="error" id="subsError" hidden></p>
         <p class="muted" id="subsInfo" hidden></p>
       </div>
-
-      <!-- Feedback -->
-      <div class="panel" id="panelFeedback" hidden>
+      <div id="panelFb" style="margin-top:14px" hidden>
         <label>נושא הפנייה</label>
         <input id="fbSubject" placeholder="נושא קצר" />
-
         <label>תוכן הפנייה</label>
         <input id="fbMessage" placeholder="כתוב/י כאן…" />
-
-        <div class="actions-row">
-          <button class="primary" id="btnSendFeedback" type="button">שלח משוב</button>
+        <div class="actions">
+          <button class="primary" id="btnSendFeedback" type="button">שלח משוב למפתח</button>
+          <button class="secondary" id="btnCopyQuizLink" type="button">העתק קישור לטבחים</button>
         </div>
-
         <p class="error" id="fbError" hidden></p>
         <p class="muted" id="fbInfo" hidden></p>
       </div>
+      <div class="mini-links">
+        <a class="link" href="./">חזרה לדף הראשי</a>
+      </div>
     </section>
   </div>
-
-  <script src="admin.js?v=2"></script>
+  <script src="admin.js?v=5"></script>
 </body>
 </html>
