@@ -4,34 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ניהול רב – לומדת כשרות</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <div class="container">
     <section class="card">
       <h1>מסך ניהול</h1>
       <p class="muted" id="adminHello"></p>
+
       <div class="actions" style="margin-top:10px">
         <button id="tabKitchens" class="secondary" type="button">עדכון מטבחים</button>
         <button id="tabSubs" class="secondary" type="button">צפייה בתשובות</button>
         <button id="tabFb" class="secondary" type="button">משוב</button>
+        <button id="btnCopyQuizLink" class="secondary" type="button">העתק קישור לטבחים</button>
       </div>
+
       <div id="panelKitchens" style="margin-top:14px" hidden>
         <div class="muted">עריכת רשימת המטבחים שלך.</div>
         <div id="kitchensGrid" style="margin-top:10px"></div>
+
         <div class="actions">
           <button id="btnAddKitchen" class="secondary" type="button">+ הוסף מטבח חדש</button>
           <button id="btnSaveKitchens" class="primary" type="button" disabled>שמור מטבחים</button>
         </div>
+
         <p class="error" id="kitchensError" hidden></p>
         <p class="muted" id="kitchensInfo" hidden></p>
       </div>
+
       <div id="panelSubs" style="margin-top:14px" hidden>
         <label>רבעון</label>
         <select id="timeFilter"></select>
+
         <div class="actions" style="margin-top:10px">
           <button class="secondary" id="btnRefreshSubs" type="button">רענן</button>
         </div>
+
         <div style="overflow:auto;margin-top:10px">
           <table style="width:100%;border-collapse:collapse">
             <thead>
@@ -39,32 +47,34 @@
                 <th>שם מלא</th>
                 <th>ת.ז/מ.א</th>
                 <th>מטבח</th>
-                <th>תאריך ביצוע</th>
+                <th>תאריך</th>
               </tr>
             </thead>
             <tbody id="subsBody"></tbody>
           </table>
         </div>
+
         <p class="error" id="subsError" hidden></p>
         <p class="muted" id="subsInfo" hidden></p>
       </div>
+
       <div id="panelFb" style="margin-top:14px" hidden>
         <label>נושא הפנייה</label>
         <input id="fbSubject" placeholder="נושא קצר" />
+
         <label>תוכן הפנייה</label>
         <input id="fbMessage" placeholder="כתוב/י כאן…" />
+
         <div class="actions">
           <button class="primary" id="btnSendFeedback" type="button">שלח משוב למפתח</button>
-          <button class="secondary" id="btnCopyQuizLink" type="button">העתק קישור לטבחים</button>
         </div>
+
         <p class="error" id="fbError" hidden></p>
         <p class="muted" id="fbInfo" hidden></p>
       </div>
-      <div class="mini-links">
-        <a class="link" href="./">חזרה לדף הראשי</a>
-      </div>
     </section>
   </div>
-  <script src="admin.js?v=5"></script>
+
+  <script src="admin.js?v=6"></script>
 </body>
 </html>
