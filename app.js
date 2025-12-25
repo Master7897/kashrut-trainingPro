@@ -1,7 +1,7 @@
 // =========================
 // CONFIG
 // =========================
-const APPS_SCRIPT_URL = "PASTE_YOUR_GAS_WEBAPP_URL_HERE"; // חובה
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // חובה
 
 const $ = (id) => document.getElementById(id);
 const el = {
