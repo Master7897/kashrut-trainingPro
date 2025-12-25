@@ -1,1 +1,159 @@
-<!DOCTYPE html> <html lang="he"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>לומדת כשרות – צוות מטבח</title> <link rel="stylesheet" href="style.css" /> </head> <body> <div class="container"> <!-- START --> <section id="screen-start" class="card"> <h1>הדרכת כשרות צוות מטבח</h1> <p class="muted">מלא/י פרטים כדי להתחיל.</p> <label>שם מלא</label> <input id="fullName" placeholder="שמך..." /> <label>תעודת זהות / מספר אישי</label> <input id="personalId" placeholder="ת.ז / מ.א" inputmode="numeric" /> <label>מטבח</label> <select id="kitchen"> <option value="">בחר/י מטבח</option> <option>מקל&quot;ר</option> <option>מקרפ&quot;ר ב</option> <option>חט&quot;ל</option> <option>מש&quot;א תל השומר</option> <option>בסיס ציוד</option> <option>מצר&quot;פ</option> <option>מש&quot;א צריפין</option> <option>דקל</option> <option>מרלו&quot;ג</option> <option>מפקדת מרה&quot;ס</option> <option>סביון</option> <option>גדוד הובלה 6920</option> <option>בית סרודי</option> </select> <button id="btnStart" class="primary">התחל</button> <p id="startError" class="error" hidden></p> </section> <!-- QUIZ --> <section id="screen-quiz" class="card" hidden> <div class="topbar"> <div id="progress" class="muted"></div> </div> <h2 id="questionTitle"></h2> <!-- ✅ תמונה אופציונלית לפני השאלה (כולל לפני רב-ברירה) --> <div id="leadWrap" class="lead" hidden> <img id="leadImg" alt="תמונה לשאלה" /> <div id="leadCap" class="lead-cap" hidden></div> </div> <!-- TWO --> <div id="twoWrap" class="two-images" hidden> <button class="img-choice" data-two="A" type="button"> <img id="imgA" alt="אפשרות א" /> <div class="img-caption" id="capA"></div> </button> <button class="img-choice" data-two="B" type="button"> <img id="imgB" alt="אפשרות ב" /> <div class="img-caption" id="capB"></div> </button> </div> <!-- HOTSPOT --> <div id="hotspotWrap" class="hotspot" hidden> <div class="hotspot-instructions muted"> ניתן למחוק סימון ספציפי ולנסות מחדש. </div> <div id="hotspotStage" class="hotspot-stage"> <img id="hotspotImg" alt="תמונת תקלה" /> <div id="hotspotOverlay" class="hotspot-overlay"></div> </div> <div class="hotspot-bottom"> <div id="hotspotStatus" class="muted"></div> <div id="hotspotMarks" class="marks"></div> </div> </div> <!-- MC --> <div id="mcWrap" class="mc" hidden> <div id="mcHint" class="muted"></div> <div id="mcOptions" class="mc-options"></div> </div> <!-- IMG MULTI 10 --> <div id="imgMultiWrap" class="img-multi" hidden> <div id="imgMultiGrid" class="img-multi-grid"></div> <p id="imgMultiFeedback" class="feedback" hidden></p> </div> <!-- DRAG --> <div id="dragWrap" class="drag" hidden> <div id="dragIntro" hidden> <div class="drag-stage"> <img id="dragIntroImg" alt="תרשים הסבר" /> </div> </div> <div id="dragPlay" hidden> <div class="drag-tools"> <button id="btnShowChart" type="button" class="secondary">הצג תרשים</button> </div> <div class="drag-stage" id="dragStage"> <img id="dragBg" alt="מדפים" /> <div id="dragZones"></div> <div id="dragItem" class="drag-item" draggable="true"> <img id="dragItemImg" alt="מוצר" /> <div id="dragItemCap" class="drag-cap"></div> </div> </div> <p id="dragFeedback" class="feedback" hidden></p> </div> </div> <div class="actions"> <button id="btnNext" class="primary" disabled>המשך</button> </div> <p id="feedback" class="feedback" hidden></p> </section> <!-- RESULT --> <section id="screen-result" class="card" hidden> <h2>סיום</h2> <p id="sendStatus" class="muted"></p> <button id="btnResend" class="secondary" hidden>שלח שוב</button> </section> </div> <script src="app.js"></script> </body> </html>
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>לומדת כשרות – צוות מטבח</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- START -->
+      <section id="screen-start" class="card">
+        <h1>הדרכת כשרות צוות מטבח</h1>
+        <p class="muted">מלא/י פרטים כדי להתחיל.</p>
+
+        <label for="fullName">שם מלא</label>
+        <input
+          id="fullName"
+          type="text"
+          placeholder="שמך..."
+          autocomplete="name"
+          aria-describedby="startError"
+        />
+
+        <label for="personalId">תעודת זהות / מספר אישי</label>
+        <input
+          id="personalId"
+          type="text"
+          placeholder="ת.ז / מ.א"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-describedby="startError"
+        />
+
+        <label for="kitchen">מטבח</label>
+        <select id="kitchen" autocomplete="organization" aria-describedby="startError">
+          <option value="">בחר/י מטבח</option>
+          <option>מקל&quot;ר</option>
+          <option>מקרפ&quot;ר ב</option>
+          <option>חט&quot;ל</option>
+          <option>מש&quot;א תל השומר</option>
+          <option>בסיס ציוד</option>
+          <option>מצר&quot;פ</option>
+          <option>מש&quot;א צריפין</option>
+          <option>דקל</option>
+          <option>מרלו&quot;ג</option>
+          <option>מפקדת מרה&quot;ס</option>
+          <option>סביון</option>
+          <option>גדוד הובלה 6920</option>
+          <option>בית סרודי</option>
+        </select>
+
+        <button id="btnStart" class="primary" type="button">התחל</button>
+        <p id="startError" class="error" hidden role="alert"></p>
+      </section>
+
+      <!-- QUIZ -->
+      <section id="screen-quiz" class="card" hidden>
+        <div class="topbar">
+          <div id="progress" class="muted" aria-live="polite"></div>
+        </div>
+
+        <h2 id="questionTitle"></h2>
+
+        <!-- ✅ תמונה אופציונלית לפני השאלה (כולל לפני רב-ברירה) -->
+        <div id="leadWrap" class="lead" hidden>
+          <img id="leadImg" alt="תמונה לשאלה" loading="lazy" />
+          <div id="leadCap" class="lead-cap" hidden></div>
+        </div>
+
+        <!-- TWO -->
+        <div id="twoWrap" class="two-images" hidden>
+          <button class="img-choice" data-two="A" type="button">
+            <img id="imgA" alt="אפשרות א" loading="lazy" />
+            <div class="img-caption" id="capA"></div>
+          </button>
+
+          <button class="img-choice" data-two="B" type="button">
+            <img id="imgB" alt="אפשרות ב" loading="lazy" />
+            <div class="img-caption" id="capB"></div>
+          </button>
+        </div>
+
+        <!-- HOTSPOT -->
+        <div id="hotspotWrap" class="hotspot" hidden>
+          <div class="hotspot-instructions muted">
+            ניתן למחוק סימון ספציפי ולנסות מחדש.
+          </div>
+
+          <div id="hotspotStage" class="hotspot-stage">
+            <img id="hotspotImg" alt="תמונת תקלה" loading="lazy" />
+            <div id="hotspotOverlay" class="hotspot-overlay"></div>
+          </div>
+
+          <div class="hotspot-bottom">
+            <div id="hotspotStatus" class="muted" aria-live="polite"></div>
+            <div id="hotspotMarks" class="marks"></div>
+          </div>
+        </div>
+
+        <!-- MC -->
+        <div id="mcWrap" class="mc" hidden>
+          <div id="mcHint" class="muted"></div>
+          <div id="mcOptions" class="mc-options"></div>
+        </div>
+
+        <!-- IMG MULTI 10 -->
+        <div id="imgMultiWrap" class="img-multi" hidden>
+          <div id="imgMultiGrid" class="img-multi-grid"></div>
+          <p id="imgMultiFeedback" class="feedback" hidden></p>
+        </div>
+
+        <!-- DRAG -->
+        <div id="dragWrap" class="drag" hidden>
+          <div id="dragIntro" hidden>
+            <div class="drag-stage">
+              <img id="dragIntroImg" alt="תרשים הסבר" loading="lazy" />
+            </div>
+          </div>
+
+          <div id="dragPlay" hidden>
+            <div class="drag-tools">
+              <button id="btnShowChart" type="button" class="secondary">הצג תרשים</button>
+            </div>
+
+            <div class="drag-stage" id="dragStage">
+              <img id="dragBg" alt="מדפים" loading="lazy" />
+              <div id="dragZones"></div>
+
+              <div id="dragItem" class="drag-item" draggable="true">
+                <img id="dragItemImg" alt="מוצר" loading="lazy" />
+                <div id="dragItemCap" class="drag-cap"></div>
+              </div>
+            </div>
+
+            <p id="dragFeedback" class="feedback" hidden></p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnNext" class="primary" type="button" disabled>המשך</button>
+        </div>
+
+        <p id="feedback" class="feedback" hidden></p>
+      </section>
+
+      <!-- RESULT -->
+      <section id="screen-result" class="card" hidden>
+        <h2>סיום</h2>
+        <p id="sendStatus" class="muted" aria-live="polite"></p>
+        <button id="btnResend" class="secondary" type="button" hidden>שלח שוב</button>
+      </section>
+    </div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
