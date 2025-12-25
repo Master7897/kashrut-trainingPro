@@ -518,6 +518,19 @@ el.btnSaveKitchens.onclick = async () => {
   }
 };
 el.btnRefreshSubs.onclick = refreshSubmissions;
+// ✅ רענון אוטומטי כשמשנים רבעון
+let subsRefreshing = false;
+
+el.timeFilter.onchange = async () => {
+  if (subsRefreshing) return;
+  subsRefreshing = true;
+  try {
+    await refreshSubmissions();
+  } finally {
+    subsRefreshing = false;
+  }
+};
+
 el.btnSendFeedback.onclick = sendFeedback;
 
 // ====== INIT ======
