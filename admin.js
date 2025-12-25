@@ -85,8 +85,10 @@ function createKitchenRow(value=""){
   inp.placeholder = "שם מטבח";
   inp.value = value;
 
-  // ✅ כל שינוי מדליק Dirty (אם לא בשמירה)
-  inp.addEventListener("input", () => setKitchensDirty(true));
+  inp.addEventListener("input", () => {
+    setKitchensDirty(true);     // יש שינוי
+    updateSaveEnabled();        // רק אם הכל מלא – השמירה תידלק
+  });
 
   const del = document.createElement("button");
   del.type = "button";
@@ -95,6 +97,7 @@ function createKitchenRow(value=""){
   del.onclick = () => {
     wrap.remove();
     setKitchensDirty(true);
+    updateSaveEnabled();
   };
 
   wrap.appendChild(inp);
@@ -211,16 +214,25 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
-function setKitchensDirty(on){
-  state.kitchens.dirty = !!on;
+function kitchensAllFilled(){
+  const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
+  if (inputs.length === 0) return false;
+  return inputs.every(i => i.value.trim().length > 0);
+}
 
-  // ✅ בזמן שמירה – הכפתור תמיד נעול, לא משנה מה
+// ✅ מפעיל/מכבה שמירה רק אם גם dirty וגם הכל מלא
+function updateSaveEnabled(){
   if (state.kitchens.saving){
     el.btnSaveKitchens.disabled = true;
     return;
   }
+  const canSave = state.kitchens.dirty && kitchensAllFilled();
+  el.btnSaveKitchens.disabled = !canSave;
+}
 
-  el.btnSaveKitchens.disabled = !state.kitchens.dirty;
+function setKitchensDirty(on){
+  state.kitchens.dirty = !!on;
+  updateSaveEnabled();
 }
 
 function beginKitchensLoading(){
@@ -370,6 +382,26 @@ function rowToDateMs(row){
   return NaN;
 }
 
+function formatDateDDMMYYYY(s){
+  const str = String(s || "").trim();
+  if (!str) return "";
+
+  // אם זה ISO: yyyy-mm-dd
+  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+  // אם זה ISO עם שעה: yyyy-mm-dd ...
+  const part = str.split(" ")[0];
+  m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(part);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+  // אם כבר dd/mm/yyyy
+  m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(part);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+
+  return part; // fallback
+}
+
 async function refreshSubmissions(){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
@@ -384,7 +416,6 @@ async function refreshSubmissions(){
   el.btnRefreshSubs.disabled = true;
   el.btnRefreshSubs.textContent = "טוען…";
 
-  // ✅ חוזרים לפרמטר שהשרת מכיר: sinceMs
   const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: startMs });
 
   el.btnRefreshSubs.disabled = false;
@@ -410,21 +441,22 @@ async function refreshSubmissions(){
   }
 
   for (const row of rows){
-    const dateOnly =
+    const raw =
       row.dateISO ? row.dateISO :
       (String(row.dateStr || "").split(" ")[0] || "");
+
+    const dateDDMMYYYY = formatDateDDMMYYYY(raw);
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(row.fullName || "")}</td>
       <td>${escapeHtml(row.personalId || "")}</td>
       <td>${escapeHtml(row.kitchen || "")}</td>
-      <td class="date-cell" dir="ltr">${escapeHtml(dateOnly)}</td>
+      <td class="date-cell">${escapeHtml(dateDDMMYYYY)}</td>
     `;
     el.subsBody.appendChild(tr);
   }
 }
-
 async function sendFeedback(){
   setErr(el.fbError, "");
   setInfo(el.fbInfo, "");
@@ -474,6 +506,12 @@ el.tabFeedback.onclick = async () => {
 el.btnAddKitchen.onclick = () => {
   el.kitchensGrid.appendChild(createKitchenRow(""));
   setKitchensDirty(true);
+  updateSaveEnabled();
+
+  // פוקוס לשדה החדש
+  const inputs = el.kitchensGrid.querySelectorAll("input");
+  const last = inputs[inputs.length - 1];
+  if (last) last.focus();
 };
 // ✅ SAVE: נעילה מלאה עד שינוי הבא
 el.btnSaveKitchens.onclick = async () => {
