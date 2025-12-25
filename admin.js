@@ -3,7 +3,7 @@
 // =========================
 
 // ✅ הדבק כאן את כתובת ה-Web App (…/exec)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // TODO: paste your GAS Web App URL
 
 const $ = (id) => document.getElementById(id);
 
@@ -43,55 +43,90 @@ function setInfo(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
 
 function getParams(){
   const p = new URLSearchParams(window.location.search);
-  return { rid: p.get("rid") || "", token: p.get("token") || "" };
+  return {
+    rid: p.get("rid") || "",
+    token: p.get("token") || "",
+  };
 }
 
 // ---------- JSONP API (works on GitHub Pages) ----------
 function apiCall(path, payload){
   return new Promise((resolve) => {
-    if (!APPS_SCRIPT_URL) return resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
-
+    if (!APPS_SCRIPT_URL){
+      resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
+      return;
+    }
     const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    const script = document.createElement("script");
-
-    const cleanup = (data) => {
+    window[cb] = (data) => {
       try { delete window[cb]; } catch {}
       script.remove();
       resolve(data);
     };
 
-    window[cb] = (data) => cleanup(data);
-
     const req = encodeURIComponent(JSON.stringify({ path, payload }));
-    script.src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
-    script.onerror = () => cleanup({ ok:false, error:"NETWORK_ERROR" });
+    const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
 
+    const script = document.createElement("script");
+    script.src = src;
+    script.onerror = () => {
+      try { delete window[cb]; } catch {}
+      script.remove();
+      resolve({ ok:false, error:"NETWORK_ERROR" });
+    };
     document.body.appendChild(script);
   });
 }
 // -----------------------------------------------------
+function createKitchenRow(value=""){
+  const wrap = document.createElement("div");
+  wrap.className = "kitchen-item";
 
-const { rid, token } = getParams();
+  const inp = document.createElement("input");
+  inp.placeholder = "שם מטבח";
+  inp.value = value;
 
-const state = {
-  profile: { fullName: "", email: "" },
-  kitchens: { dirty: false, saving: false },
-  activeTab: null,
-};
+  inp.addEventListener("input", () => {
+    setKitchensDirty(true);     // יש שינוי
+    updateSaveEnabled();        // רק אם הכל מלא – השמירה תידלק
+  });
+
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "btn-del";
+  del.textContent = "מחק";
+  del.onclick = () => {
+    wrap.remove();
+    setKitchensDirty(true);
+    updateSaveEnabled();
+  };
+
+  wrap.appendChild(inp);
+  wrap.appendChild(del);
+  return wrap;
+}
+function listKitchens(){
+  return Array.from(el.kitchensGrid.querySelectorAll("input"))
+    .map(i => i.value.trim())
+    .filter(Boolean);
+}
 
 function clearActiveTabs(){
   [el.tabKitchens, el.tabSubmissions, el.tabFeedback].forEach(b => b.classList.remove("active"));
 }
+
 function hideAllPanels(){
   el.panelKitchens.hidden = true;
   el.panelSubmissions.hidden = true;
   el.panelFeedback.hidden = true;
 }
+
 function showTab(name){
   clearActiveTabs();
   hideAllPanels();
+
   state.activeTab = name;
 
+  // נועל את הטאב הפעיל – לא לחיץ עד מעבר לטאב אחר
   el.tabKitchens.disabled = (name === "kitchens");
   el.tabSubmissions.disabled = (name === "subs");
   el.tabFeedback.disabled = (name === "fb");
@@ -102,85 +137,153 @@ function showTab(name){
   } else if (name === "subs"){
     el.tabSubmissions.classList.add("active");
     el.panelSubmissions.hidden = false;
-  } else {
+  } else if (name === "fb"){
     el.tabFeedback.classList.add("active");
     el.panelFeedback.hidden = false;
   }
 }
+function getQuarterKey(d){
+  const y = d.getFullYear();
+  const q = Math.floor(d.getMonth() / 3) + 1; // 1..4
+  return { y, q };
+}
 
-// =========================
-// Kitchens logic (FIX #1)
-// =========================
+function nextQuarter(y, q){
+  return (q === 4) ? { y: y + 1, q: 1 } : { y, q: q + 1 };
+}
 
-function kitchenInputs(){
-  return Array.from(el.kitchensGrid.querySelectorAll("input"));
+function quarterLabel(y, q){
+  const map = {1:"א׳",2:"ב׳",3:"ג׳",4:"ד׳"};
+  return `${y} רבעון ${map[q]}`;
+}
+
+function quarterStartMs(y, q){
+  const m = (q - 1) * 3; // 0,3,6,9
+  return new Date(y, m, 1, 0, 0, 0, 0).getTime();
+}
+
+function quarterEndMs(y, q){
+  const nq = nextQuarter(y, q);
+  return quarterStartMs(nq.y, nq.q);
+}
+
+// ✅ בונה 8 רבעונים אחרונים, בלי לדרוס בחירה קיימת
+function buildQuarterOptions(){
+  const prevValue = el.timeFilter.value || "";
+
+  const now = new Date();
+  const { y: nowY, q: nowQ } = getQuarterKey(now);
+
+  const opts = [];
+  let y = nowY, q = nowQ;
+
+  for (let i = 0; i < 8; i++){
+    opts.push({
+      y, q,
+      label: quarterLabel(y, q),
+      startMs: quarterStartMs(y, q),
+      endMs: quarterEndMs(y, q),
+    });
+
+    q--;
+    if (q === 0){ q = 4; y--; }
+  }
+
+  el.timeFilter.innerHTML = "";
+  for (const o of opts){
+    const op = document.createElement("option");
+    op.value = String(o.startMs);
+    op.dataset.endMs = String(o.endMs);
+    op.textContent = o.label;
+    el.timeFilter.appendChild(op);
+  }
+
+  // ✅ אם הבחירה הקודמת עדיין קיימת – נשמר אותה
+  if (prevValue && Array.from(el.timeFilter.options).some(o => o.value === prevValue)){
+    el.timeFilter.value = prevValue;
+  } else {
+    // ✅ ברירת מחדל: הרבעון האחרון (הנוכחי) = הראשון ברשימה
+    el.timeFilter.value = String(opts[0].startMs);
+  }
+}
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 function kitchensAllFilled(){
-  const inputs = kitchenInputs();
-  return inputs.length > 0 && inputs.every(i => i.value.trim().length > 0);
+  const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
+  if (inputs.length === 0) return false;
+  return inputs.every(i => i.value.trim().length > 0);
 }
-function listKitchensTrimmed(){
-  return kitchenInputs().map(i => i.value.trim());
+
+// ✅ מפעיל/מכבה שמירה רק אם גם dirty וגם הכל מלא
+function updateSaveEnabled(){
+  if (state.kitchens.saving){
+    el.btnSaveKitchens.disabled = true;
+    return;
+  }
+  const canSave = state.kitchens.dirty && kitchensAllFilled();
+  el.btnSaveKitchens.disabled = !canSave;
 }
+
 function setKitchensDirty(on){
   state.kitchens.dirty = !!on;
   updateSaveEnabled();
 }
-function updateSaveEnabled(){
-  const canSave = !state.kitchens.saving && state.kitchens.dirty && kitchensAllFilled();
-  el.btnSaveKitchens.disabled = !canSave;
+
+function beginKitchensLoading(){
+  state.kitchens.loading = true;
+  el.btnAddKitchen.hidden = true;
+  el.btnAddKitchen.disabled = true;
+
+  el.btnSaveKitchens.hidden = true;      // לא מציגים בזמן טעינה
+  el.btnSaveKitchens.disabled = true;
+
+  el.tabKitchens.disabled = true;        // מונע ספאם קליקים בטאב עצמו
 }
 
-function createKitchenRow(value=""){
-  const wrap = document.createElement("div");
-  wrap.className = "kitchen-item";
+function endKitchensLoading(){
+  state.kitchens.loading = false;
 
-  const inp = document.createElement("input");
-  inp.placeholder = "שם מטבח";
-  inp.value = value;
+  el.btnAddKitchen.hidden = false;
+  el.btnAddKitchen.disabled = false;
 
-  inp.addEventListener("input", () => {
-    setKitchensDirty(true);      // יש שינוי
-    // updateSaveEnabled() נקרא מבפנים
-  });
+  // שמור מופיע אחרי טעינה אבל נשאר disabled עד שינוי
+  el.btnSaveKitchens.hidden = false;
+  el.btnSaveKitchens.disabled = !state.kitchens.dirty;
 
-  const del = document.createElement("button");
-  del.type = "button";
-  del.className = "btn-del";
-  del.textContent = "מחק";
-  del.onclick = () => {
-    wrap.remove();
-    setKitchensDirty(true);
-  };
-
-  wrap.appendChild(inp);
-  wrap.appendChild(del);
-  return wrap;
+  el.tabKitchens.disabled = false;
 }
 
-// =========================
-// Load profile
-// =========================
+// ====== LOADERS ======
+const { rid, token } = getParams();
+const state = {
+  profile: { fullName: "", email: "" },
+  kitchens: { dirty: false, saving: false },
+  activeTab: null,
+};
 async function loadProfile(){
   if (!rid || !token) return;
 
   const r = await apiCall("admin/getProfile", { rid, token });
+
   if (r && r.ok && r.profile){
     state.profile.fullName = r.profile.fullName || "";
     state.profile.email = r.profile.email || "";
 
-    const meta = $("adminMeta");
+        const meta = document.getElementById("adminMeta");
     if (meta){
       meta.textContent = `שלום הרב ${state.profile.fullName || ""}`;
       meta.hidden = false;
     }
+    // אם עדיין יש לך שדה מייל ב-HTML (בינתיים) אפשר להשאיר שקט:
     if (el.fbEmail) el.fbEmail.value = state.profile.email || "";
   }
 }
-
-// =========================
-// Kitchens load/save
-// =========================
 async function loadKitchens(){
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
@@ -189,141 +292,114 @@ async function loadKitchens(){
   // בזמן טעינה: מסתירים הוספה+שמירה
   el.btnAddKitchen.hidden = true;
   el.btnAddKitchen.disabled = true;
+
   el.btnSaveKitchens.hidden = true;
   el.btnSaveKitchens.disabled = true;
 
   if (!rid || !token){
+    // מחזירים UI למצב תקין גם במקרה כשל
     el.btnAddKitchen.hidden = false;
     el.btnAddKitchen.disabled = true;
+
     el.btnSaveKitchens.hidden = false;
     el.btnSaveKitchens.disabled = true;
+
     return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
   }
 
+  setInfo(el.kitchensInfo, "טוען מטבחים…");
+
   const r = await apiCall("admin/getKitchens", { rid, token });
+
   if (!r || !r.ok){
+    // סוף טעינה (כשל): מעלימים "טוען..."
+    setInfo(el.kitchensInfo, "");
+
+    // מאפשרים למשתמש לנסות שוב/להוסיף ידנית אם רוצים
     el.btnAddKitchen.hidden = false;
     el.btnAddKitchen.disabled = false;
+
     el.btnSaveKitchens.hidden = false;
     el.btnSaveKitchens.disabled = true;
+
+    setKitchensDirty(false);
     return setErr(el.kitchensError, "טעינת מטבחים נכשלה.");
   }
 
   const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
-  if (kitchens.length){
-    kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(String(k || ""))));
-  } else {
+
+  if (kitchens.length === 0){
     el.kitchensGrid.appendChild(createKitchenRow(""));
+    el.kitchensGrid.appendChild(createKitchenRow(""));
+  } else {
+    kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
   }
 
-  state.kitchens.dirty = false;
-  state.kitchens.saving = false;
+  // סוף טעינה מוצלחת: מעלימים "טוען..."
+  setInfo(el.kitchensInfo, "");
 
+  // מציגים כפתורים אחרי טעינה
   el.btnAddKitchen.hidden = false;
   el.btnAddKitchen.disabled = false;
 
   el.btnSaveKitchens.hidden = false;
-  el.btnSaveKitchens.textContent = "שמור מטבחים";
-  updateSaveEnabled(); // <- יישאר disabled עד שינוי + הכל מלא
+  el.btnSaveKitchens.disabled = true; // יופעל רק אחרי שינוי
+
+  setKitchensDirty(false);
 }
+function parseRowDateMs(row){
+  // מצפה ל-dateStr כמו "2025-12-24 10:22" או "2025-12-24"
+  const s = String(row?.dateStr || "").trim();
+  if (!s) return NaN;
 
-async function saveKitchens(){
-  setErr(el.kitchensError, "");
-  setInfo(el.kitchensInfo, "");
+  const datePart = s.split(" ")[0]; // yyyy-mm-dd
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (!m) return NaN;
 
-  if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
-
-  // חובה: כל השדות מלאים
-  if (!kitchensAllFilled()){
-    el.btnSaveKitchens.disabled = true;
-    return setErr(el.kitchensError, "יש למלא את כל שמות המטבחים לפני שמירה.");
-  }
-
-  const kitchens = listKitchensTrimmed();
-  if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
-
-  state.kitchens.saving = true;
-  el.btnSaveKitchens.disabled = true;
-  el.btnSaveKitchens.textContent = "שומר…";
-
-  try {
-    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
-    if (!r || !r.ok){
-      state.kitchens.saving = false;
-      el.btnSaveKitchens.textContent = "שמור מטבחים";
-      updateSaveEnabled(); // מאפשר ניסיון חוזר רק אם עדיין עומד בתנאים
-      return setErr(el.kitchensError, "שמירה נכשלה.");
-    }
-
-    setInfo(el.kitchensInfo, "נשמר ✅");
-    state.kitchens.dirty = false;
-    state.kitchens.saving = false;
-    el.btnSaveKitchens.textContent = "שמור מטבחים";
-    updateSaveEnabled(); // יישאר disabled עד שינוי הבא
-  } catch (e){
-    state.kitchens.saving = false;
-    el.btnSaveKitchens.textContent = "שמור מטבחים";
-    updateSaveEnabled();
-    setErr(el.kitchensError, "שמירה נכשלה.");
-  }
-}
-
-// =========================
-// Submissions
-// =========================
-function escapeHtml(s){
-  return String(s ?? "").replace(/[&<>"']/g, (m) => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  })[m]);
+  const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+  return new Date(y, mo, d, 0, 0, 0, 0).getTime();
 }
 function rowToDateMs(row){
-  // מנסה dateISO (YYYY-MM-DD...) או dateStr
-  const raw = row && (row.dateISO || row.dateStr || "");
-  const d = new Date(String(raw));
-  const ms = d.getTime();
-  return Number.isFinite(ms) ? ms : NaN;
-}
-function formatDateDDMMYYYY(raw){
-  // raw יכול להיות YYYY-MM-DD או תאריך מלא; נשמור על DD-MM-YYYY
-  const d = new Date(String(raw));
-  if (!Number.isFinite(d.getTime())) return String(raw || "");
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const yy = d.getFullYear();
-  return `${dd}-${mm}-${yy}`;
-}
+  // 1) אם השרת כבר מחזיר מספר
+  if (Number.isFinite(row?.dateMs)) return Number(row.dateMs);
 
-function buildQuarterOptions(){
-  const sel = el.timeFilter;
-  if (!sel) return;
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth(); // 0..11
-  const q = Math.floor(m/3) + 1;
+  // 2) אם יש dateISO "yyyy-mm-dd"
+  const iso = String(row?.dateISO || "").trim();
+  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], 0, 0, 0, 0).getTime();
 
-  sel.innerHTML = "";
-  // 8 רבעונים אחרונים
-  for (let i=0;i<8;i++){
-    const idx = (q-1) - i;
-    const yy = y + Math.floor(idx/4);
-    const qq = ((idx%4)+4)%4 + 1;
-    const opt = document.createElement("option");
-    opt.value = `${yy}-Q${qq}`;
-    opt.textContent = `${qq}/${yy}`;
-    sel.appendChild(opt);
-  }
+  // 3) dateStr "yyyy-mm-dd ..." או "dd/mm/yyyy"
+  const s = String(row?.dateStr || "").trim();
+  if (!s) return NaN;
+  const datePart = s.split(" ")[0];
+
+  m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], 0, 0, 0, 0).getTime();
+
+  m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(datePart);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1], 0, 0, 0, 0).getTime();
+
+  return NaN;
 }
 
-function quarterRangeMs(quarterValue){
-  // "2025-Q3"
-  const m = /^(\d{4})-Q([1-4])$/.exec(String(quarterValue||""));
-  if (!m) return { startMs: NaN, endMs: NaN };
-  const yy = +m[1];
-  const qq = +m[2];
-  const startMonth = (qq-1)*3;
-  const start = new Date(yy, startMonth, 1, 0,0,0,0).getTime();
-  const end = new Date(yy, startMonth+3, 1, 0,0,0,0).getTime();
-  return { startMs: start, endMs: end };
+function formatDateDDMMYYYY(s){
+  const str = String(s || "").trim();
+  if (!str) return "";
+
+  // אם זה ISO: yyyy-mm-dd
+  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+  // אם זה ISO עם שעה: yyyy-mm-dd ...
+  const part = str.split(" ")[0];
+  m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(part);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+  // אם כבר dd/mm/yyyy
+  m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(part);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+
+  return part; // fallback
 }
 
 async function refreshSubmissions(){
@@ -333,15 +409,25 @@ async function refreshSubmissions(){
 
   if (!rid || !token) return setErr(el.subsError, "קישור ניהול לא תקין (חסר rid/token).");
 
-  const qv = el.timeFilter ? el.timeFilter.value : "";
-  const { startMs, endMs } = quarterRangeMs(qv);
+  const opt = el.timeFilter.selectedOptions[0];
+  const startMs = Number(el.timeFilter.value);
+  const endMs = Number(opt?.dataset?.endMs || 0);
 
-  const r = await apiCall("admin/getSubmissions", { rid, token });
+  el.btnRefreshSubs.disabled = true;
+  el.btnRefreshSubs.textContent = "טוען…";
+
+  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: startMs });
+
+  el.btnRefreshSubs.disabled = false;
+  el.btnRefreshSubs.textContent = "רענן";
+
   if (!r || !r.ok){
-    return setErr(el.subsError, "טעינת תשובות נכשלה.");
+    return setErr(el.subsError, "טעינה נכשלה.");
   }
 
   let rows = Array.isArray(r.rows) ? r.rows : [];
+
+  // ✅ סינון רבעון אמיתי: start <= date < end
   if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs){
     rows = rows.filter(row => {
       const ms = rowToDateMs(row);
@@ -355,7 +441,10 @@ async function refreshSubmissions(){
   }
 
   for (const row of rows){
-    const raw = row.dateISO ? row.dateISO : (String(row.dateStr || "").split(" ")[0] || "");
+    const raw =
+      row.dateISO ? row.dateISO :
+      (String(row.dateStr || "").split(" ")[0] || "");
+
     const dateDDMMYYYY = formatDateDDMMYYYY(raw);
 
     const tr = document.createElement("tr");
@@ -368,10 +457,6 @@ async function refreshSubmissions(){
     el.subsBody.appendChild(tr);
   }
 }
-
-// =========================
-// Feedback
-// =========================
 async function sendFeedback(){
   setErr(el.fbError, "");
   setInfo(el.fbInfo, "");
@@ -390,48 +475,105 @@ async function sendFeedback(){
   const r = await apiCall("admin/sendFeedback", {
     rid, token,
     subject,
-    email: state.profile.email,
+    email: state.profile.email,   // ← נמשך אוטומטית מהטבלה
     message
   });
-
   el.btnSendFeedback.disabled = false;
   el.btnSendFeedback.textContent = "שלח משוב";
 
-  if (!r || !r.ok) return setErr(el.fbError, "שליחה נכשלה.");
+  if (!r.ok) return setErr(el.fbError, "שליחה נכשלה.");
 
   el.fbSubject.value = "";
   el.fbMessage.value = "";
   setInfo(el.fbInfo, "נשלח ✅");
 }
 
-// =========================
-// Events
-// =========================
-el.tabKitchens.onclick = async () => { showTab("kitchens"); await loadKitchens(); };
-el.tabSubmissions.onclick = async () => { showTab("subs"); buildQuarterOptions(); await refreshSubmissions(); };
-el.tabFeedback.onclick = async () => { showTab("fb"); };
+// ====== EVENTS ======
+el.tabKitchens.onclick = async () => {
+  showTab("kitchens");
+  await loadKitchens();
+};
+el.tabSubmissions.onclick = async () => {
+  showTab("subs");
+  buildQuarterOptions();       // ✅ מתעדכן אוטומטית לפי תאריך נוכחי
+  await refreshSubmissions();
+};
+el.tabFeedback.onclick = async () => {
+  showTab("fb");
+  // email נטען בפתיחה בכל מקרה
+};
 
 el.btnAddKitchen.onclick = () => {
   el.kitchensGrid.appendChild(createKitchenRow(""));
   setKitchensDirty(true);
+  updateSaveEnabled();
+
+  // פוקוס לשדה החדש
+  const inputs = el.kitchensGrid.querySelectorAll("input");
+  const last = inputs[inputs.length - 1];
+  if (last) last.focus();
 };
+// ✅ SAVE: נעילה מלאה עד שינוי הבא
+el.btnSaveKitchens.onclick = async () => {
+  setErr(el.kitchensError, "");
+  setInfo(el.kitchensInfo, "");
 
-el.btnSaveKitchens.onclick = saveKitchens;
+  if (!rid || !token) return setErr(el.kitchensError, "קישור ניהול לא תקין (חסר rid/token).");
 
+  const kitchens = listKitchens();
+  if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
+
+  // ✅ LOCK מיד
+  state.kitchens.saving = true;
+  el.btnSaveKitchens.disabled = true;
+  el.btnSaveKitchens.textContent = "שומר…";
+
+  try {
+    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
+
+    if (!r || !r.ok){
+      setErr(el.kitchensError, "שמירה נכשלה.");
+      // ✅ בכשל – מאפשרים ניסיון חוזר (בלי לחכות לשינוי)
+      state.kitchens.saving = false;
+      el.btnSaveKitchens.textContent = "שמור מטבחים";
+      el.btnSaveKitchens.disabled = false;
+      return;
+    }
+
+    setInfo(el.kitchensInfo, "נשמר ✅");
+
+    // ✅ הצלחה: נשאר נעול עד שינוי הבא
+    state.kitchens.dirty = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
+    el.btnSaveKitchens.disabled = true;
+    state.kitchens.saving = false;
+
+  } catch (e){
+    setErr(el.kitchensError, "שמירה נכשלה.");
+    state.kitchens.saving = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
+    el.btnSaveKitchens.disabled = false;
+  }
+};
 el.btnRefreshSubs.onclick = refreshSubmissions;
-
 // ✅ רענון אוטומטי כשמשנים רבעון
 let subsRefreshing = false;
+
 el.timeFilter.onchange = async () => {
   if (subsRefreshing) return;
   subsRefreshing = true;
-  try { await refreshSubmissions(); } finally { subsRefreshing = false; }
+  try {
+    await refreshSubmissions();
+  } finally {
+    subsRefreshing = false;
+  }
 };
 
 el.btnSendFeedback.onclick = sendFeedback;
 
 // ====== INIT ======
-hideAllPanels();
-clearActiveTabs();
+
+hideAllPanels();       // ✅ אין ברירת מחדל
+clearActiveTabs();     // ✅ אין כפתור לחוץ
 buildQuarterOptions();
-loadProfile();
+loadProfile();         // ✅ ימלא אימייל בטופס משוב
