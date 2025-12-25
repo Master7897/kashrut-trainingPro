@@ -13,7 +13,8 @@ const el = {
   tabKitchens: $("tabKitchens"),
   tabSubmissions: $("tabSubmissions"),
   tabFeedback: $("tabFeedback"),
-
+  btnCopyTraineeLink: $("btnCopyTraineeLink"),
+  
   panelKitchens: $("panelKitchens"),
   panelSubmissions: $("panelSubmissions"),
   panelFeedback: $("panelFeedback"),
@@ -570,6 +571,40 @@ el.timeFilter.onchange = async () => {
 };
 
 el.btnSendFeedback.onclick = sendFeedback;
+function buildTraineeLink(){
+  // מניח שהטופס לטבחים נמצא באותו פרויקט תחת index.html
+  const base = window.location.origin + window.location.pathname.replace(/\/admin\.html.*$/i, "/index.html");
+  return `${base}?rid=${encodeURIComponent(rid)}`;
+}
+
+async function copyToClipboard(text){
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch {}
+    ta.remove();
+    return true;
+  }
+}
+
+el.btnCopyTraineeLink.onclick = async () => {
+  setErr(el.kitchensError, "");
+  setInfo(el.kitchensInfo, "");
+
+  if (!rid) return setErr(el.kitchensError, "חסר rid בקישור הניהול.");
+  const link = buildTraineeLink();
+
+  await copyToClipboard(link);
+  setInfo(el.kitchensInfo, "הקישור לטבחים הועתק ✅");
+};
 
 // ====== INIT ======
 
