@@ -1,97 +1,418 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>רישום רב – לומדת כשרות</title>
-  <link rel="stylesheet" href="style.css?v=5" />
-</head>
-<body>
-  <div class="container">
-    <section class="card">
-      <h1>רישום רב / יצירת מערכת</h1>
-      <p class="muted">אימות במייל + יצירת קישור ניהול אישי.</p>
+[hidden] { display: none !important; }
 
-      <div id="step1">
-        <label>שם מלא</label>
-        <input id="rabbiFullName" placeholder="שם ושם משפחה" />
+:root{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#667085;
+  --primary:#0b74de;
+  --danger:#d92d20;
+  --border:#e6e8ec;
+}
 
-        <div class="two-col">
-          <div>
-            <label>מספר אישי (7 ספרות)</label>
-            <input id="rabbiPersonalId" placeholder="ספרות בלבד" inputmode="numeric" />
-          </div>
-          <div>
-            <label>יחידה</label>
-            <input id="rabbiUnit" placeholder="לדוגמה: מרכז הובלה" />
-          </div>
-        </div>
+@font-face{
+  font-family: 'Assistant';
+  src: url('fonts/Assistant-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
 
-        <div class="two-col">
-          <div>
-            <label>אימייל</label>
-            <input id="rabbiEmail" placeholder="name@example.com" inputmode="email" />
-          </div>
-          <div>
-            <label>טלפון (אופציונלי)</label>
-            <input id="rabbiPhone" placeholder="05xxxxxxxx" inputmode="tel" />
-          </div>
-        </div>
+body{
+  margin:0;
+  font-family: 'Assistant', sans-serif;
+  font-weight: 700;
+  direction: rtl;
+  background: var(--bg);
+  color: var(--text);
+}
 
-        <div class="actions">
-          <button class="primary" id="btnSendOtp" type="button">שלח קוד אימות למייל</button>
-        </div>
+.container{
+  max-width: 520px;
+  margin: 18px auto;
+  padding: 12px;
+}
 
-        <p class="error" id="step1Error" hidden></p>
-        <p class="muted" id="step1Info" hidden></p>
-      </div>
+.card{
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(16,24,40,0.06);
+}
 
-      <div id="step2" hidden>
-        <label>הזן/י את הקוד שקיבלת במייל</label>
-        <input id="otpCode" placeholder="000000" inputmode="numeric" />
+h1{ margin: 0 0 8px; font-size: 60px; }
+h2{ margin: 8px 0 14px; font-size: 30px; text-align:center; }
 
-        <div class="actions">
-          <button class="primary" id="btnVerifyOtp" type="button">אמת קוד</button>
-          <button class="secondary" id="btnResendOtp" type="button">שלח קוד שוב</button>
-        </div>
+#screen-start{ text-align:center; }
 
-        <p class="error" id="step2Error" hidden></p>
-        <p class="muted" id="step2Info" hidden></p>
-      </div>
+label{ display:block; margin-top: 10px; font-size: 20px; }
+input, select{
+  width:100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border:1px solid var(--border);
+  border-radius: 10px;
+  margin-top: 6px;
+  font-size: 16px;
+  background: #fff;
+}
 
-      <div id="step3" hidden>
-        <p class="muted">הוסף/י את שמות המטבחים שלך. בסיום תקבל/י קישור ניהול אישי.</p>
-        <div class="kitchens-grid" id="kitchensGrid"></div>
-        <button class="secondary" id="btnAddKitchen" type="button">+ הוסף מטבח חדש</button>
+button{
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 16px;
+  cursor:pointer;
+}
 
-        <div class="actions">
-          <button class="primary" id="btnFinishRegister" type="button" disabled>שמירה והרשמה</button>
-        </div>
+.primary{
+  width:100%;
+  margin-top: 14px;
+  background: var(--primary);
+  color: #fff;
+}
 
-        <p class="error" id="step3Error" hidden></p>
+.secondary{
+  width:100%;
+  margin-top: 14px;
+  background: #eef2ff;
+  color:#1f2a37;
+}
 
-        <div class="success" id="step3Success" hidden>
-          <div style="font-weight:900;">נרשמת בהצלחה ✅</div>
-          <div class="muted" style="margin-top:6px;">קישורים:</div>
+button:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-          <div style="margin-top:10px;">
-            <div class="muted">קישור ניהול:</div>
-            <div class="feedback" id="adminLinkBox"></div>
-          </div>
+.muted{ color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+.error{ color: var(--danger); margin-top: 10px; font-weight: 700; }
+.topbar{ display:flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
 
-          <div style="margin-top:10px;">
-            <div class="muted">קישור שאלון לטבחים:</div>
-            <div class="feedback" id="quizLinkBox"></div>
-          </div>
+#questionTitle{ line-height: 1.3; margin-bottom: 16px; }
 
-          <div class="mini-links">
-            <a class="link" href="./">חזרה לדף הראשי</a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
+/* ✅ תמונה לפני השאלה */
+.lead{
+  margin-top: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f2f4f7;
+}
+.lead img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+.lead-cap{
+  padding: 10px;
+  background:#fff;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  text-align:center;
+}
 
-  <script src="register.js?v=5"></script>
-</body>
-</html>
+.actions{ margin-top: 12px; }
+
+.feedback{
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+}
+
+/* Two images */
+.two-images{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 520px){
+  .two-images{ grid-template-columns: 1fr; }
+  .img-choice img{ height: 200px; }
+}
+
+.img-choice{
+  display:block;
+  padding: 10px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.img-choice img{
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f2f4f7;
+}
+
+.img-choice.selected{
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(11,116,222,0.12);
+}
+
+.img-caption{
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Hotspot */
+.hotspot-stage{
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f2f4f7;
+  margin-top: 10px;
+}
+.hotspot-stage img{ width: 100%; height: auto; display: block; }
+.hotspot-overlay{ position: absolute; inset: 0; cursor: crosshair; }
+
+.hotspot-marker{
+  position:absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(217,45,32,0.95);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 6px rgba(217,45,32,0.15);
+  pointer-events: none;
+}
+.hotspot-marker.cal{
+  background: rgba(11,116,222,0.95);
+  box-shadow: 0 0 0 6px rgba(11,116,222,0.15);
+}
+
+.hotspot-bottom{ margin-top: 10px; }
+.marks{ margin-top: 10px; display: grid; gap: 8px; }
+
+.mark-row{
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+}
+.mark-row .txt{ font-size: 13px; color: var(--muted); }
+
+.btn-del{
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fff1f0;
+  color: var(--danger);
+  border: 1px solid #ffd5d2;
+  font-weight: 700;
+}
+
+/* MC */
+.mc{ margin-top: 10px; }
+.mc-options{
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+.mc-option{
+  display:flex;
+  gap: 10px;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+.mc-option input{
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+.mc-option .txt{
+  font-size: 18px;
+  line-height: 1.4;
+}
+#mcHint{
+  font-size: 18px;
+  line-height: 1.4;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+/* special tags */
+.hl-parve{ color:#d9a821; font-weight:700; }
+.hl-meat{ color: #d92d20; font-weight: 700; }
+.hl-dairy{ color: #0b74de; font-weight: 700; }
+.feedback.errorbox .hl-dairy,
+.feedback.errorbox .hl-meat,
+.feedback.errorbox .hl-parve{
+  font-size: inherit;
+  line-height: inherit;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* IMG MULTI 10 */
+.img-multi{ margin-top: 10px; }
+.img-multi-grid{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.img-multi-card{
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+.img-multi-card img{
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f2f4f7;
+}
+.img-multi-card.selected{
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(11,116,222,0.12);
+}
+.img-multi-card.wrong{
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px rgba(217,45,32,0.12);
+}
+@media (max-width: 360px){
+  .img-multi-grid{ grid-template-columns: 1fr; }
+}
+.img-multi-caption{
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* DRAG */
+.drag-stage{
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f2f4f7;
+  margin-top: 10px;
+}
+.drag-stage img{ width: 100%; height: auto; display: block; }
+
+#dragZones{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.drag-zone{
+  position: absolute;
+  border-radius: 10px;
+  pointer-events: auto;
+  outline: 4px dashed rgba(11,116,222,0.95);
+  background: rgba(255,255,255,0.02);
+}
+.drag-zone.over{ outline: 3px solid rgba(11,116,222,0.85); }
+.drag-zone.filled{ outline: none; background: transparent; }
+
+.drag-item{
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%,-50%);
+  width: 42%;
+  max-width: 260px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 10px 25px rgba(16,24,40,0.12);
+  cursor: grab;
+  z-index: 3;
+  pointer-events: auto;
+  touch-action: none;
+}
+.drag-item:active{ cursor: grabbing; }
+
+.drag-item img{
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.drag-cap{
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+#adminMeta {
+  font-size: 18px;
+  margin-top: 12px;   /* אפשר 8 / 16 לפי הטעם */
+}
+
+/* ===== Admin submissions table lines ===== */
+
+#subsBody {
+  border-top: 1px solid #e0e0e0;
+}
+
+#subsBody tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#subsBody td {
+  padding: 10px 12px;
+}
+
+/* קווים אנכיים */
+#subsBody td:not(:last-child),
+thead th:not(:last-child) {
+  border-left: 1px solid #e0e0e0;
+}
+
+/* כותרת */
+thead th {
+  padding: 10px 12px;
+  border-bottom: 2px solid #cfcfcf;
+}
+
+.date-cell{
+  direction:ltr;
+  text-align:left;
+  unicode-bidi:embed;
+}
+button{
+  border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.18), 0 10px 22px rgba(0,0,0,0.12);
+  transform: translateY(0);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+button:hover{
+  filter: brightness(1.03);
+}
+
+button:active{
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.18), 0 6px 14px rgba(0,0,0,0.10);
+}
+
+button:disabled{
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
