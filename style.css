@@ -161,3 +161,11 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .mini-links{margin-top:12px}
 .link{display:inline-block;color:var(--primary);font-weight:900;text-decoration:none}
 .link:hover{text-decoration:underline}
+.start-title{
+  text-align:center;
+  font-size:28px;
+  margin:0 0 10px;
+}
+.btn-start{
+  margin-top:14px;
+}
