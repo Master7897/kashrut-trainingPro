@@ -156,9 +156,11 @@ el.btnSendOtp.onclick = async () => {
   const r = await apiCall("register/sendOtp", { email, otpSession: state.otpSession });
 
   lockStep1(false);
-
   if (!r.ok){
     setInfo(el.step1Info, "");
+    if (r.error === "EMAIL_ALREADY_REGISTERED") {
+      return setErr(el.step1Error, "המייל כבר רשום במערכת. אם צריך לשחזר גישה – פנה/י לתמיכה.");
+    }
     return setErr(el.step1Error, "שליחת קוד נכשלה (בדוק APPS_SCRIPT_URL / Deploy).");
   }
 
@@ -255,11 +257,11 @@ el.btnFinishRegister.onclick = async () => {
 
   el.btnFinishRegister.disabled = false;
   el.btnFinishRegister.textContent = "שמירה והרשמה";
-
   if (!r.ok){
+    if (r.error === "DUP_EMAIL") return setErr(el.step3Error, "המייל כבר רשום במערכת.");
+    if (r.error === "DUP_PHONE") return setErr(el.step3Error, "מספר הטלפון כבר קיים במערכת.");
     return setErr(el.step3Error, "שמירה נכשלה (בדוק Deploy/ID של השיטס).");
   }
-
   state.rid = r.rid;
   state.token = r.token;
 
