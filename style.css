@@ -12,6 +12,12 @@
   --shadow:0 10px 26px rgba(16,24,40,.08);
   --r:16px;
 }
+@font-face{
+  font-family: 'Assistant';
+  src: url('fonts/Assistant-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -163,7 +169,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .link:hover{text-decoration:underline}
 .start-title{
   text-align:center;
-  font-size:28px;
+  font-size:50px;
   margin:0 0 10px;
 }
 .btn-start{
