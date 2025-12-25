@@ -184,6 +184,12 @@ async function loadKitchens(){
 // QUESTIONS (עדכון קל: רק לערוך את המערך)
 // =========================
 const QUESTIONS = [
+  if (!Array.isArray(QUESTIONS) || QUESTIONS.length === 0){
+    showScreen("start");
+    el.startError.hidden = false;
+    el.startError.textContent = "אין שאלות במערכת (QUESTIONS ריק). החזר/י את מערך השאלות לקובץ app.js.";
+  }
+
   // דוגמאות — תשאיר/י את שלך כאן (אותו פורמט)
   // two:
   // { type:"two", title:"...", A:{img:"...",caption:"..."}, B:{img:"...",caption:"..."}, correct:"A", wrongMsg:"..." }
