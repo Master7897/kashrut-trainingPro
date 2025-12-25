@@ -56,23 +56,35 @@ function apiCall(path, payload){
       resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
       return;
     }
-    const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    window[cb] = (data) => {
-      try { delete window[cb]; } catch {}
-      script.remove();
-      resolve(data);
-    };
 
+    const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     const req = encodeURIComponent(JSON.stringify({ path, payload }));
     const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
 
     const script = document.createElement("script");
+    const timeoutMs = 15000;
+    let done = false;
+    const cleanup = (data) => {
+      if (done) return;
+      done = true;
+      try { delete window[cb]; } catch {}
+      try { script.remove(); } catch {}
+      resolve(data);
+    };
+
+    const timer = setTimeout(() => cleanup({ ok:false, error:"TIMEOUT" }), timeoutMs);
+
+    window[cb] = (data) => {
+      clearTimeout(timer);
+      cleanup(data);
+    };
+
     script.src = src;
     script.onerror = () => {
-      try { delete window[cb]; } catch {}
-      script.remove();
-      resolve({ ok:false, error:"NETWORK_ERROR" });
+      clearTimeout(timer);
+      cleanup({ ok:false, error:"NETWORK_ERROR" });
     };
+
     document.body.appendChild(script);
   });
 }
