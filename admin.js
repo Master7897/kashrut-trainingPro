@@ -77,7 +77,6 @@ function apiCall(path, payload){
   });
 }
 // -----------------------------------------------------
-
 function createKitchenRow(value=""){
   const wrap = document.createElement("div");
   wrap.className = "kitchen-item";
@@ -85,7 +84,10 @@ function createKitchenRow(value=""){
   const inp = document.createElement("input");
   inp.placeholder = "שם מטבח";
   inp.value = value;
+
+  // ✅ כל שינוי מדליק Dirty (אם לא בשמירה)
   inp.addEventListener("input", () => setKitchensDirty(true));
+
   const del = document.createElement("button");
   del.type = "button";
   del.className = "btn-del";
@@ -99,7 +101,6 @@ function createKitchenRow(value=""){
   wrap.appendChild(del);
   return wrap;
 }
-
 function listKitchens(){
   return Array.from(el.kitchensGrid.querySelectorAll("input"))
     .map(i => i.value.trim())
@@ -212,7 +213,13 @@ function escapeHtml(s){
 }
 function setKitchensDirty(on){
   state.kitchens.dirty = !!on;
-  // שמור מופיע רק אחרי טעינה, ומופעל רק אם יש שינוי
+
+  // ✅ בזמן שמירה – הכפתור תמיד נעול, לא משנה מה
+  if (state.kitchens.saving){
+    el.btnSaveKitchens.disabled = true;
+    return;
+  }
+
   el.btnSaveKitchens.disabled = !state.kitchens.dirty;
 }
 
@@ -244,7 +251,8 @@ function endKitchensLoading(){
 const { rid, token } = getParams();
 const state = {
   profile: { fullName: "", email: "" },
-  kitchens: { dirty: false },
+  kitchens: { dirty: false, saving: false },
+  activeTab: null,
 };
 async function loadProfile(){
   if (!rid || !token) return;
@@ -339,6 +347,29 @@ function parseRowDateMs(row){
   const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
   return new Date(y, mo, d, 0, 0, 0, 0).getTime();
 }
+function rowToDateMs(row){
+  // 1) אם השרת כבר מחזיר מספר
+  if (Number.isFinite(row?.dateMs)) return Number(row.dateMs);
+
+  // 2) אם יש dateISO "yyyy-mm-dd"
+  const iso = String(row?.dateISO || "").trim();
+  let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], 0, 0, 0, 0).getTime();
+
+  // 3) dateStr "yyyy-mm-dd ..." או "dd/mm/yyyy"
+  const s = String(row?.dateStr || "").trim();
+  if (!s) return NaN;
+  const datePart = s.split(" ")[0];
+
+  m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], 0, 0, 0, 0).getTime();
+
+  m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(datePart);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1], 0, 0, 0, 0).getTime();
+
+  return NaN;
+}
+
 async function refreshSubmissions(){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
@@ -353,8 +384,8 @@ async function refreshSubmissions(){
   el.btnRefreshSubs.disabled = true;
   el.btnRefreshSubs.textContent = "טוען…";
 
-  // ✅ מבקשים מהשרת פילטר רבעוני מדויק
-  const r = await apiCall("admin/listSubmissions", { rid, token, startMs, endMs });
+  // ✅ חוזרים לפרמטר שהשרת מכיר: sinceMs
+  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: startMs });
 
   el.btnRefreshSubs.disabled = false;
   el.btnRefreshSubs.textContent = "רענן";
@@ -363,14 +394,25 @@ async function refreshSubmissions(){
     return setErr(el.subsError, "טעינה נכשלה.");
   }
 
-  const rows = Array.isArray(r.rows) ? r.rows : [];
+  let rows = Array.isArray(r.rows) ? r.rows : [];
+
+  // ✅ סינון רבעון אמיתי: start <= date < end
+  if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs){
+    rows = rows.filter(row => {
+      const ms = rowToDateMs(row);
+      return Number.isFinite(ms) && ms >= startMs && ms < endMs;
+    });
+  }
+
   if (rows.length === 0){
     setInfo(el.subsInfo, "אין תשובות ברבעון שנבחר.");
     return;
   }
 
   for (const row of rows){
-    const dateOnly = row.dateISO ? row.dateISO : (row.dateStr || "").split(" ")[0];
+    const dateOnly =
+      row.dateISO ? row.dateISO :
+      (String(row.dateStr || "").split(" ")[0] || "");
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -421,7 +463,7 @@ el.tabKitchens.onclick = async () => {
 };
 el.tabSubmissions.onclick = async () => {
   showTab("subs");
-  buildQuarterOptions();       // ✅ תמיד מעדכן רבעונים, בלי לדרוס בחירה אם קיימת
+  buildQuarterOptions();       // ✅ מתעדכן אוטומטית לפי תאריך נוכחי
   await refreshSubmissions();
 };
 el.tabFeedback.onclick = async () => {
@@ -433,6 +475,7 @@ el.btnAddKitchen.onclick = () => {
   el.kitchensGrid.appendChild(createKitchenRow(""));
   setKitchensDirty(true);
 };
+// ✅ SAVE: נעילה מלאה עד שינוי הבא
 el.btnSaveKitchens.onclick = async () => {
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
@@ -442,26 +485,37 @@ el.btnSaveKitchens.onclick = async () => {
   const kitchens = listKitchens();
   if (kitchens.length === 0) return setErr(el.kitchensError, "נא להזין לפחות מטבח אחד.");
 
-  // ✅ נועל מיד, ולא משחרר אוטומטית אחרי הצלחה
+  // ✅ LOCK מיד
+  state.kitchens.saving = true;
   el.btnSaveKitchens.disabled = true;
   el.btnSaveKitchens.textContent = "שומר…";
 
-  const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
+  try {
+    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
 
-  // לא מחזירים enabled פה!
-  el.btnSaveKitchens.textContent = "שמור מטבחים";
+    if (!r || !r.ok){
+      setErr(el.kitchensError, "שמירה נכשלה.");
+      // ✅ בכשל – מאפשרים ניסיון חוזר (בלי לחכות לשינוי)
+      state.kitchens.saving = false;
+      el.btnSaveKitchens.textContent = "שמור מטבחים";
+      el.btnSaveKitchens.disabled = false;
+      return;
+    }
 
-  if (!r || !r.ok){
-    // ✅ במקרה כשל – כן מאפשרים ניסיון חוזר (כי אין שינוי חדש)
+    setInfo(el.kitchensInfo, "נשמר ✅");
+
+    // ✅ הצלחה: נשאר נעול עד שינוי הבא
+    state.kitchens.dirty = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
+    el.btnSaveKitchens.disabled = true;
+    state.kitchens.saving = false;
+
+  } catch (e){
+    setErr(el.kitchensError, "שמירה נכשלה.");
+    state.kitchens.saving = false;
+    el.btnSaveKitchens.textContent = "שמור מטבחים";
     el.btnSaveKitchens.disabled = false;
-    return setErr(el.kitchensError, "שמירה נכשלה.");
   }
-
-  setInfo(el.kitchensInfo, "נשמר ✅");
-
-  // ✅ אחרי הצלחה – נשאר נעול עד שינוי הבא
-  setKitchensDirty(false);
-  el.btnSaveKitchens.disabled = true;
 };
 el.btnRefreshSubs.onclick = refreshSubmissions;
 el.btnSendFeedback.onclick = sendFeedback;
