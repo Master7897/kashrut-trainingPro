@@ -4,12 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>לומדת כשרות – צוות מטבח</title>
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <div class="container">
+
+    <!-- START -->
     <section id="screen-start" class="card">
-      <h1>הדרכת כשרות מטבח צבאי</h1>
+      <h1 class="start-title">הדרכת כשרות מטבח צבאי</h1>
       <p class="muted">מלא/י פרטים כדי להתחיל.</p>
 
       <label>שם מלא</label>
@@ -23,14 +25,11 @@
         <option value="">טוען מטבחים…</option>
       </select>
 
-      <button id="btnStart" class="primary">התחל</button>
+      <button id="btnStart" class="primary btn-start">התחל</button>
       <p id="startError" class="error" hidden></p>
-
-      <div class="mini-links">
-        <a class="link" href="register.html">רישום רב / יצירת מערכת</a>
-      </div>
     </section>
 
+    <!-- QUIZ -->
     <section id="screen-quiz" class="card" hidden>
       <div class="topbar">
         <div id="progress" class="muted"></div>
@@ -110,13 +109,15 @@
       <p id="feedback" class="feedback" hidden></p>
     </section>
 
+    <!-- RESULT -->
     <section id="screen-result" class="card" hidden>
       <h2>סיום</h2>
       <p id="sendStatus" class="muted"></p>
       <button id="btnResend" class="secondary" hidden>שלח שוב</button>
     </section>
+
   </div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
