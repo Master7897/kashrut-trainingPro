@@ -87,7 +87,6 @@ function createKitchenRow(value=""){
 
   inp.addEventListener("input", () => {
     setKitchensDirty(true);     // יש שינוי
-    updateSaveEnabled();        // רק אם הכל מלא – השמירה תידלק
   });
 
   const del = document.createElement("button");
@@ -214,20 +213,25 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
-function kitchensAllFilled(){
-  const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
-  if (inputs.length === 0) return false;
-  return inputs.every(i => i.value.trim().length > 0);
+function kitchensNoDuplicates(){
+  const names = Array.from(el.kitchensGrid.querySelectorAll("input"))
+    .map(i => i.value.trim())
+    .filter(Boolean)
+    .map(s => s.toLowerCase());
+  return new Set(names).size === names.length;
 }
 
-// ✅ מפעיל/מכבה שמירה רק אם גם dirty וגם הכל מלא
 function updateSaveEnabled(){
   if (state.kitchens.saving){
     el.btnSaveKitchens.disabled = true;
     return;
   }
-  const canSave = state.kitchens.dirty && kitchensAllFilled();
+  const canSave = state.kitchens.dirty && kitchensAllFilled() && kitchensNoDuplicates();
   el.btnSaveKitchens.disabled = !canSave;
+
+  // אופציונלי: הודעת שגיאה בזמן אמת
+  if (!kitchensNoDuplicates()) setErr(el.kitchensError, "יש שמות מטבח כפולים — תקן/י לפני שמירה.");
+  else if (el.kitchensError.textContent.includes("כפולים")) setErr(el.kitchensError, "");
 }
 
 function setKitchensDirty(on){
