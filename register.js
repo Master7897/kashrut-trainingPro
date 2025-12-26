@@ -185,18 +185,21 @@ el.btnSendOtp.onclick = async () => {
 
   lockStep1(true);
   setInfo(el.step1Info, "שולח קוד אימות למייל…");
-
-  const r = await apiCall("register/sendOtp", { email, otpSession: state.otpSession });
-
+  const r = await apiCall("register/sendOtp", {
+    email,
+    phone,
+    personalId,
+    otpSession: state.otpSession
+  });
   lockStep1(false);
   if (!r.ok){
     setInfo(el.step1Info, "");
-    if (r.error === "EMAIL_ALREADY_REGISTERED") {
-      return setErr(el.step1Error, "המייל כבר רשום במערכת. אם צריך לשחזר גישה – פנה/י לתמיכה.");
-    }
+    if (r.error === "EMAIL_ALREADY_REGISTERED") return setErr(el.step1Error, "המייל כבר רשום במערכת.");
+    if (r.error === "DUP_PHONE") return setErr(el.step1Error, "מספר הטלפון כבר קיים במערכת.");
+    if (r.error === "DUP_PERSONAL_ID") return setErr(el.step1Error, "המספר האישי כבר קיים במערכת.");
+    if (r.error === "BAD_PERSONAL_ID_7DIGITS") return setErr(el.step1Error, "מספר אישי חייב להיות בדיוק 7 ספרות.");
     return setErr(el.step1Error, "שליחת קוד נכשלה (בדוק APPS_SCRIPT_URL / Deploy).");
   }
-
   state.otpSession = r.otpSession;
   setInfo(el.step1Info, "הקוד נשלח. בדוק/י את המייל.");
   showStep(2);
@@ -283,7 +286,8 @@ el.btnFinishRegister.onclick = async () => {
       email,
       phone,
       kitchens,
-      otpSession: state.otpSession
+      otpSession: state.otpSession,
+      baseUrl: getBaseUrl()
     });
 
     if (!r || !r.ok){
@@ -308,8 +312,8 @@ el.btnFinishRegister.onclick = async () => {
 
     if (rid && token){
       const base = getBaseUrl();
-      el.adminLinkBox.value = `${base}admin.html?rid=${encodeURIComponent(rid)}&token=${encodeURIComponent(token)}`;
-      el.quizLinkBox.value = `${base}index.html?rid=${encodeURIComponent(rid)}`;
+      el.adminLinkBox.textContent = `${base}admin.html?rid=${encodeURIComponent(rid)}&token=${encodeURIComponent(token)}`;
+      el.quizLinkBox.textContent  = `${base}index.html?rid=${encodeURIComponent(rid)}`;
     }
 
   } finally {
