@@ -416,3 +416,6 @@ button:disabled{
   transform: none;
   cursor: not-allowed;
 }
+#btnAddKitchen{
+  margin-top: 12px;
+}
