@@ -201,16 +201,19 @@ function setKitchenOptions(names){
 }
 
 async function initKitchenList(){
-  // אין rid? משאיר את רשימת ה-HTML הקיימת כמו היום
   if (!RID) return;
 
-  // יש rid? טוען מהמערכת החדשה
+  // נועל את הבחירה בזמן טעינה
+  el.kitchen.disabled = true;
+  el.kitchen.innerHTML = "";
+  const loadingOpt = document.createElement("option");
+  loadingOpt.value = "";
+  loadingOpt.textContent = "טוען מטבחים…";
+  el.kitchen.appendChild(loadingOpt);
+
   const r = await apiCall("quiz/getKitchens", { rid: RID });
 
-   if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
-    console.warn("quiz/getKitchens failed", r);
-
-    // אם יש rid ולא הצלחנו להביא מטבחים – לא נותנים להתחיל בטעות עם הרשימה הישנה
+  if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
     el.startError.hidden = false;
     el.startError.textContent = "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.";
     el.btnStart.disabled = true;
@@ -218,8 +221,8 @@ async function initKitchenList(){
   }
 
   setKitchenOptions(r.kitchens);
+  el.kitchen.disabled = false; // פותח בחזרה אחרי הצלחה
 }
-
 const HOTSPOT_MAX_CLICKS = 5;
 
 // דוגמה: איזורי hotspot (אם לכל שאלה יש boxes משלה – אפשר להכניס בתוך השאלה ולהפסיק להשתמש בקבוע)
