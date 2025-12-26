@@ -36,6 +36,8 @@ const el = {
   btnSendFeedback: $("btnSendFeedback"),
   fbError: $("fbError"),
   fbInfo: $("fbInfo"),
+
+  btnCopyQuizLink: $("btnCopyQuizLink"),
 };
 
 function setErr(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
@@ -229,7 +231,7 @@ function updateSaveEnabled(){
   const canSave = state.kitchens.dirty && kitchensAllFilled() && kitchensNoDuplicates();
   el.btnSaveKitchens.disabled = !canSave;
 
-  // אופציונלי: הודעת שגיאה בזמן אמת
+  // הודעה בזמן אמת (רשות)
   if (!kitchensNoDuplicates()) setErr(el.kitchensError, "יש שמות מטבח כפולים — תקן/י לפני שמירה.");
   else if (el.kitchensError.textContent.includes("כפולים")) setErr(el.kitchensError, "");
 }
@@ -262,6 +264,28 @@ function endKitchensLoading(){
 
   el.tabKitchens.disabled = false;
 }
+function getBaseUrl(){
+  const u = new URL(window.location.href);
+  // הופך admin.html?rid=... ל"תיקייה" + index.html
+  u.search = "";
+  u.hash = "";
+  u.pathname = u.pathname.replace(/admin\.html$/i, "");
+  return u.toString();
+}
+
+el.btnCopyQuizLink.onclick = async () => {
+  const old = el.btnCopyQuizLink.textContent;
+  const quizUrl = `${getBaseUrl()}index.html?rid=${encodeURIComponent(rid)}`;
+
+  try {
+    await navigator.clipboard.writeText(quizUrl);
+    el.btnCopyQuizLink.textContent = "הועתק ✅";
+    setTimeout(() => (el.btnCopyQuizLink.textContent = old), 2000);
+  } catch {
+    el.btnCopyQuizLink.textContent = "לא הצלחתי להעתיק ❌";
+    setTimeout(() => (el.btnCopyQuizLink.textContent = old), 2000);
+  }
+};
 
 // ====== LOADERS ======
 const { rid, token } = getParams();
