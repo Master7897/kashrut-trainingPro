@@ -98,7 +98,6 @@ function createKitchenRow(value=""){
   del.onclick = () => {
     wrap.remove();
     setKitchensDirty(true);
-    updateSaveEnabled();
   };
 
   wrap.appendChild(inp);
@@ -110,7 +109,10 @@ function listKitchens(){
     .map(i => i.value.trim())
     .filter(Boolean);
 }
-
+function kitchensAllFilled(){
+  const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
+  return inputs.length > 0 && inputs.every(i => i.value.trim().length > 0);
+}
 function clearActiveTabs(){
   [el.tabKitchens, el.tabSubmissions, el.tabFeedback].forEach(b => b.classList.remove("active"));
 }
