@@ -178,28 +178,23 @@ function apiCall(path, payload){
 // -----------------------------------------------------
 
 function setKitchenOptions(names){
-  // שומר את האופציה הראשונה: "בחר/י מטבח"
-  const first = el.kitchen.querySelector("option[value='']") || el.kitchen.options[0];
+  // ניקוי מלא
   el.kitchen.innerHTML = "";
-  if (first){
-    const opt0 = document.createElement("option");
-    opt0.value = "";
-    opt0.textContent = first.textContent || "בחר/י מטבח";
-    el.kitchen.appendChild(opt0);
-  } else {
-    const opt0 = document.createElement("option");
-    opt0.value = "";
-    opt0.textContent = "בחר/י מטבח";
-    el.kitchen.appendChild(opt0);
-  }
 
-  names.forEach(name => {
+  // אופציית ברירת מחדל אחרי טעינה
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = "בחר/י מטבח";
+  el.kitchen.appendChild(opt0);
+
+  // הוספת המטבחים
+  (names || []).forEach(name => {
     const opt = document.createElement("option");
+    opt.value = name;
     opt.textContent = name;
     el.kitchen.appendChild(opt);
   });
 }
-
 async function initKitchenList(){
   if (!RID) return;
 
