@@ -106,8 +106,13 @@ function updateFinishEnabled(){
     el.btnFinishRegister.disabled = true;
     return;
   }
-  const can = state.step3.dirty && kitchensAllFilled() && kitchensNoDuplicates();
+  const filled = kitchensAllFilled();
+  const nodup = kitchensNoDuplicates();
+  const can = state.step3.dirty && filled && nodup;
   el.btnFinishRegister.disabled = !can;
+
+  if (!nodup) setErr(el.step3Error, "יש שמות מטבח כפולים. תקן/י לפני שמירה.");
+  else if (el.step3Error.textContent.includes("כפולים")) setErr(el.step3Error, "");
 }
 function setStep3Dirty(on){
   state.step3.dirty = !!on;
@@ -124,7 +129,6 @@ function createKitchenRow(value=""){
 
   inp.addEventListener("input", () => {
     setStep3Dirty(true);
-    updateFinishEnabled();
   });
 
   const del = document.createElement("button");
@@ -134,9 +138,7 @@ function createKitchenRow(value=""){
   del.onclick = () => {
     wrap.remove();
     setStep3Dirty(true);
-    updateFinishEnabled();
   };
-
   wrap.appendChild(inp);
   wrap.appendChild(del);
   return wrap;
@@ -244,13 +246,12 @@ el.btnResendOtp.onclick = async () => {
   state.otpSession = r.otpSession || state.otpSession;
   setInfo(el.step2Info, "נשלח ✅");
 };
-
 // Step 3: Add kitchen
 el.btnAddKitchen.onclick = () => {
   el.kitchensGrid.appendChild(createKitchenRow(""));
+  setStep3Dirty(true);
+  updateFinishEnabled();
 };
-
-// Step 3: Finish register
 el.btnFinishRegister.onclick = async () => {
   setErr(el.step3Error, "");
   el.step3Success.hidden = true;
@@ -259,21 +260,64 @@ el.btnFinishRegister.onclick = async () => {
   if (!kitchensAllFilled()) return setErr(el.step3Error, "נא למלא את כל שמות המטבחים (לא להשאיר ריק).");
   if (!kitchensNoDuplicates()) return setErr(el.step3Error, "יש שמות מטבח כפולים. תקן/י לפני שמירה.");
 
-  if (state.step3.saving) return; // עוד שכבת הגנה
+  if (state.step3.saving) return;
   state.step3.saving = true;
 
-  el.btnFinishRegister.disabled = true;
   const oldTxt = el.btnFinishRegister.textContent;
+  el.btnFinishRegister.disabled = true;
   el.btnFinishRegister.textContent = "שומר…";
 
   try {
+    const fullName = el.fullName.value.trim();
+    const personalId = el.personalId.value.trim();
+    const unit = el.unit.value.trim();
+    const email = el.email.value.trim().toLowerCase();
+    const phone = el.phone.value.trim();
+
     const kitchens = listKitchens();
-    // ... הקריאה שלך לשרת נשארת כמו שהיא
+
+    const r = await apiCall("register/finish", {
+      fullName,
+      personalId,
+      unit,
+      email,
+      phone,
+      kitchens,
+      otpSession: state.otpSession
+    });
+
+    if (!r || !r.ok){
+      // הודעות שגיאה מדויקות
+      if (r && r.error === "DUP_EMAIL") return setErr(el.step3Error, "המייל כבר רשום במערכת.");
+      if (r && r.error === "DUP_PHONE") return setErr(el.step3Error, "מספר הטלפון כבר קיים במערכת.");
+      if (r && r.error === "DUP_KITCHEN_NAME") return setErr(el.step3Error, "יש שמות מטבח כפולים. תקן/י לפני שמירה.");
+      if (r && r.error === "OTP_NOT_VERIFIED") return setErr(el.step3Error, "האימות פג תוקף. חזר/י לשלב האימות.");
+      return setErr(el.step3Error, "השמירה נכשלה. בדוק/י Deploy של Apps Script ונסו שוב.");
+    }
+
+    // הצלחה: לנעול עד שינוי הבא ולהציג אינדיקציה ברורה
+    state.step3.dirty = false;
+    updateFinishEnabled();
+
+    el.step3Success.hidden = false;
+    el.step3Success.textContent = "נרשמת בהצלחה ✅";
+
+    // לינקים (בהנחה שהשרת מחזיר rid/token)
+    const rid = r.rid || "";
+    const token = r.token || "";
+
+    if (rid && token){
+      const base = getBaseUrl();
+      el.adminLinkBox.value = `${base}admin.html?rid=${encodeURIComponent(rid)}&token=${encodeURIComponent(token)}`;
+      el.quizLinkBox.value = `${base}index.html?rid=${encodeURIComponent(rid)}`;
+    }
+
   } finally {
     state.step3.saving = false;
     el.btnFinishRegister.textContent = oldTxt;
-    // אם הצלחה: תשאיר disabled עד שינוי הבא
-    // אם כשל: setStep3Dirty(true) או פשוט enable מחדש
+    // אם הצליח – updateFinishEnabled ישאיר disabled כי dirty=false
+    // אם נכשל – הכפתור יחזור לפי התנאים
+    updateFinishEnabled();
   }
 };
 // initial UI
