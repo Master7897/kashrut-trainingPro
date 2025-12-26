@@ -197,15 +197,15 @@
         <p class="error" id="step3Error" hidden></p>
         <div class="success" id="step3Success" hidden>
           <div style="font-weight:700;">נרשמת בהצלחה ✅</div>
-          <div class="muted" style="margin-top:6px;">קישורי גישה (בדיקה/תצוגה):</div>
-          <div style="margin-top:8px;">
-            <div class="muted">קישור ניהול:</div>
-            <div class="linkbox" id="adminLinkBox"></div>
+          <div class="muted" style="margin-top:6px;">מה תרצה/י לעשות עכשיו?</div>
+        
+          <div class="actions-row" style="margin-top:10px;">
+            <button class="primary" id="btnGoAdmin" type="button">פתח דף ניהול</button>
+            <button class="secondary" id="btnInstallAdmin" type="button">התקן קיצור דרך לניהול</button>
+            <button class="secondary" id="btnCopyQuizLink" type="button">העתק קישור לשאלון האישי</button>
           </div>
-          <div style="margin-top:8px;">
-            <div class="muted">קישור שאלון לטבחים:</div>
-            <div class="linkbox" id="quizLinkBox"></div>
-          </div>
+        
+          <p class="muted" id="installHint" hidden style="margin-top:10px;"></p>
         </div>
       </div>
     </section>
