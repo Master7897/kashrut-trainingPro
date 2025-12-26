@@ -11,6 +11,11 @@ const el = {
   step2: $("step2"),
   step3: $("step3"),
 
+  btnGoAdmin: $("btnGoAdmin"),
+  btnInstallAdmin: $("btnInstallAdmin"),
+  btnCopyQuizLink: $("btnCopyQuizLink"),
+  installHint: $("installHint"),
+
   fullName: $("rabbiFullName"),
   personalId: $("rabbiPersonalId"),
   unit: $("rabbiUnit"),
@@ -46,6 +51,12 @@ const state = {
 
   step3: { dirty:false, saving:false }
 };
+let deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
 function setErr(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
 function setInfo(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
 
@@ -312,10 +323,47 @@ el.btnFinishRegister.onclick = async () => {
 
     if (rid && token){
       const base = getBaseUrl();
-      el.adminLinkBox.textContent = `${base}admin.html?rid=${encodeURIComponent(rid)}&token=${encodeURIComponent(token)}`;
-      el.quizLinkBox.textContent  = `${base}index.html?rid=${encodeURIComponent(rid)}`;
+      const adminLink = `${base}admin.html?rid=${encodeURIComponent(rid)}&token=${encodeURIComponent(token)}`;
+      const quizLink  = `${base}index.html?rid=${encodeURIComponent(rid)}`;
+    
+      // כפתור: פתח ניהול
+      el.btnGoAdmin.onclick = () => {
+        window.location.href = adminLink;
+      };
+    
+      // כפתור: העתק קישור לשאלון
+      el.btnCopyQuizLink.onclick = async () => {
+        const old = el.btnCopyQuizLink.textContent;
+        try{
+          await navigator.clipboard.writeText(quizLink);
+          el.btnCopyQuizLink.textContent = "הועתק ✅";
+        } catch {
+          el.btnCopyQuizLink.textContent = "שגיאה בהעתקה ❌";
+        }
+        setTimeout(() => (el.btnCopyQuizLink.textContent = old), 2000);
+      };
+    
+      // כפתור: התקנת קיצור דרך לניהול (PWA אם אפשר, אחרת הוראות)
+      el.btnInstallAdmin.onclick = async () => {
+        el.installHint.hidden = true;
+    
+        if (deferredInstallPrompt){
+          deferredInstallPrompt.prompt();
+          deferredInstallPrompt = null;
+          return;
+        }
+    
+        // אין install prompt → להציג הוראות קצרות
+        el.installHint.hidden = false;
+        el.installHint.textContent =
+          "כדי ליצור קיצור דרך: " +
+          "באנדרואיד (Chrome) לחצ/י ⋮ > הוסף למסך הבית. " +
+          "באייפון (Safari) לחצ/י שיתוף ⤴︎ > Add to Home Screen. " +
+          "העתקתי לך את הקישור ללוח.";
+    
+        try { await navigator.clipboard.writeText(adminLink); } catch {}
+      };
     }
-
   } finally {
     state.step3.saving = false;
     el.btnFinishRegister.textContent = oldTxt;
