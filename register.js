@@ -315,7 +315,6 @@ el.btnFinishRegister.onclick = async () => {
     updateFinishEnabled();
 
     el.step3Success.hidden = false;
-    el.step3Success.textContent = "נרשמת בהצלחה ✅";
 
     // לינקים (בהנחה שהשרת מחזיר rid/token)
     const rid = r.rid || "";
