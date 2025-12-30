@@ -177,24 +177,36 @@ function apiCall(path, payload){
 }
 // -----------------------------------------------------
 
-function setKitchenOptions(names){
-  // ניקוי מלא
+function setKitchenOptions(kitchens){
+  // kitchens יכול להיות:
+  // חדש: [{id,name}]
+  // ישן: ["מטבח א", "מטבח ב"]
+  const first = el.kitchen.querySelector("option[value='']") || el.kitchen.options[0];
+
   el.kitchen.innerHTML = "";
 
-  // אופציית ברירת מחדל אחרי טעינה
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = "בחר/י מטבח";
+  opt0.textContent = (first && first.textContent) ? first.textContent : "בחר/י מטבח";
   el.kitchen.appendChild(opt0);
 
-  // הוספת המטבחים
-  (names || []).forEach(name => {
+  (Array.isArray(kitchens) ? kitchens : []).forEach(k => {
     const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
+
+    if (typeof k === "string"){
+      opt.value = "";             // אין ID בישן
+      opt.dataset.name = k;
+      opt.textContent = k;
+    } else {
+      opt.value = String(k.id || "").trim();
+      opt.dataset.name = String(k.name || "").trim();
+      opt.textContent = String(k.name || "").trim();
+    }
+
     el.kitchen.appendChild(opt);
   });
 }
+
 async function initKitchenList(){
   if (!RID) return;
 
@@ -214,8 +226,10 @@ async function initKitchenList(){
     el.btnStart.disabled = true;
     return;
   }
-
-  setKitchenOptions(r.kitchens);
+  const list = Array.isArray(r.kitchens)
+    ? r.kitchens
+    : (Array.isArray(r.kitchenNames) ? r.kitchenNames : []);
+  setKitchenOptions(list);
   el.kitchen.disabled = false; // פותח בחזרה אחרי הצלחה
 }
 const HOTSPOT_MAX_CLICKS = 5;
@@ -1281,7 +1295,13 @@ el.btnShowChart.addEventListener("click", () => {
 async function onStart(){
   const fullName = el.fullName.value.trim();
   const personalId = el.personalId.value.trim();
-  const kitchen = el.kitchen.value.trim();
+  const sel = el.kitchen;
+  const kitchenId = sel.value.trim();
+  const kitchenName = sel.options[sel.selectedIndex]?.textContent?.trim() || "";
+  
+  state.user.kitchenId = kitchenId || "";
+  state.user.kitchenName = kitchenName;
+
 
   if (!fullName){
     el.startError.hidden = false;
@@ -1293,7 +1313,7 @@ async function onStart(){
     el.startError.textContent = "נא למלא ת.ז/מספר אישי.";
     return;
   }
-  if (!kitchen){
+  if (!state.user.kitchenId){
     el.startError.hidden = false;
     el.startError.textContent = "נא לבחור מטבח.";
     return;
@@ -1402,8 +1422,10 @@ async function sendResult(force){
     const payload = {
       fullName: state.user.fullName,
       personalId: state.user.personalId,
-      kitchen: state.user.kitchen,
+      kitchenId: state.user.kitchenId,
+      kitchenName: state.user.kitchenName,
     };
+
 
         // אם יש rid – שולחים למערכת החדשה (שיטס מרכזי)
     if (RID){
