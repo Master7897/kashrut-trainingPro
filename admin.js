@@ -79,16 +79,22 @@ function apiCall(path, payload){
   });
 }
 // -----------------------------------------------------
-function createKitchenRow(value=""){
+function createKitchenRow(k = {id:"", name:""}){
+  // תומך אחורה אם מגיע מחרוזת
+  if (typeof k === "string") k = { id:"", name:k };
+
   const wrap = document.createElement("div");
   wrap.className = "kitchen-item";
 
   const inp = document.createElement("input");
   inp.placeholder = "שם מטבח";
-  inp.value = value;
+  inp.value = k.name || "";
+
+  // שומרים ID יציב בשדה
+  inp.dataset.kitchenId = (k.id || "");
 
   inp.addEventListener("input", () => {
-    setKitchensDirty(true);     // יש שינוי
+    setKitchensDirty(true);
   });
 
   const del = document.createElement("button");
@@ -103,6 +109,15 @@ function createKitchenRow(value=""){
   wrap.appendChild(inp);
   wrap.appendChild(del);
   return wrap;
+}
+
+function listKitchens(){
+  return Array.from(el.kitchensGrid.querySelectorAll("input"))
+    .map(i => ({
+      id: (i.dataset.kitchenId || "").trim(),
+      name: i.value.trim()
+    }))
+    .filter(x => x.name);
 }
 function listKitchens(){
   return Array.from(el.kitchensGrid.querySelectorAll("input"))
@@ -560,11 +575,8 @@ el.btnSaveKitchens.onclick = async () => {
 
   try {
     const kitchens = listKitchens();
-    const r = await apiCall("admin/updateKitchens", {
-      rid, token,
-      kitchens,
-      prevKitchens: state.kitchens.original || []
-    });
+    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
+
 
     if (!r || !r.ok){
       setErr(el.kitchensError, "שמירה נכשלה.");
