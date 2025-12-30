@@ -559,7 +559,12 @@ el.btnSaveKitchens.onclick = async () => {
   el.btnSaveKitchens.textContent = "שומר…";
 
   try {
-    const r = await apiCall("admin/updateKitchens", { rid, token, kitchens });
+    const kitchens = listKitchens();
+    const r = await apiCall("admin/updateKitchens", {
+      rid, token,
+      kitchens,
+      prevKitchens: state.kitchens.original || []
+    });
 
     if (!r || !r.ok){
       setErr(el.kitchensError, "שמירה נכשלה.");
@@ -577,7 +582,7 @@ el.btnSaveKitchens.onclick = async () => {
     el.btnSaveKitchens.textContent = "שמור מטבחים";
     el.btnSaveKitchens.disabled = true;
     state.kitchens.saving = false;
-
+    state.kitchens.original = kitchens.slice();
   } catch (e){
     setErr(el.kitchensError, "שמירה נכשלה.");
     state.kitchens.saving = false;
