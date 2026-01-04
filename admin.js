@@ -114,16 +114,12 @@ function createKitchenRow(k = {id:"", name:""}){
 function listKitchens(){
   return Array.from(el.kitchensGrid.querySelectorAll("input"))
     .map(i => ({
-      id: (i.dataset.kitchenId || "").trim(),
-      name: i.value.trim()
+      id: String(i.dataset.kitchenId || "").trim(),
+      name: String(i.value || "").trim()
     }))
     .filter(x => x.name);
 }
-function listKitchens(){
-  return Array.from(el.kitchensGrid.querySelectorAll("input"))
-    .map(i => i.value.trim())
-    .filter(Boolean);
-}
+
 function kitchensAllFilled(){
   const inputs = Array.from(el.kitchensGrid.querySelectorAll("input"));
   return inputs.length > 0 && inputs.every(i => i.value.trim().length > 0);
@@ -588,6 +584,7 @@ el.btnSaveKitchens.onclick = async () => {
     }
 
     setInfo(el.kitchensInfo, "נשמר ✅");
+    await loadKitchens();
 
     // ✅ הצלחה: נשאר נעול עד שינוי הבא
     state.kitchens.dirty = false;
