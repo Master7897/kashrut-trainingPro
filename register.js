@@ -65,6 +65,18 @@ function isEmailValid(email){
 }
 function isDigitsOnly(s){ return /^[0-9]+$/.test(s); }
 function isRabbiIdValid7(s){ return /^[0-9]{7}$/.test(s); }
+function normalizePhoneIL(raw){
+  let d = String(raw || "").replace(/\D/g, ""); // רק ספרות
+  if (!d) return "";
+  // +9725XXXXXXXX  -> 05XXXXXXXX
+  if (d.startsWith("972") && d.length === 12 && d[3] === "5") d = "0" + d.slice(3);
+  // 5XXXXXXXX -> 05XXXXXXXX
+  if (d.length === 9 && d[0] === "5") d = "0" + d;
+  return d;
+}
+function isPhoneILValidDigits(d){
+  return /^05\d{8}$/.test(String(d || ""));
+}
 
 function getBaseUrl(){
   const { origin, pathname } = window.location;
@@ -185,7 +197,8 @@ el.btnSendOtp.onclick = async () => {
   const personalId = el.personalId.value.trim();
   const unit = el.unit.value.trim();
   const email = el.email.value.trim().toLowerCase();
-  const phone = el.phone.value.trim();
+  const phoneRaw = el.phone.value.trim();
+  const phone = normalizePhoneIL(phoneRaw);
 
   if (!fullName) return setErr(el.step1Error, "נא למלא שם מלא.");
   if (!personalId) return setErr(el.step1Error, "נא למלא מספר אישי.");
@@ -193,6 +206,8 @@ el.btnSendOtp.onclick = async () => {
   if (!isRabbiIdValid7(personalId)) return setErr(el.step1Error, "מספר אישי חייב להיות בדיוק 7 ספרות.");
   if (!unit) return setErr(el.step1Error, "נא למלא יחידה.");
   if (!email || !isEmailValid(email)) return setErr(el.step1Error, "נא להזין אימייל תקין.");
+  if (phoneRaw && !isPhoneILValidDigits(phone)) return setErr(el.step1Error, "טלפון חייב להיות בפורמט 05X-XXXXXXX (אפשר גם בלי מקף).");
+   
 
   lockStep1(true);
   setInfo(el.step1Info, "שולח קוד אימות למייל…");
@@ -209,6 +224,7 @@ el.btnSendOtp.onclick = async () => {
     if (r.error === "DUP_PHONE") return setErr(el.step1Error, "מספר הטלפון כבר קיים במערכת.");
     if (r.error === "DUP_PERSONAL_ID") return setErr(el.step1Error, "המספר האישי כבר קיים במערכת.");
     if (r.error === "BAD_PERSONAL_ID_7DIGITS") return setErr(el.step1Error, "מספר אישי חייב להיות בדיוק 7 ספרות.");
+    if (r.error === "BAD_PHONE_FORMAT") return setErr(el.step1Error, "מספר הטלפון לא תקין. חובה 05X-XXXXXXX.");
     return setErr(el.step1Error, "שליחת קוד נכשלה (בדוק APPS_SCRIPT_URL / Deploy).");
   }
   state.otpSession = r.otpSession;
