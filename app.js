@@ -181,13 +181,20 @@ function setKitchenOptions(kitchens){
   // kitchens יכול להיות:
   // חדש: [{id,name}]
   // ישן: ["מטבח א", "מטבח ב"]
+
   const first = el.kitchen.querySelector("option[value='']") || el.kitchen.options[0];
+
+  // אם ה-placeholder הנוכחי הוא "טוען..." — מחזירים לברירת מחדל
+  const placeholderText =
+    (first && first.textContent && !first.textContent.includes("טוען"))
+      ? first.textContent
+      : "בחר/י מטבח";
 
   el.kitchen.innerHTML = "";
 
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = (first && first.textContent) ? first.textContent : "בחר/י מטבח";
+  opt0.textContent = placeholderText;
   el.kitchen.appendChild(opt0);
 
   (Array.isArray(kitchens) ? kitchens : []).forEach(k => {
@@ -206,7 +213,6 @@ function setKitchenOptions(kitchens){
     el.kitchen.appendChild(opt);
   });
 }
-
 async function initKitchenList(){
   if (!RID) return;
 
