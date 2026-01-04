@@ -1132,7 +1132,10 @@ function onDropToZone(side, zoneEl){
     setTimeout(()=> zoneEl.classList.remove("wrong"), 600);
     return;
   }
-
+  if (zoneEl.classList.contains("filled")) {
+    // התא תפוס – לא מאפשרים דריסה
+    return;
+  }
   zoneEl.classList.add("filled");
   zoneEl.classList.remove("over");
   zoneEl.innerHTML = `<img src="${it.img}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:10px;background:#fff;" />`;
@@ -1343,7 +1346,7 @@ async function onStart(){
   try {
     await preloadAllQuestionImages();
 
-    state.user = { fullName, personalId, kitchen };
+    state.user = { fullName, personalId, kitchenId, kitchenName };
     startFromBeginning();
   } finally {
     el.btnStart.disabled = false;
@@ -1430,7 +1433,8 @@ async function sendResult(force){
         // אם יש rid – שולחים למערכת החדשה (שיטס מרכזי)
     if (RID){
       const r = await apiCall("quiz/submit", { rid: RID, ...payload });
-      if (!r || !r.ok) throw new Error("SUBMIT_FAILED");
+    if (!r || !r.ok) throw new Error(r?.error || "SUBMIT_FAILED");
+
     } else {
       // אין rid – ממשיכים בשיטה הישנה (כמו היום)
       const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
