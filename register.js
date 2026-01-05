@@ -40,8 +40,6 @@ const el = {
   step2Info: $("step2Info"),
 
   step3Success: $("step3Success"),
-  adminLinkBox: $("adminLinkBox"),
-  quizLinkBox: $("quizLinkBox"),
 };
 const state = {
   rid: "",
@@ -87,28 +85,53 @@ function getBaseUrl(){
 
 // ---------- JSONP API ----------
 function apiCall(path, payload){
+  const TIMEOUT_MS = 15000;
+
   return new Promise((resolve) => {
     if (!APPS_SCRIPT_URL){
       resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
       return;
     }
+
     const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    window[cb] = (data) => {
+    let done = false;
+    let timerId = null;
+    let script = null;
+
+    const cleanup = () => {
       try { delete window[cb]; } catch {}
-      script.remove();
+      if (timerId) { clearTimeout(timerId); timerId = null; }
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      script = null;
+    };
+
+    window[cb] = (data) => {
+      if (done) return;
+      done = true;
+      cleanup();
       resolve(data);
     };
 
     const req = encodeURIComponent(JSON.stringify({ path, payload }));
     const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
 
-    const script = document.createElement("script");
+    script = document.createElement("script");
     script.src = src;
+
     script.onerror = () => {
-      try { delete window[cb]; } catch {}
-      script.remove();
+      if (done) return;
+      done = true;
+      cleanup();
       resolve({ ok:false, error:"NETWORK_ERROR" });
     };
+
+    timerId = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve({ ok:false, error:"TIMEOUT" });
+    }, TIMEOUT_MS);
+
     document.body.appendChild(script);
   });
 }
@@ -225,6 +248,8 @@ el.btnSendOtp.onclick = async () => {
     if (r.error === "DUP_PERSONAL_ID") return setErr(el.step1Error, "המספר האישי כבר קיים במערכת.");
     if (r.error === "BAD_PERSONAL_ID_7DIGITS") return setErr(el.step1Error, "מספר אישי חייב להיות בדיוק 7 ספרות.");
     if (r.error === "BAD_PHONE_FORMAT") return setErr(el.step1Error, "מספר הטלפון לא תקין. חובה 05X-XXXXXXX.");
+    if (r.error === "TIMEOUT" || r.error === "NETWORK_ERROR")
+      return setErr(el.step1Error, "בדוק את חיבור האינטרנט שלך, ונסה שוב");
     return setErr(el.step1Error, "שליחת קוד נכשלה (בדוק APPS_SCRIPT_URL / Deploy).");
   }
   state.otpSession = r.otpSession;
@@ -252,6 +277,8 @@ el.btnVerifyOtp.onclick = async () => {
 
   if (!r.ok){
     setInfo(el.step2Info, "");
+    if (r.error === "TIMEOUT" || r.error === "NETWORK_ERROR")
+      return setErr(el.step2Error, "בדוק את חיבור האינטרנט שלך, ונסה שוב");
     return setErr(el.step2Error, "קוד שגוי או פג תוקף. נסה שוב.");
   }
 
@@ -323,6 +350,8 @@ el.btnFinishRegister.onclick = async () => {
       if (r && r.error === "DUP_PHONE") return setErr(el.step3Error, "מספר הטלפון כבר קיים במערכת.");
       if (r && r.error === "DUP_KITCHEN_NAME") return setErr(el.step3Error, "יש שמות מטבח כפולים. תקן/י לפני שמירה.");
       if (r && r.error === "OTP_NOT_VERIFIED") return setErr(el.step3Error, "האימות פג תוקף. חזר/י לשלב האימות.");
+      if (r && (r.error === "TIMEOUT" || r.error === "NETWORK_ERROR"))
+        return setErr(el.step3Error, "בדוק את חיבור האינטרנט שלך, ונסה שוב");
       return setErr(el.step3Error, "השמירה נכשלה. בדוק/י Deploy של Apps Script ונסו שוב.");
     }
 
@@ -338,7 +367,7 @@ el.btnFinishRegister.onclick = async () => {
 
     if (rid && token){
       const base = getBaseUrl();
-      const adminLink = `${base}admin.html?rid=${encodeURIComponent(rid)}&token=${encodeURIComponent(token)}`;
+      const adminLink = `${base}admin.html?rid=${encodeURIComponent(rid)}#token=${encodeURIComponent(token)}`;
       const quizLink  = `${base}index.html?rid=${encodeURIComponent(rid)}`;
     
       // כפתור: פתח ניהול
