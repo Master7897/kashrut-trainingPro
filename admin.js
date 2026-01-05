@@ -8,8 +8,6 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJ
 const $ = (id) => document.getElementById(id);
 
 const el = {
-  adminNote: $("adminNote"),
-
   tabKitchens: $("tabKitchens"),
   tabSubmissions: $("tabSubmissions"),
   tabFeedback: $("tabFeedback"),
@@ -31,7 +29,6 @@ const el = {
   subsInfo: $("subsInfo"),
 
   fbSubject: $("fbSubject"),
-  fbEmail: $("fbEmail"),
   fbMessage: $("fbMessage"),
   btnSendFeedback: $("btnSendFeedback"),
   fbError: $("fbError"),
@@ -44,37 +41,85 @@ function setErr(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
 function setInfo(node, msg){ node.hidden = !msg; node.textContent = msg || ""; }
 
 function getParams(){
-  const p = new URLSearchParams(window.location.search);
-  return {
-    rid: p.get("rid") || "",
-    token: p.get("token") || "",
-  };
-}
+  const u = new URL(window.location.href);
 
+  const sp = u.searchParams;
+  const hp = new URLSearchParams((u.hash || "").replace(/^#/, ""));
+
+  // תומך גם בעתיד אם תרצה להעביר גם rid ל-hash
+  const rid = (sp.get("rid") || hp.get("rid") || "").trim();
+
+  const tokenFromSearch = (sp.get("token") || "").trim();
+  const tokenFromHash   = (hp.get("token") || "").trim();
+
+  // ברירת מחדל: token מה-hash, ואם אין – מה-query (תאימות לקישורים ישנים)
+  let token = tokenFromHash || tokenFromSearch;
+
+  // אם הגיע token ב-query -> ננקה את הכתובת (מעביר ל-hash ומוחק מה-query)
+  if (tokenFromSearch){
+    if (!hp.get("token")) hp.set("token", tokenFromSearch);
+    sp.delete("token");
+
+    u.search = sp.toString() ? `?${sp.toString()}` : "";
+    u.hash = hp.toString() ? `#${hp.toString()}` : "";
+
+    // בלי ריענון דף
+    history.replaceState(null, "", u.toString());
+
+    token = (hp.get("token") || "").trim() || token;
+  }
+
+  return { rid, token };
+}
 // ---------- JSONP API (works on GitHub Pages) ----------
 function apiCall(path, payload){
+  const TIMEOUT_MS = 15000;
+
   return new Promise((resolve) => {
     if (!APPS_SCRIPT_URL){
       resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
       return;
     }
+
     const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    window[cb] = (data) => {
+    let done = false;
+    let timerId = null;
+    let script = null;
+
+    const cleanup = () => {
       try { delete window[cb]; } catch {}
-      script.remove();
+      if (timerId) { clearTimeout(timerId); timerId = null; }
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      script = null;
+    };
+
+    window[cb] = (data) => {
+      if (done) return;
+      done = true;
+      cleanup();
       resolve(data);
     };
 
     const req = encodeURIComponent(JSON.stringify({ path, payload }));
     const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
 
-    const script = document.createElement("script");
+    script = document.createElement("script");
     script.src = src;
+
     script.onerror = () => {
-      try { delete window[cb]; } catch {}
-      script.remove();
+      if (done) return;
+      done = true;
+      cleanup();
       resolve({ ok:false, error:"NETWORK_ERROR" });
     };
+
+    timerId = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve({ ok:false, error:"TIMEOUT" });
+    }, TIMEOUT_MS);
+
     document.body.appendChild(script);
   });
 }
@@ -321,8 +366,6 @@ async function loadProfile(){
       meta.textContent = `שלום הרב ${state.profile.fullName || ""}`;
       meta.hidden = false;
     }
-    // אם עדיין יש לך שדה מייל ב-HTML (בינתיים) אפשר להשאיר שקט:
-    if (el.fbEmail) el.fbEmail.value = state.profile.email || "";
   }
 }
 async function loadKitchens(){
@@ -463,7 +506,10 @@ async function refreshSubmissions(){
   el.btnRefreshSubs.textContent = "רענן";
 
   if (!r || !r.ok){
-    return setErr(el.subsError, "טעינה נכשלה.");
+    const msg = (r && (r.error === "TIMEOUT" || r.error === "NETWORK_ERROR"))
+      ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
+      : "טעינה נכשלה.";
+    return setErr(el.subsError, msg);
   }
 
   let rows = Array.isArray(r.rows) ? r.rows : [];
