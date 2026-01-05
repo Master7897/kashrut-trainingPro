@@ -150,28 +150,53 @@ const RID = (URL_PARAMS.get("rid") || "").trim();
 
 // ---------- JSONP API (works on GitHub Pages) ----------
 function apiCall(path, payload){
+  const TIMEOUT_MS = 15000;
+
   return new Promise((resolve) => {
     if (!APPS_SCRIPT_URL){
       resolve({ ok:false, error:"SERVER_NOT_CONFIGURED" });
       return;
     }
+
     const cb = `__jsonp_cb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    window[cb] = (data) => {
+    let done = false;
+    let timerId = null;
+    let script = null;
+
+    const cleanup = () => {
       try { delete window[cb]; } catch {}
-      script.remove();
+      if (timerId) { clearTimeout(timerId); timerId = null; }
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+      script = null;
+    };
+
+    window[cb] = (data) => {
+      if (done) return;
+      done = true;
+      cleanup();
       resolve(data);
     };
 
     const req = encodeURIComponent(JSON.stringify({ path, payload }));
     const src = `${APPS_SCRIPT_URL}?callback=${cb}&req=${req}`;
 
-    const script = document.createElement("script");
+    script = document.createElement("script");
     script.src = src;
+
     script.onerror = () => {
-      try { delete window[cb]; } catch {}
-      script.remove();
+      if (done) return;
+      done = true;
+      cleanup();
       resolve({ ok:false, error:"NETWORK_ERROR" });
     };
+
+    timerId = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve({ ok:false, error:"TIMEOUT" });
+    }, TIMEOUT_MS);
+
     document.body.appendChild(script);
   });
 }
@@ -228,7 +253,10 @@ async function initKitchenList(){
 
   if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
     el.startError.hidden = false;
-    el.startError.textContent = "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.";
+        const netMsg = (!r || r.error === "TIMEOUT" || r.error === "NETWORK_ERROR")
+      ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
+      : "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.";
+    el.startError.textContent = netMsg;
     el.btnStart.disabled = true;
     return;
   }
@@ -495,9 +523,11 @@ const el = {
 // STATE
 // =========================
 const state = {
-  user: { fullName:"", personalId:"", kitchen:"" },
+  user: { fullName:"", personalId:"", kitchenId:"", kitchenName:"" },
   idx: 0,
   sentThisRun: false,
+  submissionId: "",
+  submissionCreatedAt: 0,
 
   // per-question runtime
   runtime: {
@@ -508,6 +538,40 @@ const state = {
     drag: { phase: "intro", qIdx: -1, itemIndex: 0, placed: [], filled: {L:0,R:0} }
   }
 };
+// =========================
+// SUBMISSION ID (Idempotency)
+// =========================
+const SUBMISSION_STORAGE_KEY = "pendingSubmission_v1";
+const SUBMISSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 ימים
+
+function clearPendingSubmissionId(){
+  try { localStorage.removeItem(SUBMISSION_STORAGE_KEY); } catch {}
+}
+
+function getOrCreateSubmissionId(){
+  const now = Date.now();
+
+  // נסה לקחת מה-storage אם עדיין בתוקף
+  try {
+    const raw = localStorage.getItem(SUBMISSION_STORAGE_KEY);
+    if (raw){
+      const obj = JSON.parse(raw);
+      if (obj && obj.id && obj.createdAt && (now - obj.createdAt) < SUBMISSION_TTL_MS){
+        return { id: String(obj.id), createdAt: Number(obj.createdAt) };
+      }
+    }
+  } catch {}
+
+  // אחרת מייצרים חדש
+  const id = `sub_${now}_${Math.random().toString(16).slice(2)}`;
+  const createdAt = now;
+
+  try {
+    localStorage.setItem(SUBMISSION_STORAGE_KEY, JSON.stringify({ id, createdAt }));
+  } catch {}
+
+  return { id, createdAt };
+}
 
 // =========================
 // IMAGE PRELOAD (REAL)
@@ -1302,6 +1366,11 @@ el.btnShowChart.addEventListener("click", () => {
 // START
 // =========================
 async function onStart(){
+    // התחלת ניסיון חדש -> מזהה שליחה חדש
+  clearPendingSubmissionId();
+  state.submissionId = "";
+  state.submissionCreatedAt = 0;
+
   const fullName = el.fullName.value.trim();
   const personalId = el.personalId.value.trim();
   const sel = el.kitchen;
@@ -1399,11 +1468,7 @@ async function finish(){
   if (el.btnResend) {
     el.btnResend.hidden = true;
     el.btnResend.disabled = true;
-    el.btnResend.onclick = async () => {
-      await sendResult(true);
-    };
   }
-
   await sendResult(false);
 }
 
@@ -1414,13 +1479,6 @@ async function sendResult(force){
     if (el.btnResend) el.btnResend.hidden = true;
     return;
   }
-
-  if (!GOOGLE_SHEETS_WEBAPP_URL){
-    el.sendStatus.textContent = "לא הוגדרה כתובת של Google Sheets Web App עדיין.";
-    if (el.btnResend) el.btnResend.hidden = true;
-    return;
-  }
-
   el.sendStatus.textContent = "שולח תוצאה…";
   if (el.btnResend){
     el.btnResend.hidden = true;
@@ -1428,19 +1486,31 @@ async function sendResult(force){
   }
 
   try {
+        // יצירה/שליפה של מזהה שליחה יציב (כדי למנוע כפילויות ב-resend/timeout)
+    if (!state.submissionId){
+      const s = getOrCreateSubmissionId();
+      state.submissionId = s.id;
+      state.submissionCreatedAt = s.createdAt;
+    }
+
     const payload = {
       fullName: state.user.fullName,
       personalId: state.user.personalId,
       kitchenId: state.user.kitchenId,
       kitchenName: state.user.kitchenName,
+      submissionId: state.submissionId,
     };
-
-
-        // אם יש rid – שולחים למערכת החדשה (שיטס מרכזי)
+    // אם יש rid – שולחים למערכת החדשה (שיטס מרכזי)
     if (RID){
       const r = await apiCall("quiz/submit", { rid: RID, ...payload });
+      if (r && r.ok && r.already){
+      // כבר התקבל בעבר (ניסיון חוזר/timeout) -> זה עדיין הצלחה מבחינת המשתמש
+      state.sentThisRun = true;
+      el.sendStatus.textContent = "השליחה כבר התקבלה במערכת ✅";
+      if (el.btnResend) el.btnResend.hidden = true;
+      return;
+      }
     if (!r || !r.ok) throw new Error(r?.error || "SUBMIT_FAILED");
-
     } else {
       // אין rid – ממשיכים בשיטה הישנה (כמו היום)
       const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
@@ -1450,8 +1520,6 @@ async function sendResult(force){
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
     }
-
-
     state.sentThisRun = true;
     el.sendStatus.textContent = "התוצאה נשלחה בהצלחה ✅";
     if (el.btnResend) el.btnResend.hidden = true;
@@ -1461,8 +1529,10 @@ async function sendResult(force){
 
     // אם יש לנו סטטוס HTTP — נציג אותו כדי להבין למה
     const msg = (e && e.message) ? e.message : "";
-    el.sendStatus.textContent =
-      "שליחה נכשלה ❌ " + (msg ? `(${msg})` : "(בדוק הרשאות Deploy / Anyone)");
+    const isNet = (msg === "TIMEOUT" || msg === "NETWORK_ERROR");
+    el.sendStatus.textContent = isNet
+      ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
+      : ("שליחה נכשלה ❌ " + (msg ? `(${msg})` : "(בדוק הרשאות Deploy / Anyone)"));
 
     if (el.btnResend){
       el.btnResend.hidden = false;
