@@ -123,27 +123,27 @@
 
         <div class="row" style="margin-top:10px;">
           <label>שם מלא</label>
-          <input id="rabbiFullName" placeholder="שם ושם משפחה" />
+          <input id="rabbiFullName" placeholder="שם ושם משפחה" maxlength="30" />
 
           <div class="two-col">
             <div>
               <label>מספר אישי</label>
-              <input id="rabbiPersonalId" placeholder="ספרות בלבד" inputmode="numeric" />
+              <input id="rabbiPersonalId" placeholder="ספרות בלבד" inputmode="numeric" maxlength="7"/>
             </div>
             <div>
               <label>יחידה</label>
-              <input id="rabbiUnit" placeholder="לדוגמה: אט''ל 700" />
+              <input id="rabbiUnit" placeholder="לדוגמה: אט''ל 700" maxlength="50"/>
             </div>
           </div>
 
           <div class="two-col">
             <div>
               <label>אימייל</label>
-              <input id="rabbiEmail" placeholder="name@example.com" inputmode="email" />
+              <input id="rabbiEmail" placeholder="name@example.com" inputmode="email" maxlength="50"/>
             </div>
             <div>
               <label>טלפון (אופציונלי)</label>
-              <input id="rabbiPhone" placeholder="05xxxxxxxx" inputmode="tel" />
+              <input id="rabbiPhone" placeholder="05xxxxxxxx" inputmode="tel" maxlength="10"/>
             </div>
           </div>
 
@@ -164,7 +164,7 @@
 
         <div class="row" style="margin-top:10px;">
           <label>הזן/י את הקוד שקיבלת במייל</label>
-          <input id="otpCode" placeholder="xxxxxx" inputmode="numeric" />
+          <input id="otpCode" placeholder="xxxxxx" inputmode="numeric" maxlength="6"/>
 
           <div class="actions-row">
             <button class="primary" id="btnVerifyOtp" type="button">אמת קוד</button>
