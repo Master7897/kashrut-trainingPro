@@ -1043,14 +1043,11 @@ const TYPE = {
       }
 
       const rt = state.runtime.drag;
-
+      el.dragIntroImg.src = q.introImg;
       if (rt.phase === "intro"){
         el.dragIntro.hidden = false;
         el.dragPlay.hidden = true;
-
         el.questionTitle.innerHTML = formatSpecial(q.introTitle || "התבוננו בתרשים ואז לחצו המשך.");
-        el.dragIntroImg.src = q.introImg;
-
         el.btnNext.disabled = false;
         return;
       }
