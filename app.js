@@ -316,7 +316,7 @@ const QUESTIONS = [
   {
     type: "hotspot5",
     title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
-    img: "images/q3_hotspot.jpeg",
+    img: "images/q3_hotspot.webp",
     boxes: [
       {
         x1: 37.01, y1: 21.68, x2: 77.71, y2: 27.35,
@@ -345,7 +345,7 @@ const QUESTIONS = [
   {
     type: "mc_single",
     title: "מצאת תבנית כזו, מה תעשה איתה?",
-    leadImg: "images/tavnit.jpg",
+    leadImg: "images/tavnit.webp",
     options: [
       "תבנית בלי חורים יכולה לשמש ל[B]בשרי[/B]",
       "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור",
@@ -358,7 +358,7 @@ const QUESTIONS = [
   {
     type: "mc_multi",
     title: "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?",
-    //leadImg: "images/fridge.png",
+    //leadImg: "images/fridge.webp",
     options: [
       "שכל התחתית תהיה צבועה באדום",
       "3 חורים בפינה",
@@ -372,8 +372,8 @@ const QUESTIONS = [
   {
     type: "two",
     title: "בחר את הכף [H]החלבית[/H]",
-    A: { img: "images/q1_a1.jpg", caption: "כף עם חור" },
-    B: { img: "images/q1_a2.png", caption: "כף בלי חור" },
+    A: { img: "images/q1_a1.webp", caption: "כף עם חור" },
+    B: { img: "images/q1_a2.webp", caption: "כף בלי חור" },
     correct: "A",
     wrongMsg: "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור."
   },
@@ -381,25 +381,25 @@ const QUESTIONS = [
     type: "drag_shelves",
     title: "גררו כל מוצר למדף הנכון לפי התרשים שראיתם",
     introTitle: "התבוננו בתרשים ואז לחצו המשך.",
-    introImg: "images/intro_chart.png",
-    bgImg: "images/roomshelves.png",
+    introImg: "images/intro_chart.webp",
+    bgImg: "images/roomshelves.webp",
     zones: DRAG_ZONES_4x2,
     items: [
-      { img:"images/prod1.jpg", caption:"חלב", side:"R", wrongMsg:"❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין." },
-      { img:"images/prod2.jpg", caption:"שתיה", side:"L", wrongMsg:"❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל." },
-      { img:"images/prod3.jpg", caption:"חומוס", side:"L", wrongMsg:"❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל." },
-      { img:"images/prod4.jpg", caption:"קוטג'", side:"R", wrongMsg:"❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין." },
-      { img:"images/prod5.jpg", caption:"חלב סויה", side:"L", wrongMsg:"❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל." },
-      { img:"images/prod6.jpg", caption:"מילקי", side:"R", wrongMsg:"❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין." },
-      { img:"images/prod7.jpg", caption:"גבינה צהובה", side:"R", wrongMsg:"❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין." },
-      { img:"images/prod8.jpg", caption:"מעדן סויה", side:"L", wrongMsg:"❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל." },
+      { img:"images/prod1.webp", caption:"חלב", side:"R", wrongMsg:"❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין." },
+      { img:"images/prod2.webp", caption:"שתיה", side:"L", wrongMsg:"❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל." },
+      { img:"images/prod3.webp", caption:"חומוס", side:"L", wrongMsg:"❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל." },
+      { img:"images/prod4.webp", caption:"קוטג'", side:"R", wrongMsg:"❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין." },
+      { img:"images/prod5.webp", caption:"חלב סויה", side:"L", wrongMsg:"❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל." },
+      { img:"images/prod6.webp", caption:"מילקי", side:"R", wrongMsg:"❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין." },
+      { img:"images/prod7.webp", caption:"גבינה צהובה", side:"R", wrongMsg:"❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין." },
+      { img:"images/prod8.webp", caption:"מעדן סויה", side:"L", wrongMsg:"❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל." },
     ]
   },
   {
     type: "two",
     title: "איזה גסטרונום שייך ל[P]פרווה[/P]?",
-    A: { img: "images/q2_a.jpg", caption: "3 חורים" },
-    B: { img: "images/q2_b.jpg", caption: "2 חורים" },
+    A: { img: "images/q2_a.webp", caption: "3 חורים" },
+    B: { img: "images/q2_b.webp", caption: "2 חורים" },
     correct: "B",
     wrongMsg: "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1)."
   },
@@ -407,7 +407,7 @@ const QUESTIONS = [
   {
     type: "mc_single",
     title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
-    //leadImg: "images/mc_intro.jpg",
+    //leadImg: "images/mc_intro.webp",
     //leadCaption: "תסתכל/י על הסיטואציה ואז ענה/י",
     options: [
       "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]",
@@ -422,16 +422,16 @@ const QUESTIONS = [
     type: "img_multi10",
     title: "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]",
     items: [
-      { img: "images/pp1.jpg", alt: "מילקי", caption: "מילקי"},
-      { img: "images/pp2.jpg", alt: "מלפפונים", caption: "מלפפונים" },
-      { img: "images/pp3.jpg", alt: "חלב סויה", caption: "חלב סויה", fit: "contain"},
-      { img: "images/pp4.jpg", alt: "קוטג'", caption: "קוטג'" },
-      { img: "images/pp5.jpg", alt: "גבינה צהובה", caption: "גבינה צהובה" },
-      { img: "images/pp6.jpg", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
-      { img: "images/pp7.jpg", alt: "חלב", caption: "חלב" },
-      { img: "images/pp8.jpg", alt: "חומוס", caption: "חומוס" },
-      { img: "images/pp9.jpg", alt: "מעדן סויה", caption: "מעדן סויה" },
-      { img: "images/pp10.jpg", alt: "ביצים", caption: "ביצים" }
+      { img: "images/pp1.webp", alt: "מילקי", caption: "מילקי"},
+      { img: "images/pp2.webp", alt: "מלפפונים", caption: "מלפפונים" },
+      { img: "images/pp3.webp", alt: "חלב סויה", caption: "חלב סויה", fit: "contain"},
+      { img: "images/pp4.webp", alt: "קוטג'", caption: "קוטג'" },
+      { img: "images/pp5.webp", alt: "גבינה צהובה", caption: "גבינה צהובה" },
+      { img: "images/pp6.webp", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
+      { img: "images/pp7.webp", alt: "חלב", caption: "חלב" },
+      { img: "images/pp8.webp", alt: "חומוס", caption: "חומוס" },
+      { img: "images/pp9.webp", alt: "מעדן סויה", caption: "מעדן סויה" },
+      { img: "images/pp10.webp", alt: "ביצים", caption: "ביצים" }
     ],
     correctIndexes: [1, 2, 5, 7, 8, 9],
     wrongMsgByIndex: {
@@ -445,7 +445,7 @@ const QUESTIONS = [
   {
     type: "mc_multi",
     title: "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?",
-    //leadImg: "images/fridge.png",
+    //leadImg: "images/fridge.webp",
     options: [
       "לא, אסור בשום אופן",
       "לא אלא אם כן המשגיח אישר",
