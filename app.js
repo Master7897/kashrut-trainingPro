@@ -314,6 +314,14 @@ function formatSpecial(text) {
 // =========================
 const QUESTIONS = [
   {
+    type: "two",
+    title: "איך צריך להגיש בשר ודגים",
+    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
+    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
+    correct: "B",
+    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
+  },
+  {
     type: "hotspot5",
     title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
     img: "images/q3_hotspot.webp",
