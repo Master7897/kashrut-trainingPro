@@ -433,20 +433,20 @@ const QUESTIONS = [
       { img: "images/pp1.webp", alt: "מילקי", caption: "מילקי"},
       { img: "images/pp2.webp", alt: "מלפפונים", caption: "מלפפונים" },
       { img: "images/pp3.webp", alt: "חלב סויה", caption: "חלב סויה", fit: "contain"},
-      { img: "images/pp4.webp", alt: "קוטג'", caption: "קוטג'" },
+      { img: "images/pp4.webp", alt: "לורד סנדויץ'", caption: "לורד סנדויץ'" },
       { img: "images/pp5.webp", alt: "גבינה צהובה", caption: "גבינה צהובה" },
       { img: "images/pp6.webp", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
-      { img: "images/pp7.webp", alt: "חלב", caption: "חלב" },
-      { img: "images/pp8.webp", alt: "חומוס", caption: "חומוס" },
-      { img: "images/pp9.webp", alt: "מעדן סויה", caption: "מעדן סויה" },
+      { img: "images/pp7.webp", alt: "מעדן קרלו", caption: "מעדן קרלו" },
+      { img: "images/pp8.webp", alt: "מעדן ג'לי", caption: "מעדן ג'לי" },
+      { img: "images/pp9.webp", alt: "רוטב טריאקי", caption: "רוטב טריאקי" },
       { img: "images/pp10.webp", alt: "ביצים", caption: "ביצים" }
     ],
     correctIndexes: [1, 2, 5, 7, 8, 9],
     wrongMsgByIndex: {
       0: "❌ אסור להכניס מעדנים חלביים!",
-      3: "❌ אסור להכניס קוטג' או גבינה לבנה!",
+      3: "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!",
       4: "❌ אסור להכניס מוצרי חלב מכל סוג!",
-      6: "❌ אסור להכניס חלב!"
+      6: "❌ מעדן קרלו הוא חלבי!"
     },
     wrongMsg: "❌ יש בחירה לא נכונה. נסו שוב."
   },
