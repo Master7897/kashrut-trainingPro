@@ -351,7 +351,81 @@ const state = {
   profile: { fullName: "", email: "" },
   kitchens: { dirty: false, saving: false },
   activeTab: null,
+  cache: {
+    kitchens: { ts: 0, data: null, promise: null },
+    subsByQuarter: Object.create(null),   // key = `${startMs}-${endMs}`
+    subsPromises: Object.create(null),    // key -> promise
+  }
 };
+function runInBackground(fn){
+  if ("requestIdleCallback" in window){
+    requestIdleCallback(() => fn(), { timeout: 2000 });
+  } else {
+    setTimeout(fn, 0);
+  }
+}
+
+function quarterKey(startMs, endMs){
+  return `${startMs}-${endMs}`;
+}
+
+async function fetchKitchensCached({ force = false } = {}){
+  if (!rid || !token) return { ok:false, error:"BAD_LINK" };
+
+  const c = state.cache.kitchens;
+
+  if (!force && c.data) return { ok:true, kitchens: c.data };
+  if (!force && c.promise) return c.promise;
+
+  c.promise = (async () => {
+    const r = await apiCall("admin/getKitchens", { rid, token });
+    if (!r || !r.ok) return { ok:false, error: (r && r.error) || "LOAD_FAIL" };
+
+    const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
+    c.data = kitchens;
+    c.ts = Date.now();
+    return { ok:true, kitchens };
+  })();
+
+  const out = await c.promise;
+  c.promise = null;
+  return out;
+}
+
+async function fetchSubsCached(startMs, endMs, { force = false } = {}){
+  if (!rid || !token) return { ok:false, error:"BAD_LINK" };
+
+  const key = quarterKey(startMs, endMs);
+
+  if (!force && state.cache.subsByQuarter[key]){
+    return { ok:true, rows: state.cache.subsByQuarter[key] };
+  }
+  if (!force && state.cache.subsPromises[key]){
+    return state.cache.subsPromises[key];
+  }
+
+  state.cache.subsPromises[key] = (async () => {
+    const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: startMs });
+    if (!r || !r.ok) return { ok:false, error: (r && r.error) || "LOAD_FAIL" };
+
+    let rows = Array.isArray(r.rows) ? r.rows : [];
+    // ✅ סינון רבעון אמיתי: start <= date < end (כמו אצלך) :contentReference[oaicite:3]{index=3}
+    if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs){
+      rows = rows.filter(row => {
+        const ms = rowToDateMs(row);
+        return Number.isFinite(ms) && ms >= startMs && ms < endMs;
+      });
+    }
+
+    state.cache.subsByQuarter[key] = rows;
+    return { ok:true, rows };
+  })();
+
+  const out = await state.cache.subsPromises[key];
+  delete state.cache.subsPromises[key];
+  return out;
+}
+
 async function loadProfile(){
   if (!rid || !token) return;
 
@@ -368,12 +442,11 @@ async function loadProfile(){
     }
   }
 }
-async function loadKitchens(){
+async function loadKitchens({ force = false } = {}){
   setErr(el.kitchensError, "");
   setInfo(el.kitchensInfo, "");
   el.kitchensGrid.innerHTML = "";
 
-  // בזמן טעינה: מסתירים הוספה+שמירה
   el.btnAddKitchen.hidden = true;
   el.btnAddKitchen.disabled = true;
 
@@ -381,7 +454,6 @@ async function loadKitchens(){
   el.btnSaveKitchens.disabled = true;
 
   if (!rid || !token){
-    // מחזירים UI למצב תקין גם במקרה כשל
     el.btnAddKitchen.hidden = false;
     el.btnAddKitchen.disabled = true;
 
@@ -393,13 +465,10 @@ async function loadKitchens(){
 
   setInfo(el.kitchensInfo, "טוען מטבחים…");
 
-  const r = await apiCall("admin/getKitchens", { rid, token });
+  const out = await fetchKitchensCached({ force });
 
-  if (!r || !r.ok){
-    // סוף טעינה (כשל): מעלימים "טוען..."
-    setInfo(el.kitchensInfo, "");
-
-    // מאפשרים למשתמש לנסות שוב/להוסיף ידנית אם רוצים
+  setInfo(el.kitchensInfo, "");
+  if (!out || !out.ok){
     el.btnAddKitchen.hidden = false;
     el.btnAddKitchen.disabled = false;
 
@@ -410,7 +479,7 @@ async function loadKitchens(){
     return setErr(el.kitchensError, "טעינת מטבחים נכשלה.");
   }
 
-  const kitchens = Array.isArray(r.kitchens) ? r.kitchens : [];
+  const kitchens = out.kitchens || [];
 
   if (kitchens.length === 0){
     el.kitchensGrid.appendChild(createKitchenRow(""));
@@ -419,15 +488,11 @@ async function loadKitchens(){
     kitchens.forEach(k => el.kitchensGrid.appendChild(createKitchenRow(k)));
   }
 
-  // סוף טעינה מוצלחת: מעלימים "טוען..."
-  setInfo(el.kitchensInfo, "");
-
-  // מציגים כפתורים אחרי טעינה
   el.btnAddKitchen.hidden = false;
   el.btnAddKitchen.disabled = false;
 
   el.btnSaveKitchens.hidden = false;
-  el.btnSaveKitchens.disabled = true; // יופעל רק אחרי שינוי
+  el.btnSaveKitchens.disabled = true;
 
   setKitchensDirty(false);
 }
@@ -485,8 +550,7 @@ function formatDateDDMMYYYY(s){
 
   return part; // fallback
 }
-
-async function refreshSubmissions(){
+async function refreshSubmissions({ force = false } = {}){
   setErr(el.subsError, "");
   setInfo(el.subsInfo, "");
   el.subsBody.innerHTML = "";
@@ -498,30 +562,21 @@ async function refreshSubmissions(){
   const endMs = Number(opt?.dataset?.endMs || 0);
 
   el.btnRefreshSubs.disabled = true;
-  el.btnRefreshSubs.textContent = "טוען…";
+  el.btnRefreshSubs.textContent = force ? "מרענן…" : "טוען…";
 
-  const r = await apiCall("admin/listSubmissions", { rid, token, sinceMs: startMs });
+  const out = await fetchSubsCached(startMs, endMs, { force });
 
   el.btnRefreshSubs.disabled = false;
   el.btnRefreshSubs.textContent = "רענן";
 
-  if (!r || !r.ok){
-    const msg = (r && (r.error === "TIMEOUT" || r.error === "NETWORK_ERROR"))
+  if (!out || !out.ok){
+    const msg = (out && (out.error === "TIMEOUT" || out.error === "NETWORK_ERROR"))
       ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
       : "טעינה נכשלה.";
     return setErr(el.subsError, msg);
   }
 
-  let rows = Array.isArray(r.rows) ? r.rows : [];
-
-  // ✅ סינון רבעון אמיתי: start <= date < end
-  if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs){
-    rows = rows.filter(row => {
-      const ms = rowToDateMs(row);
-      return Number.isFinite(ms) && ms >= startMs && ms < endMs;
-    });
-  }
-
+  const rows = Array.isArray(out.rows) ? out.rows : [];
   if (rows.length === 0){
     setInfo(el.subsInfo, "אין תשובות ברבעון שנבחר.");
     return;
@@ -578,12 +633,12 @@ async function sendFeedback(){
 // ====== EVENTS ======
 el.tabKitchens.onclick = async () => {
   showTab("kitchens");
-  await loadKitchens();
+  await loadKitchens({ force: false }); // ✅ משתמש ב-cache אם קיים
 };
 el.tabSubmissions.onclick = async () => {
   showTab("subs");
-  buildQuarterOptions();       // ✅ מתעדכן אוטומטית לפי תאריך נוכחי
-  await refreshSubmissions();
+  buildQuarterOptions();
+  await refreshSubmissions({ force: false }); // ✅ משתמש ב-cache אם קיים
 };
 el.tabFeedback.onclick = async () => {
   showTab("fb");
@@ -630,7 +685,7 @@ el.btnSaveKitchens.onclick = async () => {
     }
 
     setInfo(el.kitchensInfo, "נשמר ✅");
-    await loadKitchens();
+    await loadKitchens({ force: true });
 
     // ✅ הצלחה: נשאר נעול עד שינוי הבא
     state.kitchens.dirty = false;
@@ -645,7 +700,7 @@ el.btnSaveKitchens.onclick = async () => {
     el.btnSaveKitchens.disabled = false;
   }
 };
-el.btnRefreshSubs.onclick = refreshSubmissions;
+el.btnRefreshSubs.onclick = () => refreshSubmissions({ force: true });
 // ✅ רענון אוטומטי כשמשנים רבעון
 let subsRefreshing = false;
 
@@ -653,7 +708,7 @@ el.timeFilter.onchange = async () => {
   if (subsRefreshing) return;
   subsRefreshing = true;
   try {
-    await refreshSubmissions();
+    await refreshSubmissions({ force: false });
   } finally {
     subsRefreshing = false;
   }
@@ -667,3 +722,16 @@ hideAllPanels();       // ✅ אין ברירת מחדל
 clearActiveTabs();     // ✅ אין כפתור לחוץ
 buildQuarterOptions();
 loadProfile();         // ✅ ימלא אימייל בטופס משוב
+runInBackground(async () => {
+  // ✅ טען מטבחים ברקע
+  fetchKitchensCached({ force: false });
+
+  // ✅ טען "הרבעון שנבחר" ברקע (ברירת מחדל אצלך זה הרבעון הראשון ברשימה)
+  const opt = el.timeFilter.selectedOptions[0];
+  const startMs = Number(el.timeFilter.value);
+  const endMs = Number(opt?.dataset?.endMs || 0);
+  if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs){
+    fetchSubsCached(startMs, endMs, { force: false });
+  }
+});
+
