@@ -544,7 +544,7 @@ const state = {
     hotspot: { attempts: [], hit: [] },
     mc: { selected: [] },
     imgMulti: { selected: [] },
-    drag: { phase: "intro", qIdx: -1, itemIndex: 0, placed: [], filled: {L:0,R:0} }
+    drag: { phase: "intro", qIdx: -1, itemIndex: 0, placed: [], filled: {L:0,R:0}, showingChart:false }
   }
 };
 // =========================
@@ -1053,7 +1053,8 @@ const TYPE = {
           phase: "intro",
           itemIndex: 0,
           placed: Array(q.items.length).fill(false),
-          filled: { L:0, R:0 }
+          filled: { L:0, R:0 },
+          showingChart: false
         };
       }
 
@@ -1067,15 +1068,35 @@ const TYPE = {
         return;
       }
 
-      // play
+            // play
+      // הכפתור חייב להיות בתוך dragWrap כדי שישאר זמין גם כשמציגים תרשים
+      if (el.btnShowChart && el.btnShowChart.parentElement !== el.dragWrap){
+        el.dragWrap.appendChild(el.btnShowChart);
+      }
+      el.btnShowChart.hidden = false;
+
+      // בונים את play (גם אם כרגע מציגים תרשים) כדי שלא “נאבד” את השאלה
+      el.dragBg.src = q.bgImg;
+      buildDragZonesOnce(q);
+      enablePointerDrag();
+
+      // אם במצב “תרשים” – נציג intro ונעצור כאן
+      if (rt.showingChart){
+        el.dragIntro.hidden = false;
+        el.dragPlay.hidden = true;
+        el.btnShowChart.textContent = "חזרה לשאלה";
+        el.btnNext.disabled = true;
+        return;
+      }
+
+      // מצב רגיל (שאלה)
       el.dragIntro.hidden = true;
       el.dragPlay.hidden = false;
-      el.dragBg.src = q.bgImg;
+      el.btnShowChart.textContent = "הצג תרשים";
 
-      buildDragZonesOnce(q);
       showCurrentDragItem(q);
-      enablePointerDrag();
       el.btnNext.disabled = true;
+
     },
     validate(q){
       const rt = state.runtime.drag;
@@ -1198,6 +1219,34 @@ function showCurrentDragItem(q){
   el.dragFeedback.hidden = true;
   el.dragFeedback.innerHTML = "";
 }
+function setDragChartMode(show){
+  const q = QUESTIONS[state.idx];
+  if (!q || q.type !== "drag_shelves") return;
+
+  const rt = state.runtime.drag;
+  if (rt.phase !== "play") return;
+
+  rt.showingChart = !!show;
+
+  // חשוב: הכפתור חייב להיות בתוך dragWrap (ולא בתוך dragPlay שמוסתר)
+  if (el.btnShowChart && el.btnShowChart.parentElement !== el.dragWrap){
+    el.dragWrap.appendChild(el.btnShowChart);
+  }
+
+  if (rt.showingChart){
+    el.dragIntro.hidden = false;
+    el.dragPlay.hidden = true;
+    el.btnShowChart.textContent = "חזרה לשאלה";
+    el.btnNext.disabled = true; // שלא “יתקע” על ולידציה בזמן צפייה בתרשים
+  } else {
+    el.dragIntro.hidden = true;
+    el.dragPlay.hidden = false;
+    el.btnShowChart.textContent = "הצג תרשים";
+
+    // מחזיר את מצב Next לפי התקדמות אמיתית
+    showCurrentDragItem(q);
+  }
+}
 
 function onDropToZone(side, zoneEl){
   const q = QUESTIONS[state.idx];
@@ -1295,8 +1344,7 @@ function startFromBeginning(){
   state.runtime.hotspot = { attempts: [], hit: [] };
   state.runtime.mc.selected = [];
   state.runtime.imgMulti.selected = [];
-  state.runtime.drag = { phase:"intro", qIdx:-1, itemIndex:0, placed:[], filled:{L:0,R:0} };
-
+  state.runtime.drag = { phase:"intro", qIdx:-1, itemIndex:0, placed:[], filled:{L:0,R:0}, showingChart:false };
   el.screenStart.hidden = true;
   el.screenResult.hidden = true;
   el.screenQuiz.hidden = false;
@@ -1362,17 +1410,14 @@ el.btnResend.addEventListener("click", async () => {
   await sendResult(true);
 });
 el.btnShowChart.addEventListener("click", () => {
-  // toggle chart view while staying on the same question
-  const showing = !el.dragIntro.hidden;
-  if (showing) {
-    el.dragIntro.hidden = true;
-    el.dragPlay.hidden = false;
-  } else {
-    el.dragIntro.hidden = false;
-    el.dragPlay.hidden = true;
-  }
-});
+  const q = QUESTIONS[state.idx];
+  if (!q || q.type !== "drag_shelves") return;
 
+  const rt = state.runtime.drag;
+  if (rt.phase !== "play") return; // רק אחרי שהתחילו את השאלה
+
+  setDragChartMode(!rt.showingChart);
+});
 
 // =========================
 // START
