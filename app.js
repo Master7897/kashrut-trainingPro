@@ -264,7 +264,8 @@ async function initKitchenList(){
     ? r.kitchens
     : (Array.isArray(r.kitchenNames) ? r.kitchenNames : []);
   setKitchenOptions(list);
-  el.kitchen.disabled = false; // פותח בחזרה אחרי הצלחה
+  el.kitchen.disabled = false;
+  preloadAllQuestionImages();// פותח בחזרה אחרי הצלחה
 }
 const HOTSPOT_MAX_CLICKS = 5;
 
@@ -629,13 +630,19 @@ function collectAllImageUrls(){
   return Array.from(urls);
 }
 
-async function preloadAllQuestionImages(){
-  const urls = collectAllImageUrls();
-  for (const url of urls){
-    await preloadImage(url);
-    await new Promise(r => setTimeout(r, 0));
+// שינוי בסביבות שורה 1980 (באזור ה-Image Preload)
+async function preloadAllQuestionImages() {
+  const urls = Array.from(collectAllImageUrls());
+  // טעינה הדרגתית אחד אחרי השני כדי לא להעמיס על הדפדפן
+  for (const url of urls) {
+    try {
+      await preloadImage(url); 
+      // זה רץ ברקע ולא חוסם את המשתמש
+    } catch (e) {
+      console.warn("Failed to preload:", url);
+    }
   }
-  console.log("Preloaded+decoded:", urls.length);
+  console.log("All images loaded in background");
 }
 
 // =========================
@@ -1421,10 +1428,10 @@ async function onStart(){
 
   el.btnStart.disabled = true;
   const oldTxt = el.btnStart.textContent;
-  el.btnStart.textContent = "טוען תמונות…";
+  //el.btnStart.textContent = "טוען תמונות…";
 
   try {
-    await preloadAllQuestionImages();
+    preloadAllQuestionImages();
 
     state.user = { fullName, personalId, kitchenId, kitchenName };
     startFromBeginning();
