@@ -736,12 +736,12 @@ function hideAllQuestionUIs(){
   el.dragFeedback.hidden = true;
   el.dragFeedback.innerHTML = "";
 
-  // Force hide & wipe (aggressive)
+  /* Force hide & wipe (aggressive)
   [el.twoWrap, el.hotspotWrap, el.mcWrap, el.imgMultiWrap, el.dragWrap].forEach(w => {
     w.hidden = true;
     w.style.display = "none";
     requestAnimationFrame(() => { w.style.display = ""; }); // חוזר לברירת המחדל של CSS
-  });
+  });*/
   
   // wipe images (prevents old frames flashing)
   [el.leadImg, el.imgA, el.imgB, el.hotspotImg, el.dragIntroImg, el.dragBg, el.dragItemImg].forEach(im => {
