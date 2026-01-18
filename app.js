@@ -315,8 +315,16 @@ function formatSpecial(text) {
 // =========================
 const QUESTIONS = [
   {
+    type: "two",
+    title: "איך צריך להגיש בשר ודגים",
+    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
+    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
+    correct: "B",
+    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
+  },
+  {
     type: "match_lines",
-    title: "התאימו סכין לסקוטש לפי צבע",
+    title: "התאימו בין הסקוטש לכלי",
     left: [
       { key:"red",   img:"images/tape_red.webp",   alt:"סקוטש אדום" },
       { key:"blue",  img:"images/tape_blue.webp",  alt:"סקוטש כחול" },
@@ -328,15 +336,6 @@ const QUESTIONS = [
       { key:"yellow", img:"images/knife_yellow.webp", alt:"סכין" },
     ],
     wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
-  },
-
-  {
-    type: "two",
-    title: "איך צריך להגיש בשר ודגים",
-    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
-    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
-    correct: "B",
-    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
   },
   {
     type: "hotspot5",
