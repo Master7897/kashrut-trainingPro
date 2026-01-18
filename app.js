@@ -315,6 +315,22 @@ function formatSpecial(text) {
 // =========================
 const QUESTIONS = [
   {
+    type: "match_lines",
+    title: "התאימו סכין לסקוטש לפי צבע",
+    left: [
+      { key:"red",   img:"images/tape_red.webp",   alt:"סקוטש אדום" },
+      { key:"blue",  img:"images/tape_blue.webp",  alt:"סקוטש כחול" },
+      { key:"yellow", img:"images/tape_yellow.webp", alt:"סקוטש צהוב" },
+    ],
+    right: [
+      { key:"red",   img:"images/knife_red.webp",   alt:"צלחת" },
+      { key:"blue",  img:"images/knife_blue.webp",  alt:"מגש" },
+      { key:"yellow", img:"images/knife_yellow.webp", alt:"סכין" },
+    ],
+    wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
+  },
+
+  {
     type: "two",
     title: "איך צריך להגיש בשר ודגים",
     A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
@@ -526,6 +542,13 @@ const el = {
   sendStatus: document.getElementById("sendStatus"),
   btnResend: document.getElementById("btnResend"),
 
+  matchWrap: document.getElementById("matchWrap"),
+  matchStage: document.getElementById("matchStage"),
+  matchSvg: document.getElementById("matchSvg"),
+  matchLeft: document.getElementById("matchLeft"),
+  matchRight: document.getElementById("matchRight"),
+  matchError: document.getElementById("matchError"),
+
 };
 
 // =========================
@@ -625,8 +648,11 @@ function collectAllImageUrls(){
       if (q.bgImg) urls.add(q.bgImg);
       if (Array.isArray(q.items)) q.items.forEach(it => it?.img && urls.add(it.img));
     }
+    if (q.type === "match_lines"){
+      (q.left || []).forEach(it => it?.img && urls.add(it.img));
+      (q.right || []).forEach(it => it?.img && urls.add(it.img));
+    }
   }
-
   return Array.from(urls);
 }
 
@@ -676,7 +702,8 @@ function hideAllQuestionUIs(){
   el.mcWrap.hidden = true;
   el.imgMultiWrap.hidden = true;
   el.dragWrap.hidden = true;
-
+  el.matchWrap.hidden = true;
+  
   el.feedback.hidden = true;
   el.feedback.classList.remove("errorbox");
   el.feedback.innerHTML = "";
@@ -694,6 +721,15 @@ function hideAllQuestionUIs(){
   el.imgMultiGrid.innerHTML = "";
   el.imgMultiFeedback.hidden = true;
   el.imgMultiFeedback.textContent = "";
+  
+  // ניקוי match
+  if (el.matchLeft) el.matchLeft.innerHTML = "";
+  if (el.matchRight) el.matchRight.innerHTML = "";
+  if (el.matchSvg) el.matchSvg.innerHTML = "";
+  if (el.matchError){
+    el.matchError.hidden = true;
+    el.matchError.textContent = "";
+  }
 
   // ניקוי drag
   el.dragZones.innerHTML = "";
@@ -761,6 +797,30 @@ function failAndRetry(q, fallbackMsg){
     };
   }
 }
+function buildMatchItem(side, it){
+  const key = String(it?.key ?? "").trim();
+  const img = String(it?.img ?? "").trim();
+  const alt = String(it?.alt ?? key).trim();
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "match-item";
+  btn.dataset.side = side; // "L" / "R"
+  btn.dataset.key = key;
+
+  const im = document.createElement("img");
+  im.src = img;
+  im.alt = alt;
+  im.draggable = false;
+
+  btn.appendChild(im);
+  return btn;
+}
+
+// CSS.escape לא תמיד קיים
+function cssEsc(s){
+  try { return CSS.escape(String(s)); } catch { return String(s).replace(/"/g,'\\"'); }
+}
 
 // =========================
 // QUESTION TYPE ENGINE
@@ -794,7 +854,7 @@ const TYPE = {
       return state.runtime.two.selected === q.correct;
     }
   },
-
+  match: { pairs: [], lockedL: new Set(), lockedR: new Set(), done: false },
   hotspot5: {
     render(q){
       el.hotspotWrap.hidden = false;
@@ -1106,6 +1166,203 @@ const TYPE = {
     advancePhase(){
       state.runtime.drag.phase = "play";
     }
+  },
+
+  match_lines: {
+    render(q){
+      el.matchWrap.hidden = false;
+      el.btnNext.disabled = true;
+
+      // reset runtime
+      state.runtime.match = { pairs: [], lockedL: new Set(), lockedR: new Set(), done: false };
+      el.matchError.hidden = true;
+      el.matchError.textContent = "";
+
+      // build columns (3 items each)
+      el.matchLeft.innerHTML = "";
+      el.matchRight.innerHTML = "";
+      el.matchSvg.innerHTML = "";
+
+      const left = Array.isArray(q.left) ? q.left : [];
+      const right = Array.isArray(q.right) ? q.right : [];
+
+      left.forEach(it => el.matchLeft.appendChild(buildMatchItem("L", it)));
+      right.forEach(it => el.matchRight.appendChild(buildMatchItem("R", it)));
+
+      // pointer line state
+      let drag = null; // { side, key, el, line, pid, x1,y1 }
+
+      const stage = el.matchStage;
+      const svg = el.matchSvg;
+
+      const clearTemp = () => {
+        if (!drag) return;
+        try { drag.el.classList.remove("active"); } catch {}
+        try { drag.line?.remove(); } catch {}
+        drag = null;
+      };
+
+      const setError = (on) => {
+        if (!on){
+          el.matchError.hidden = true;
+          el.matchError.textContent = "";
+        } else {
+          el.matchError.hidden = false;
+          el.matchError.textContent = "התאמה לא נכונה. נסה שוב";
+        }
+      };
+
+      const stageRect = () => stage.getBoundingClientRect();
+
+      const anchor = (itemEl, side) => {
+        const s = stageRect();
+        const r = itemEl.getBoundingClientRect();
+        const y = (r.top + r.height/2) - s.top;
+
+        // תמיד מהשול הקרוב למרכז המסך:
+        // צד שמאל -> x בקצה ימין, צד ימין -> x בקצה שמאל
+        const x = (side === "L") ? (r.right - s.left) : (r.left - s.left);
+        return { x, y };
+      };
+
+      const makeLine = (x1,y1,x2,y2, temp) => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+        line.classList.add("match-line");
+        if (temp) line.classList.add("temp");
+        svg.appendChild(line);
+        return line;
+      };
+
+      const isLocked = (side, key) => {
+        const rt = state.runtime.match;
+        return (side === "L") ? rt.lockedL.has(key) : rt.lockedR.has(key);
+      };
+
+      const redrawFixedLines = () => {
+        // מצייר מחדש לפי pairs (מינימום, בלי לגעת בלוגיקה)
+        const rt = state.runtime.match;
+        el.matchSvg.innerHTML = "";
+        rt.pairs.forEach(p => {
+          const aEl = stage.querySelector(`.match-item[data-side="${p.lSide}"][data-key="${cssEsc(p.lKey)}"]`);
+          const bEl = stage.querySelector(`.match-item[data-side="${p.rSide}"][data-key="${cssEsc(p.rKey)}"]`);
+          if (!aEl || !bEl) return;
+          const p1 = anchor(aEl, p.lSide);
+          const p2 = anchor(bEl, p.rSide);
+          makeLine(p1.x, p1.y, p2.x, p2.y, false);
+        });
+      };
+
+      stage.onpointerdown = (ev) => {
+        const item = ev.target.closest(".match-item");
+        if (!item) return;
+
+        const side = item.dataset.side; // "L"/"R"
+        const key = item.dataset.key;
+
+        // אם כבר נעול — לא מתחילים
+        if (!side || !key || isLocked(side, key)) return;
+
+        // מתחילים drag
+        setError(false);
+        clearTemp();
+
+        stage.setPointerCapture(ev.pointerId);
+
+        const p1 = anchor(item, side);
+        const line = makeLine(p1.x, p1.y, p1.x, p1.y, true);
+
+        item.classList.add("active");
+        drag = { pid: ev.pointerId, side, key, el: item, line, x1: p1.x, y1: p1.y };
+      };
+
+      stage.onpointermove = (ev) => {
+        if (!drag || ev.pointerId !== drag.pid) return;
+        const s = stageRect();
+        const x2 = ev.clientX - s.left;
+        const y2 = ev.clientY - s.top;
+        drag.line.setAttribute("x2", x2);
+        drag.line.setAttribute("y2", y2);
+      };
+
+      stage.onpointerup = (ev) => {
+        if (!drag || ev.pointerId !== drag.pid) return;
+
+        const under = document.elementFromPoint(ev.clientX, ev.clientY);
+        const target = under ? under.closest(".match-item") : null;
+
+        // אם לא נחת על תמונה -> מוחקים שקט
+        if (!target){ clearTemp(); return; }
+
+        const tSide = target.dataset.side;
+        const tKey = target.dataset.key;
+
+        // חייב צד אחר
+        if (!tSide || !tKey || tSide === drag.side){ clearTemp(); return; }
+
+        // יעד נעול -> מוחקים שקט (לפי הדרישה)
+        if (isLocked(tSide, tKey)){ clearTemp(); return; }
+
+        // בדיקת התאמה: key חייב להיות זהה
+        if (tKey !== drag.key){
+          clearTemp();
+          setError(true);
+          return;
+        }
+
+        // נכון -> מקבעים
+        const rt = state.runtime.match;
+
+        // קיבוע קו לפי עוגנים (לא לפי נקודת שחרור)
+        const p2 = anchor(target, tSide);
+        drag.line.classList.remove("temp");
+        drag.line.setAttribute("x2", p2.x);
+        drag.line.setAttribute("y2", p2.y);
+
+        // נועלים UI
+        drag.el.classList.remove("active");
+        drag.el.classList.add("locked");
+        target.classList.add("locked");
+
+        // שומרים pair לציור מחדש אם צריך (ריסייז)
+        const lSide = (drag.side === "L") ? "L" : "R";
+        const rSide = (drag.side === "L") ? "R" : "L";
+        const lKey  = (drag.side === "L") ? drag.key : tKey;
+        const rKey  = (drag.side === "L") ? tKey : drag.key;
+
+        // בפועל: drag.key === tKey, אבל שומרים ברור
+        rt.lockedL.add(lKey);
+        rt.lockedR.add(rKey);
+
+        rt.pairs.push({ lSide: "L", lKey, rSide: "R", rKey });
+
+        // ניקוי drag זמני בלי למחוק את הקו
+        drag = null;
+
+        // אחרי 3 התאמות -> מאפשרים המשך
+        if (rt.pairs.length >= 3){
+          rt.done = true;
+          el.btnNext.disabled = false;
+          setError(false);
+        }
+      };
+
+      stage.onpointercancel = () => { clearTemp(); };
+
+      // אם בכל זאת יש resize (נדיר כי נעילת Portrait) -> מציירים מחדש קבועים
+      window.addEventListener("resize", () => {
+        if (el.screenQuiz.hidden) return;
+        clearTemp();
+        redrawFixedLines();
+      }, { passive:true });
+    },
+
+    validate(){
+      return !!state.runtime.match?.done;
+    }
   }
 };
 
@@ -1331,6 +1588,27 @@ function enablePointerDrag(){
     resetToCenter();
   };
 }
+function requestPortraitLock(){
+  try {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("portrait").catch(()=>{});
+    }
+  } catch {}
+}
+
+function updateRotateOverlay(){
+  const overlay = document.getElementById("rotateOverlay");
+  if (!overlay) return;
+
+  const isLandscape = window.matchMedia && window.matchMedia("(orientation: landscape)").matches;
+  const quizActive = !el.screenQuiz.hidden;
+
+  // overlay רק בתוך השאלון
+  overlay.hidden = !(quizActive && isLandscape);
+
+  // class לצורך CSS media
+  document.body.classList.toggle("quiz-lock", quizActive);
+}
 
 // =========================
 // FLOW
@@ -1348,7 +1626,8 @@ function startFromBeginning(){
   el.screenStart.hidden = true;
   el.screenResult.hidden = true;
   el.screenQuiz.hidden = false;
-
+  requestPortraitLock();
+  updateRotateOverlay();
   renderQuestion();
 }
 
@@ -1396,7 +1675,12 @@ el.btnNext.addEventListener("click", onNext);
 
 window.addEventListener("DOMContentLoaded", async () => {
   // קודם כל: אם יש rid – להביא מטבחים מהשיטס ולהחליף את ה-HTML
-  try { await initKitchenList(); } catch(e){ console.warn(e); }
+  try { 
+    updateRotateOverlay();
+    window.addEventListener("resize", updateRotateOverlay, { passive:true });
+    window.addEventListener("orientationchange", updateRotateOverlay, { passive:true });
+    await initKitchenList();
+  } catch(e){ console.warn(e); }
 
   // preload בזמן טעינת דף (לא חוסם)
   if ("requestIdleCallback" in window) {
