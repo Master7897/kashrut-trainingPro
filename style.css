@@ -482,8 +482,11 @@ button:disabled{
 }
 
 .match-item.locked{
-  opacity: 0.55;
+  border-color: rgba(0, 160, 80, 0.95);
+  background: rgba(0, 160, 80, 0.10); /* ירוק שקוף */
+  box-shadow: 0 0 0 4px rgba(0, 160, 80, 0.15);
   pointer-events: none;
+  opacity: 0.85;
 }
 
 .match-svg{
@@ -495,14 +498,14 @@ button:disabled{
 }
 
 .match-line{
-  stroke: rgba(0,0,0,0.8);
-  stroke-width: 6;
+  stroke: #e4002b;
+  stroke-width: 3;
   stroke-linecap: round;
 }
 
 .match-line.temp{
-  stroke-dasharray: 10 8;
-  opacity: 0.75;
+  stroke-dasharray: none;
+  opacity: 1;
 }
 /* =========================
    Portrait-only (Quiz)
