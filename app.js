@@ -1173,7 +1173,7 @@ const TYPE = {
       el.btnNext.disabled = true;
 
       // reset runtime
-      state.runtime.match = { pairs: [], lockedL: new Set(), lockedR: new Set(), done: false };
+      state.runtime.match = { count: 0, lockedL: new Set(), lockedR: new Set(), done: false };
       el.matchError.hidden = true;
       el.matchError.textContent = "";
 
@@ -1241,21 +1241,7 @@ const TYPE = {
         return (side === "L") ? rt.lockedL.has(key) : rt.lockedR.has(key);
       };
 
-      const redrawFixedLines = () => {
-        // מצייר מחדש לפי pairs (מינימום, בלי לגעת בלוגיקה)
-        const rt = state.runtime.match;
-        el.matchSvg.innerHTML = "";
-        rt.pairs.forEach(p => {
-          const aEl = stage.querySelector(`.match-item[data-side="${p.lSide}"][data-key="${cssEsc(p.lKey)}"]`);
-          const bEl = stage.querySelector(`.match-item[data-side="${p.rSide}"][data-key="${cssEsc(p.rKey)}"]`);
-          if (!aEl || !bEl) return;
-          const p1 = anchor(aEl, p.lSide);
-          const p2 = anchor(bEl, p.rSide);
-          makeLine(p1.x, p1.y, p2.x, p2.y, false);
-        });
-      };
-
-      stage.onpointerdown = (ev) => {
+        stage.onpointerdown = (ev) => {
         const item = ev.target.closest(".match-item");
         if (!item) return;
 
@@ -1325,6 +1311,7 @@ const TYPE = {
         drag.el.classList.remove("active");
         drag.el.classList.add("locked");
         target.classList.add("locked");
+        try { drag.line.remove(); } catch {}
 
         // שומרים pair לציור מחדש אם צריך (ריסייז)
         const lSide = (drag.side === "L") ? "L" : "R";
@@ -1336,13 +1323,12 @@ const TYPE = {
         rt.lockedL.add(lKey);
         rt.lockedR.add(rKey);
 
-        rt.pairs.push({ lSide: "L", lKey, rSide: "R", rKey });
-
+        rt.count += 1;
         // ניקוי drag זמני בלי למחוק את הקו
         drag = null;
 
         // אחרי 3 התאמות -> מאפשרים המשך
-        if (rt.pairs.length >= 3){
+        if (rt.count >= 3){
           rt.done = true;
           el.btnNext.disabled = false;
           setError(false);
@@ -1350,13 +1336,6 @@ const TYPE = {
       };
 
       stage.onpointercancel = () => { clearTemp(); };
-
-      // אם בכל זאת יש resize (נדיר כי נעילת Portrait) -> מציירים מחדש קבועים
-      window.addEventListener("resize", () => {
-        if (el.screenQuiz.hidden) return;
-        clearTemp();
-        redrawFixedLines();
-      }, { passive:true });
     },
 
     validate(){
