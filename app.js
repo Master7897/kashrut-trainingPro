@@ -701,7 +701,7 @@ function hideAllQuestionUIs(){
   el.mcWrap.hidden = true;
   el.imgMultiWrap.hidden = true;
   el.dragWrap.hidden = true;
-  //el.matchWrap.hidden = true;
+  el.matchWrap.hidden = true;
   
   el.feedback.hidden = true;
   el.feedback.classList.remove("errorbox");
