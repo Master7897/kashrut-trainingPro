@@ -11,6 +11,13 @@
   </head>
 
   <body>
+    <div id="rotateOverlay" class="rotate-overlay" hidden>
+      <div class="rotate-card">
+        <div class="rotate-title">אנא סובב חזרה לאורך</div>
+        <div class="rotate-sub">השאלון עובד רק לאורך</div>
+      </div>
+    </div>
+
     <div class="container">
       <!-- START -->
       <section id="screen-start" class="card">
@@ -141,6 +148,15 @@
 
             <p id="dragFeedback" class="feedback" hidden></p>
           </div>
+        </div>
+        <!-- MATCH LINES (3x3) -->
+        <div id="matchWrap" class="match" hidden>
+          <div id="matchStage" class="match-stage">
+            <svg id="matchSvg" class="match-svg" aria-hidden="true"></svg>
+            <div id="matchLeft" class="match-col match-left"></div>
+            <div id="matchRight" class="match-col match-right"></div>
+          </div>
+          <p id="matchError" class="error" hidden role="alert"></p>
         </div>
 
         <div class="actions">
