@@ -693,6 +693,60 @@ function isIsraeliIdValid(id){
 // =========================
 // UI HELPERS
 // =========================
+function sampleEdgeColor(imgEl){
+  // מחזיר "rgb(r,g,b)" או null אם לא ניתן לדגום
+  try{
+    const w = 32, h = 32;
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(imgEl, 0, 0, w, h);
+
+    const data = ctx.getImageData(0, 0, w, h).data;
+
+    let rSum=0, gSum=0, bSum=0, n=0;
+
+    const isNearWhite = (r,g,b) => (r>245 && g>245 && b>245);
+    const push = (x,y) => {
+      const i = (y*w + x) * 4;
+      const a = data[i+3];
+      if (a < 200) return; // שקוף/חצי שקוף
+      const r = data[i], g = data[i+1], b = data[i+2];
+      if (isNearWhite(r,g,b)) return; // מתעלמים מלבן
+      rSum += r; gSum += g; bSum += b; n++;
+    };
+
+    // דוגמים "מסגרת פנימית" דקה (פיקסל 1 פנימה) כדי לקבל את צבע המתאר
+    const x1 = 1, x2 = w-2, y1 = 1, y2 = h-2;
+    for (let x=x1; x<=x2; x++){ push(x, y1); push(x, y2); }
+    for (let y=y1; y<=y2; y++){ push(x1, y); push(x2, y); }
+
+    // אם הכל היה לבן/שקוף – fallback לדגימה יותר פנימה
+    if (n < 6){
+      const xA=3, xB=w-4, yA=3, yB=h-4;
+      for (let x=xA; x<=xB; x++){ push(x, yA); push(x, yB); }
+      for (let y=yA; y<=yB; y++){ push(xA, y); push(xB, y); }
+    }
+
+    if (n === 0) return null;
+    const r = Math.round(rSum/n), g = Math.round(gSum/n), b = Math.round(bSum/n);
+    return `rgb(${r},${g},${b})`;
+  } catch {
+    return null; // למשל אם canvas "tainted" בגלל cross-origin
+  }
+}
+
+function applyTileBgFromImage(tileEl, imgEl){
+  const set = () => {
+    const c = sampleEdgeColor(imgEl);
+    if (c) tileEl.style.setProperty("--tile-bg", c);
+  };
+
+  // אם כבר נטענה
+  if (imgEl.complete && imgEl.naturalWidth > 0) set();
+  else imgEl.addEventListener("load", set, { once: true });
+}
+
 function hideAllQuestionUIs(){
   el.leadWrap.hidden = true;
 
@@ -813,6 +867,7 @@ function buildMatchItem(side, it){
   im.draggable = false;
 
   btn.appendChild(im);
+  applyTileBgFromImage(btn, im);
   return btn;
 }
 
