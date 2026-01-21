@@ -319,12 +319,12 @@ const QUESTIONS = [
     title: "התאימו בין הסקוטש לכלי",
     left: [
       { key:"red",   img:"images/tape_red.webp",   alt:"סקוטש אדום" },
-      { key:"blue",  img:"images/tape_blue.webp",  alt:"סקוטש כחול" },
       { key:"yellow", img:"images/tape_yellow.webp", alt:"סקוטש צהוב" },
+      { key:"blue",  img:"images/tape_blue.webp",  alt:"סקוטש כחול" },
     ],
     right: [
-      { key:"red",   img:"images/knife_red.webp",   alt:"צלחת" },
       { key:"blue",  img:"images/knife_blue.webp",  alt:"מגש" },
+      { key:"red",   img:"images/knife_red.webp",   alt:"צלחת" },
       { key:"yellow", img:"images/knife_yellow.webp", alt:"סכין" },
     ],
     wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
