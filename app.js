@@ -1210,6 +1210,16 @@ const TYPE = {
           el.matchError.textContent = "התאמה לא נכונה. נסה שוב";
         }
       };
+      const flashMismatch = (a, b) => {
+        [a, b].forEach(node => {
+          if (!node) return;
+          node.classList.remove("errflash"); // אם נשאר משגיאה קודמת
+          // force reflow קטן כדי שהאנימציה תורגש גם ברצף מהיר
+          void node.offsetWidth;
+          node.classList.add("errflash");
+          setTimeout(() => node.classList.remove("errflash"), 1000);
+        });
+      };
 
       const stageRect = () => stage.getBoundingClientRect();
 
@@ -1293,10 +1303,14 @@ const TYPE = {
 
         // בדיקת התאמה: key חייב להיות זהה
         if (tKey !== drag.key){
+          const a = drag.el;
+          const b = target;
           clearTemp();
+          flashMismatch(a, b);
           setError(true);
           return;
         }
+
 
         // נכון -> מקבעים
         const rt = state.runtime.match;
