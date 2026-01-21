@@ -314,15 +314,7 @@ function formatSpecial(text) {
 // אפשר לשים בכל שאלה (במיוחד mc_single/mc_multi)
 // =========================
 const QUESTIONS = [
-  {
-    type: "two",
-    title: "איך צריך להגיש בשר ודגים",
-    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
-    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
-    correct: "B",
-    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
-  },
-  {
+    {
     type: "match_lines",
     title: "התאימו בין הסקוטש לכלי",
     left: [
@@ -336,6 +328,14 @@ const QUESTIONS = [
       { key:"yellow", img:"images/knife_yellow.webp", alt:"סכין" },
     ],
     wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
+  },
+  {
+    type: "two",
+    title: "איך צריך להגיש בשר ודגים",
+    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
+    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
+    correct: "B",
+    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
   },
   {
     type: "hotspot5",
