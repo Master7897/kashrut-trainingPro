@@ -694,6 +694,7 @@ function isIsraeliIdValid(id){
 // UI HELPERS
 // =========================
 function sampleEdgeColor(imgEl){
+  // דוגם רק את המיתאר החיצוני של התמונה (בלי להיכנס פנימה)
   // מחזיר "rgb(r,g,b)" או null אם לא ניתן לדגום
   try{
     const w = 32, h = 32;
@@ -704,37 +705,51 @@ function sampleEdgeColor(imgEl){
 
     const data = ctx.getImageData(0, 0, w, h).data;
 
-    let rSum=0, gSum=0, bSum=0, n=0;
+    const isNearWhite = (r,g,b) => (r > 245 && g > 245 && b > 245);
 
-    const isNearWhite = (r,g,b) => (r>245 && g>245 && b>245);
-    const push = (x,y) => {
-      const i = (y*w + x) * 4;
-      const a = data[i+3];
-      if (a < 200) return; // שקוף/חצי שקוף
-      const r = data[i], g = data[i+1], b = data[i+2];
-      if (isNearWhite(r,g,b)) return; // מתעלמים מלבן
-      rSum += r; gSum += g; bSum += b; n++;
+    // אוספים רק פיקסלים מהמסגרת החיצונית (2 פיקסלים עובי כדי להתגבר על אנטיאליאס)
+    const collect = (ignoreWhite) => {
+      let rSum=0, gSum=0, bSum=0, n=0;
+
+      const push = (x,y) => {
+        const i = (y*w + x) * 4;
+        const a = data[i+3];
+        if (a < 200) return; // שקוף/חצי שקוף
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if (ignoreWhite && isNearWhite(r,g,b)) return;
+        rSum += r; gSum += g; bSum += b; n++;
+      };
+
+      // טבעת 0
+      for (let x=0; x<w; x++){ push(x,0); push(x,h-1); }
+      for (let y=0; y<h; y++){ push(0,y); push(w-1,y); }
+
+      // טבעת 1 (עדיין מיתאר, רק עובי נוסף)
+      for (let x=0; x<w; x++){ push(x,1); push(x,h-2); }
+      for (let y=0; y<h; y++){ push(1,y); push(w-2,y); }
+
+      if (!n) return null;
+      return {
+        r: Math.round(rSum/n),
+        g: Math.round(gSum/n),
+        b: Math.round(bSum/n),
+        n
+      };
     };
 
-    // דוגמים "מסגרת פנימית" דקה (פיקסל 1 פנימה) כדי לקבל את צבע המתאר
-    const x1 = 1, x2 = w-2, y1 = 1, y2 = h-2;
-    for (let x=x1; x<=x2; x++){ push(x, y1); push(x, y2); }
-    for (let y=y1; y<=y2; y++){ push(x1, y); push(x2, y); }
+    // קודם מנסים ממוצע מיתאר בלי לבן (כדי להעדיף צבע מסגרת)
+    const noWhite = collect(true);
 
-    // אם הכל היה לבן/שקוף – fallback לדגימה יותר פנימה
-    if (n < 6){
-      const xA=3, xB=w-4, yA=3, yB=h-4;
-      for (let x=xA; x<=xB; x++){ push(x, yA); push(x, yB); }
-      for (let y=yA; y<=yB; y++){ push(xA, y); push(xB, y); }
-    }
+    // אם אין מספיק דגימות צבע (כלומר הכל לבן/שקוף) – לוקחים ממוצע רגיל של המיתאר כולל לבן
+    const best = (noWhite && noWhite.n >= 10) ? noWhite : collect(false);
+    if (!best) return null;
 
-    if (n === 0) return null;
-    const r = Math.round(rSum/n), g = Math.round(gSum/n), b = Math.round(bSum/n);
-    return `rgb(${r},${g},${b})`;
+    return `rgb(${best.r},${best.g},${best.b})`;
   } catch {
-    return null; // למשל אם canvas "tainted" בגלל cross-origin
+    return null;
   }
 }
+
 
 function applyTileBgFromImage(tileEl, imgEl){
   const set = () => {
