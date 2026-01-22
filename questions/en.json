@@ -1,0 +1,155 @@
+[
+  {
+    "type": "match_lines",
+    "title": "Match the Velcro color to the utensil",
+    "left": [
+      { "key": "red", "img": "images/tape_red.webp", "alt": "Red Velcro" },
+      { "key": "yellow", "img": "images/tape_yellow.webp", "alt": "Yellow Velcro" },
+      { "key": "blue", "img": "images/tape_blue.webp", "alt": "Blue Velcro" }
+    ],
+    "right": [
+      { "key": "blue", "img": "images/knife_blue.webp", "alt": "Tray" },
+      { "key": "red", "img": "images/knife_red.webp", "alt": "Plate" },
+      { "key": "yellow", "img": "images/knife_yellow.webp", "alt": "Knife" }
+    ],
+    "wrongMsg": "❌ Incorrect match. Try again."
+  },
+  {
+    "type": "two",
+    "title": "How should meat and fish be served?",
+    "A": { "img": "images/fishandmeatplateW.webp", "caption": "On separate trays" },
+    "B": { "img": "images/fishandmeatplate.webp", "caption": "With a carbohydrate separation" },
+    "correct": "B",
+    "wrongMsg": "❌ It is forbidden to place meat and fish next to each other or in the same warming cabinet."
+  },
+  {
+    "type": "hotspot5",
+    "title": "Tap the problem areas in the picture (up to 5 taps)",
+    "img": "images/q3_hotspot.webp",
+    "boxes": [
+      { "x1": 37.01, "y1": 21.68, "x2": 77.71, "y2": 27.35, "label": "[H]Dairy[/H] product on a [P]parve[/P] cart and above open [P]parve[/P] food" },
+      { "x1": 16.45, "y1": 58.05, "x2": 52.63, "y2": 68.11, "label": "[H]Dairy[/H] product on a [P]parve[/P] cart" },
+      { "x1": 12.54, "y1": 67.92, "x2": 48.93, "y2": 77.4, "label": "[H]Dairy[/H] product on a [P]parve[/P] cart" },
+      { "x1": 46.88, "y1": 53.7, "x2": 83.47, "y2": 64.68, "label": "[H]Dairy[/H] product on a [P]parve[/P] cart, above a [B]meat[/B] tray" },
+      { "x1": 49.14, "y1": 72.66, "x2": 83.68, "y2": 83.06, "label": "[B]Meat[/B] tray on a [P]parve[/P] cart, under [H]dairy[/H] products" }
+    ],
+    "wrongMsg": "❌ Notice the cart color — what was placed on it by mistake?"
+  },
+  {
+    "type": "mc_single",
+    "title": "You found a tray like this — what do you do?",
+    "leadImg": "images/tavnit.webp",
+    "options": [
+      "A tray without holes can be used for [B]meat[/B]",
+      "It can be used as a base for other trays in the oven",
+      "It is not labeled — contact the supervisor",
+      "It is not labeled, but you may use it anyway"
+    ],
+    "correctIndex": 2,
+    "wrongMsg": "❌ Incorrect. If the tray is not labeled — do not use it and contact the supervisor."
+  },
+  {
+    "type": "mc_multi",
+    "title": "Which markings are required for a [B]meat[/B] tray?",
+    "options": [
+      "The entire bottom must be painted red",
+      "3 holes in the corner",
+      "Both color and a sticker",
+      "4 holes in the corner",
+      "A sticker that says '[B]MEAT[/B]'"
+    ],
+    "correctIndexes": [1, 4],
+    "wrongMsg": "❌ Incorrect. You must have both the holes and the '[B]MEAT[/B]' label."
+  },
+  {
+    "type": "two",
+    "title": "Choose the [H]dairy[/H] spoon",
+    "A": { "img": "images/q1_a1.webp", "caption": "Spoon with a hole" },
+    "B": { "img": "images/q1_a2.webp", "caption": "Spoon without a hole" },
+    "correct": "A",
+    "wrongMsg": "❌ That is not the [H]dairy[/H] spoon. Tip: hole / no hole."
+  },
+  {
+    "type": "drag_shelves",
+    "title": "Drag each product to the correct shelf according to the chart",
+    "introTitle": "Look at the chart, then press Next.",
+    "introImg": "images/intro_chart.webp",
+    "bgImg": "images/roomshelves.webp",
+    "zones": [
+      { "side": "L", "left": 6, "top": 24, "w": 22, "h": 9 },
+      { "side": "L", "left": 6, "top": 38, "w": 22, "h": 9 },
+      { "side": "L", "left": 6, "top": 52, "w": 22, "h": 9 },
+      { "side": "L", "left": 6, "top": 66, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 24, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 38, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 52, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 66, "w": 22, "h": 9 }
+    ],
+    "items": [
+      { "img": "images/prod1.webp", "caption": "Milk", "side": "R", "wrongMsg": "❌ Milk is [H]dairy[/H]. Place it on the right." },
+      { "img": "images/prod2.webp", "caption": "Soft drinks", "side": "L", "wrongMsg": "❌ Soft drinks are [P]parve[/P]. Place them on the left." },
+      { "img": "images/prod3.webp", "caption": "Hummus", "side": "L", "wrongMsg": "❌ Hummus/tahini/salads are [P]parve[/P]. Place them on the left." },
+      { "img": "images/prod4.webp", "caption": "Cottage cheese", "side": "R", "wrongMsg": "❌ Cottage cheese is [H]dairy[/H]. Place it on the right." },
+      { "img": "images/prod5.webp", "caption": "Soy milk", "side": "L", "wrongMsg": "❌ Even though it's called soy “milk”, soy is [P]parve[/P]. Place it on the left." },
+      { "img": "images/prod6.webp", "caption": "Milky dessert", "side": "R", "wrongMsg": "❌ This dessert contains milk, so it is [H]dairy[/H] and belongs on the right." },
+      { "img": "images/prod7.webp", "caption": "Yellow cheese", "side": "R", "wrongMsg": "❌ Cheese contains milk and is [H]dairy[/H]. Place it on the right." },
+      { "img": "images/prod8.webp", "caption": "Soy dessert", "side": "L", "wrongMsg": "❌ Soy is [P]parve[/P]. Don’t confuse it with dairy dessert — place it on the left." }
+    ]
+  },
+  {
+    "type": "two",
+    "title": "Which gastronorm belongs to [P]parve[/P]?",
+    "A": { "img": "images/q2_a.webp", "caption": "3 holes" },
+    "B": { "img": "images/q2_b.webp", "caption": "2 holes" },
+    "correct": "B",
+    "wrongMsg": "❌ That is not the [P]parve[/P] gastronorm. Hint: [B]meat[/B] has 3 holes, [H]dairy[/H] has 1 hole."
+  },
+  {
+    "type": "mc_single",
+    "title": "How may [B]meat[/B] utensils be brought into a [P]parve[/P] room?",
+    "options": [
+      "It is forbidden to bring [B]meat[/B] utensils into a [P]parve[/P] room",
+      "Only on a [B]meat[/B] cart",
+      "Only if placed on the floor",
+      "Only on clean surfaces after verifying the utensil is clean and dry"
+    ],
+    "correctIndex": 1,
+    "wrongMsg": "❌ Incorrect. Bringing a [B]meat[/B] utensil into a [P]parve[/P] room is allowed only on a meat cart."
+  },
+  {
+    "type": "img_multi10",
+    "title": "Select all items that may be placed in a [P]parve[/P] refrigerator",
+    "items": [
+      { "img": "images/pp1.webp", "alt": "Milky dessert", "caption": "Milky dessert" },
+      { "img": "images/pp2.webp", "alt": "Cucumbers", "caption": "Cucumbers" },
+      { "img": "images/pp3.webp", "alt": "Soy milk", "caption": "Soy milk", "fit": "contain" },
+      { "img": "images/pp4.webp", "alt": "Sandwich", "caption": "Sandwich" },
+      { "img": "images/pp5.webp", "alt": "Yellow cheese", "caption": "Yellow cheese" },
+      { "img": "images/pp6.webp", "alt": "Soft drink", "caption": "Soft drink" },
+      { "img": "images/pp7.webp", "alt": "Carlo dessert", "caption": "Carlo dessert" },
+      { "img": "images/pp8.webp", "alt": "Jelly dessert", "caption": "Jelly dessert" },
+      { "img": "images/pp9.webp", "alt": "Teriyaki sauce", "caption": "Teriyaki sauce" },
+      { "img": "images/pp10.webp", "alt": "Eggs", "caption": "Eggs" }
+    ],
+    "correctIndexes": [1, 2, 5, 7, 8, 9],
+    "wrongMsgByIndex": {
+      "0": "❌ Dairy desserts are not allowed!",
+      "3": "❌ Check what's in the sandwich — it’s dairy!",
+      "4": "❌ Any dairy products are forbidden!",
+      "6": "❌ Carlo dessert is dairy!"
+    },
+    "wrongMsg": "❌ There is an incorrect selection. Try again."
+  },
+  {
+    "type": "mc_multi",
+    "title": "Is it allowed to keep both [H]dairy[/H] and [P]parve[/P] in the same refrigerator?",
+    "options": [
+      "No, never",
+      "No, unless the supervisor approved",
+      "On shelves on different sides, as long as there is a chart on the fridge and you arrange accordingly.",
+      "On shelves on the same side, when [P]parve[/P] is always on top and tightly closed."
+    ],
+    "correctIndexes": [2, 3],
+    "wrongMsg": "❌ Incorrect. It is allowed only with clear separation and a fixed arrangement that prevents drips/contact."
+  }
+]
