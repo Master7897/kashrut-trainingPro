@@ -316,24 +316,66 @@ async function loadLanguage(lang){
   applyStaticUIStrings();
   refreshKitchenOptionTexts();
 }
+function getStaticEls(){
+  return {
+    startH1: el.screenStart?.querySelector("h1"),
+    startSub: el.screenStart?.querySelector("p.muted"),
+    lblFullName: el.screenStart?.querySelector('label[for="fullName"]'),
+    lblPersonalId: el.screenStart?.querySelector('label[for="personalId"]'),
+    lblKitchen: el.screenStart?.querySelector('label[for="kitchen"]'),
+
+    hotspotInstructions: el.hotspotWrap?.querySelector(".hotspot-instructions"),
+
+    resultH2: el.screenResult?.querySelector("h2"),
+
+    rotateTitle: document.querySelector("#rotateOverlay .rotate-title"),
+    rotateSub: document.querySelector("#rotateOverlay .rotate-sub"),
+  };
+}
 
 function applyStaticUIStrings(){
+  const s = getStaticEls();
+
+  // Home (מסך בית)
+  if (s.startH1) s.startH1.textContent = t("home.title");
+  if (s.startSub) s.startSub.textContent = t("home.subtitle");
+
+  if (s.lblFullName) s.lblFullName.textContent = t("home.fullNameLabel");
+  if (s.lblPersonalId) s.lblPersonalId.textContent = t("home.personalIdLabel");
+  if (s.lblKitchen) s.lblKitchen.textContent = t("home.kitchenLabel");
+
   if (el.btnStart) el.btnStart.textContent = t("home.start");
   if (el.fullName) el.fullName.placeholder = t("home.fullNamePlaceholder");
   if (el.personalId) el.personalId.placeholder = t("home.personalIdPlaceholder");
 
+  // Quiz buttons
   if (el.btnNext) el.btnNext.textContent = t("quiz.next");
+
+  // Hotspot instruction line (הטקסט שהיה תקוע בעברית)
+  if (s.hotspotInstructions) s.hotspotInstructions.textContent = t("hotspot.instructions");
+
+  // Drag button text (הצג תרשים / חזרה לשאלה)
+  if (el.btnShowChart){
+    // הטקסט עצמו נקבע גם ב-render של drag, אבל פה חשוב לשפה כשעושים switch במסך בית
+    el.btnShowChart.textContent = t("drag.showChart");
+  }
+
+  // Result screen
+  if (s.resultH2) s.resultH2.textContent = t("result.title");
   if (el.btnResend) el.btnResend.textContent = t("result.resend");
 
-  // Rotate overlay text (optional; exists in HTML)
-  const rotTitle = document.querySelector(".rotate-title");
-  const rotSub   = document.querySelector(".rotate-sub");
-  if (rotTitle) rotTitle.textContent = t("rotate.title");
-  if (rotSub)   rotSub.textContent   = t("rotate.sub");
+  // Rotate overlay
+  if (s.rotateTitle) s.rotateTitle.textContent = t("rotate.title");
+  if (s.rotateSub) s.rotateSub.textContent = t("rotate.subtitle");
 
-  // Calibration labels
+  // Calibration panel (אם כבר נבנה)
   if (CAL.panelEl){
-    applyCalPanelLabels();
+    CAL.panelEl.querySelector("#calUndo").textContent = t("cal.undoPoint");
+    CAL.panelEl.querySelector("#calClearPts").textContent = t("cal.clearPoints");
+    CAL.panelEl.querySelector("#calClearAll").textContent = t("cal.clearAll");
+    CAL.panelEl.querySelector("#calCopyLast").textContent = t("cal.copyLast");
+    CAL.panelEl.querySelector("#calCopyAll").textContent = t("cal.copyAll");
+    CAL.panelEl.querySelector("#calHint").textContent = t("cal.hint");
     updateCalPanel();
   }
 }
@@ -394,21 +436,9 @@ function ensureLanguageSelector(){
 let KITCHENS_RAW = []; // store raw list from backend to allow re-render per language
 
 function kitchenDisplayName(heName){
-  const name = String(heName || "").trim();
-  if (!name) return "";
-  if (CURRENT_LANG === "he") return name;
-
-  const ovr =
-    deepGet(I18N, "kitchen_overrides") ||
-    deepGet(I18N_HE, "kitchen_overrides");
-
-  if (ovr && typeof ovr === "object" && ovr[name] && ovr[name][CURRENT_LANG]){
-    return String(ovr[name][CURRENT_LANG]).trim();
-  }
-
-  return transliterateHebrewToTargetScript(name, CURRENT_LANG);
+  // לפי הבקשה: רשימת המטבחים תמיד בעברית (מקור)
+  return String(heName || "").trim();
 }
-
 function refreshKitchenOptionTexts(){
   if (!el.kitchen) return;
   if (!KITCHENS_RAW || KITCHENS_RAW.length === 0) return;
@@ -861,6 +891,21 @@ function isIsraeliIdValid(id){
 function setStableTileBg(tileEl){
   tileEl.style.setProperty("--tile-bg", "var(--card, #fff)");
 }
+function ensureDragToolsTop(){
+  if (!el.dragWrap || !el.btnShowChart) return;
+
+  let tools = document.getElementById("dragToolsTop");
+  if (!tools){
+    tools = document.createElement("div");
+    tools.id = "dragToolsTop";
+    tools.className = "drag-tools";
+    tools.style.cssText = "margin-top:10px;";
+    el.dragWrap.insertBefore(tools, el.dragWrap.firstChild);
+  }
+  if (el.btnShowChart.parentElement !== tools){
+    tools.appendChild(el.btnShowChart);
+  }
+}
 
 function hideAllQuestionUIs(){
   el.leadWrap.hidden = true;
@@ -940,24 +985,17 @@ function failAndRetry(q, fallbackMsg){
 
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
-  el.feedback.innerHTML = `
-    <div>${formatSpecial(msg)}</div>
-    <div style="margin-top:10px;">
-      <button type="button" id="btnRetryNow" class="secondary">${t("quiz.retry")}</button>
-    </div>
-  `;
+  el.feedback.innerHTML = `<div>${formatSpecial(msg)}</div>`;
   el.btnNext.disabled = true;
 
-  const btn = document.getElementById("btnRetryNow");
-  if (btn){
-    btn.onclick = () => {
-      el.feedback.hidden = true;
-      el.feedback.classList.remove("errorbox");
-      renderQuestion();
-    };
-  }
+  // בלי כפתור "נסו שוב": ריסט אוטומטי אחרי רגע קצר
+  window.clearTimeout(failAndRetry._t);
+  failAndRetry._t = window.setTimeout(() => {
+    el.feedback.hidden = true;
+    el.feedback.classList.remove("errorbox");
+    renderQuestion();
+  }, 900);
 }
-
 function buildMatchItem(side, it){
   const key = String(it?.key ?? "").trim();
   const img = String(it?.img ?? "").trim();
@@ -1271,14 +1309,18 @@ const TYPE = {
         el.dragPlay.hidden = true;
         el.questionTitle.innerHTML = formatSpecial(q.introTitle || t("drag.introDefault"));
         el.btnNext.disabled = false;
+        if (el.btnShowChart) el.btnShowChart.hidden = true;
         return;
       }
 
+      // play
+      ensureDragToolsTop();
       el.btnShowChart.hidden = false;
+      
       el.dragBg.src = q.bgImg;
       buildDragZonesOnce(q);
       enablePointerDrag();
-
+      
       if (rt.showingChart){
         el.dragIntro.hidden = false;
         el.dragPlay.hidden = true;
@@ -1286,13 +1328,14 @@ const TYPE = {
         el.btnNext.disabled = true;
         return;
       }
-
+      
       el.dragIntro.hidden = true;
       el.dragPlay.hidden = false;
       el.btnShowChart.textContent = t("drag.showChart");
-
+      
       showCurrentDragItem(q);
       el.btnNext.disabled = true;
+
     },
     validate(q){
       const rt = state.runtime.drag;
@@ -1809,7 +1852,8 @@ el.btnShowChart.addEventListener("click", () => {
   const rt = state.runtime.drag;
   if (rt.phase !== "play") return;
 
-  setDragChartMode(!rt.showingChart);
+  rt.showingChart = !rt.showingChart;
+  renderQuestion();
 });
 
 /* =========================
