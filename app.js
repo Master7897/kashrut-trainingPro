@@ -1,19 +1,9 @@
 /* =========================================================
-   Kashrut Training – app.js (rewritten with i18n architecture)
-   Goals:
-   1) Language selector on Home (default Hebrew) – changes whole site language
-   2) UI strings NOT hardcoded in logic (fallback to HE)
-   3) Questions loaded per-language from JSON files (fallback to embedded HE)
-   4) Kitchen names displayed as phonetic transliteration *in target script*
-      (RU Cyrillic / AR Arabic / AM Amharic / EN Latin / HE original)
-   5) Safer + more maintainable structure
-
-   Notes:
-   - This file will work today even before you create i18n/*.json + questions/*.json
-     because it embeds HE packs and falls back automatically.
-   - When you add language files later, name them:
-       /i18n/he.json  /i18n/en.json  /i18n/ru.json  /i18n/ar.json  /i18n/am.json
-       /questions/he.json ... etc
+   Kashrut Training – app.js (Level B: per-language JSON packs)
+   - UI strings loaded from /i18n/<lang>.json (fallback to embedded HE)
+   - Questions loaded from /questions/<lang>.json (fallback to embedded HE)
+   - Kitchen names transliterated per language (overrideable)
+   - Works on GitHub Pages (no server needed) + JSONP Apps Script backend
    ========================================================= */
 
 /* =========================
@@ -93,13 +83,17 @@ function ensureCalPanel(){
     updateCalPanel(t("cal.copied"));
   };
 
-  // i18n labels
-  panel.querySelector("#calUndo").textContent = t("cal.undoPoint");
-  panel.querySelector("#calClearPts").textContent = t("cal.clearPoints");
-  panel.querySelector("#calClearAll").textContent = t("cal.clearAll");
-  panel.querySelector("#calCopyLast").textContent = t("cal.copyLast");
-  panel.querySelector("#calCopyAll").textContent = t("cal.copyAll");
-  panel.querySelector("#calHint").textContent = t("cal.hint");
+  applyCalPanelLabels();
+}
+
+function applyCalPanelLabels(){
+  if (!CAL.panelEl) return;
+  CAL.panelEl.querySelector("#calUndo").textContent = t("cal.undoPoint");
+  CAL.panelEl.querySelector("#calClearPts").textContent = t("cal.clearPoints");
+  CAL.panelEl.querySelector("#calClearAll").textContent = t("cal.clearAll");
+  CAL.panelEl.querySelector("#calCopyLast").textContent = t("cal.copyLast");
+  CAL.panelEl.querySelector("#calCopyAll").textContent = t("cal.copyAll");
+  CAL.panelEl.querySelector("#calHint").textContent = t("cal.hint");
 }
 
 function updateCalPanel(statusText=""){
@@ -169,7 +163,7 @@ const APPS_SCRIPT_URL =
 const URL_PARAMS = new URLSearchParams(window.location.search);
 const RID = (URL_PARAMS.get("rid") || "").trim();
 
-// JSONP API (works on GitHub Pages)
+/* JSONP API (works on GitHub Pages) */
 function apiCall(path, payload){
   const TIMEOUT_MS = 15000;
 
@@ -223,7 +217,7 @@ function apiCall(path, payload){
 }
 
 /* =========================
-   i18n + language loader
+   i18n + language loader (Level B)
    ========================= */
 
 const LANG_STORAGE_KEY = "kashrut_lang_v1";
@@ -257,8 +251,19 @@ function setDocDirAndLang(lang){
   document.body.classList.toggle("ltr", meta.dir !== "rtl");
 }
 
+function deepGet(obj, key){
+  if (!obj || !key) return null;
+  const parts = String(key).split(".");
+  let cur = obj;
+  for (const p of parts){
+    if (!cur || typeof cur !== "object") return null;
+    if (!(p in cur)) return null;
+    cur = cur[p];
+  }
+  return cur;
+}
+
 function t(key, vars){
-  // safe lookup with fallback to HE embedded
   const val =
     deepGet(I18N, key) ??
     deepGet(I18N_HE, key) ??
@@ -272,21 +277,11 @@ function t(key, vars){
   }
   return s;
 }
-function deepGet(obj, key){
-  if (!obj || !key) return null;
-  const parts = String(key).split(".");
-  let cur = obj;
-  for (const p of parts){
-    if (!cur || typeof cur !== "object") return null;
-    if (!(p in cur)) return null;
-    cur = cur[p];
-  }
-  return cur;
-}
 
 async function fetchJsonSafe(url){
   try {
-    const res = await fetch(url, { cache: "no-store" }); // you can change to 'default' after you settle caching strategy
+    // no-store: בתקופת פיתוח; אחרי שהכול יציב אפשר לשנות ל-default
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -294,11 +289,16 @@ async function fetchJsonSafe(url){
   }
 }
 
-async function loadLanguage(lang){
-  // lock to home screen only (safer)
-  const pack = await fetchJsonSafe(`i18n/${lang}.json`);
-  I18N = pack || I18N_HE;
+function isPlainObject(x){
+  return !!x && typeof x === "object" && !Array.isArray(x);
+}
 
+async function loadLanguage(lang){
+  // 1) UI pack
+  const pack = await fetchJsonSafe(`i18n/${lang}.json`);
+  I18N = isPlainObject(pack) ? pack : I18N_HE;
+
+  // 2) Questions pack (must be array)
   const qpack = await fetchJsonSafe(`questions/${lang}.json`);
   if (Array.isArray(qpack)){
     QUESTIONS = qpack;
@@ -312,35 +312,33 @@ async function loadLanguage(lang){
   try { localStorage.setItem(LANG_STORAGE_KEY, lang); } catch {}
   setDocDirAndLang(lang);
 
-  // apply UI strings
+  // apply UI strings + dependent labels
   applyStaticUIStrings();
   refreshKitchenOptionTexts();
 }
 
 function applyStaticUIStrings(){
-  // Start screen texts (only if elements exist in HTML)
   if (el.btnStart) el.btnStart.textContent = t("home.start");
   if (el.fullName) el.fullName.placeholder = t("home.fullNamePlaceholder");
   if (el.personalId) el.personalId.placeholder = t("home.personalIdPlaceholder");
 
-  // Kitchen placeholder: handled inside setKitchenOptions()
-  // Buttons
   if (el.btnNext) el.btnNext.textContent = t("quiz.next");
   if (el.btnResend) el.btnResend.textContent = t("result.resend");
 
-  // Calibration panel (if already built)
+  // Rotate overlay text (optional; exists in HTML)
+  const rotTitle = document.querySelector(".rotate-title");
+  const rotSub   = document.querySelector(".rotate-sub");
+  if (rotTitle) rotTitle.textContent = t("rotate.title");
+  if (rotSub)   rotSub.textContent   = t("rotate.sub");
+
+  // Calibration labels
   if (CAL.panelEl){
-    CAL.panelEl.querySelector("#calUndo").textContent = t("cal.undoPoint");
-    CAL.panelEl.querySelector("#calClearPts").textContent = t("cal.clearPoints");
-    CAL.panelEl.querySelector("#calClearAll").textContent = t("cal.clearAll");
-    CAL.panelEl.querySelector("#calCopyLast").textContent = t("cal.copyLast");
-    CAL.panelEl.querySelector("#calCopyAll").textContent = t("cal.copyAll");
-    CAL.panelEl.querySelector("#calHint").textContent = t("cal.hint");
+    applyCalPanelLabels();
     updateCalPanel();
   }
 }
 
-// Build language selector dynamically so you don't need HTML changes
+/* Build language selector dynamically (no HTML edits) */
 function ensureLanguageSelector(){
   const host = el.screenStart;
   if (!host) return;
@@ -354,7 +352,6 @@ function ensureLanguageSelector(){
   const label = document.createElement("label");
   label.id = "langLabel";
   label.textContent = t("home.language");
-  label.style.fontWeight = "600";
 
   const sel = document.createElement("select");
   sel.id = "langSelect";
@@ -370,17 +367,21 @@ function ensureLanguageSelector(){
   sel.addEventListener("change", async () => {
     const lang = sel.value;
     await loadLanguage(lang);
-    // After switching language, update kitchen dropdown rendering + start errors if visible
-    if (!el.startError.hidden) el.startError.textContent = t("home.errors.generic");
+    // אם יש שגיאה כבר מוצגת במסך פתיחה – נעדכן לטקסט בשפה החדשה
+    if (el.startError && !el.startError.hidden){
+      el.startError.textContent = t("home.errors.generic");
+    }
   });
 
   row.appendChild(label);
   row.appendChild(sel);
 
-  // insert before kitchen row if possible, else append
-  const kitchenEl = el.kitchen;
-  if (kitchenEl && kitchenEl.parentElement){
-    kitchenEl.parentElement.insertBefore(row, kitchenEl);
+  // ✅ חשוב: לא לשבור את ה-Label של המטבח. נכניס לפני label[for="kitchen"] אם קיים.
+  const kitchenLabel = host.querySelector('label[for="kitchen"]');
+  if (kitchenLabel && kitchenLabel.parentElement){
+    kitchenLabel.parentElement.insertBefore(row, kitchenLabel);
+  } else if (el.kitchen && el.kitchen.parentElement) {
+    el.kitchen.parentElement.insertBefore(row, el.kitchen);
   } else {
     host.appendChild(row);
   }
@@ -395,11 +396,12 @@ let KITCHENS_RAW = []; // store raw list from backend to allow re-render per lan
 function kitchenDisplayName(heName){
   const name = String(heName || "").trim();
   if (!name) return "";
-
   if (CURRENT_LANG === "he") return name;
 
-  // Optional overrides from i18n pack (recommended for edge cases)
-  const ovr = deepGet(I18N, "kitchen_overrides") || deepGet(I18N_HE, "kitchen_overrides");
+  const ovr =
+    deepGet(I18N, "kitchen_overrides") ||
+    deepGet(I18N_HE, "kitchen_overrides");
+
   if (ovr && typeof ovr === "object" && ovr[name] && ovr[name][CURRENT_LANG]){
     return String(ovr[name][CURRENT_LANG]).trim();
   }
@@ -408,52 +410,35 @@ function kitchenDisplayName(heName){
 }
 
 function refreshKitchenOptionTexts(){
-  // Re-render kitchen dropdown texts without losing selected value
   if (!el.kitchen) return;
   if (!KITCHENS_RAW || KITCHENS_RAW.length === 0) return;
 
   const currentValue = el.kitchen.value;
   setKitchenOptions(KITCHENS_RAW);
-
-  // restore selection if possible
-  try {
-    el.kitchen.value = currentValue;
-  } catch {}
+  try { el.kitchen.value = currentValue; } catch {}
 }
 
 function setKitchenOptions(kitchens){
-  // kitchens can be:
-  // new: [{id,name}]
-  // old: ["מטבח א", ...]
   KITCHENS_RAW = Array.isArray(kitchens) ? kitchens : [];
-
-  const first = el.kitchen.querySelector("option[value='']") || el.kitchen.options[0];
-
-  const placeholderText =
-    (first && first.textContent && !first.textContent.includes(t("home.loadingKitchens")))
-      ? first.textContent
-      : t("home.chooseKitchen");
 
   el.kitchen.innerHTML = "";
 
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = placeholderText;
+  opt0.textContent = t("home.chooseKitchen");
   el.kitchen.appendChild(opt0);
 
   (Array.isArray(kitchens) ? kitchens : []).forEach(k => {
     const opt = document.createElement("option");
 
     if (typeof k === "string"){
-      opt.value = ""; // legacy: no id
-      opt.dataset.name = k;
+      opt.value = ""; // legacy no id
       opt.dataset.he = k;
       opt.textContent = kitchenDisplayName(k);
     } else {
       const id = String(k.id || "").trim();
       const he = String(k.name || "").trim();
       opt.value = id;
-      opt.dataset.name = he;
       opt.dataset.he = he;
       opt.textContent = kitchenDisplayName(he);
     }
@@ -485,15 +470,14 @@ async function initKitchenList(){
     return;
   }
 
-  const list = Array.isArray(r.kitchens)
-    ? r.kitchens
-    : (Array.isArray(r.kitchenNames) ? r.kitchenNames : []);
-
-  setKitchenOptions(list);
+  setKitchenOptions(r.kitchens);
   el.kitchen.disabled = false;
-  preloadAllQuestionImages(); // after kitchens loaded
+  preloadAllQuestionImages();
 }
 
+/* =========================
+   CONSTS
+   ========================= */
 const HOTSPOT_MAX_CLICKS = 5;
 
 const DRAG_ZONES_4x2 = [
@@ -515,7 +499,6 @@ function formatSpecial(text) {
   s = s.replace(/\[P\](.*?)\[\/P\]/g, '<span class="hl-parve">$1</span>');
   s = s.replace(/\[B\](.*?)\[\/B\]/g, '<span class="hl-meat">$1</span>');
   s = s.replace(/\[H\](.*?)\[\/H\]/g, '<span class="hl-dairy">$1</span>');
-  // remove whitespace after Hebrew preposition before tag
   s = s.replace(
     /(^|[^\u0590-\u05FF])([הכמוש])\s+(<span class="hl-(?:parve|dairy|meat)">)/g,
     "$1$2$3"
@@ -525,7 +508,6 @@ function formatSpecial(text) {
 
 /* =========================
    QUESTIONS – Embedded HE fallback
-   (Later: move each language to questions/<lang>.json)
    ========================= */
 const DEFAULT_QUESTIONS_HE = [
   {
@@ -757,7 +739,8 @@ const state = {
     hotspot: { attempts: [], hit: [] },
     mc: { selected: [] },
     imgMulti: { selected: [] },
-    drag: { phase: "intro", qIdx: -1, itemIndex: 0, placed: [], filled: {L:0,R:0}, showingChart:false }
+    drag: { phase: "intro", qIdx: -1, itemIndex: 0, placed: [], filled: {L:0,R:0}, showingChart:false },
+    match: null
   }
 };
 
@@ -770,7 +753,6 @@ const SUBMISSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 function clearPendingSubmissionId(){
   try { localStorage.removeItem(SUBMISSION_STORAGE_KEY); } catch {}
 }
-
 function getOrCreateSubmissionId(){
   const now = Date.now();
 
@@ -816,6 +798,7 @@ function collectAllImageUrls(){
   const urls = new Set();
 
   for (const q of QUESTIONS){
+    if (!q) continue;
     if (q.leadImg) urls.add(q.leadImg);
 
     if (!q.type || q.type === "two"){
@@ -875,10 +858,7 @@ function isIsraeliIdValid(id){
    UI HELPERS
    ========================= */
 
-// Fix for match tile background “bleeding” from image colors:
-// We DO NOT sample the image anymore. We force a stable background.
 function setStableTileBg(tileEl){
-  // Use CSS var if exists; otherwise fall back to white
   tileEl.style.setProperty("--tile-bg", "var(--card, #fff)");
 }
 
@@ -924,7 +904,7 @@ function hideAllQuestionUIs(){
   el.dragFeedback.hidden = true;
   el.dragFeedback.innerHTML = "";
 
-  // wipe images (prevents old frames flashing)
+  // wipe images
   [el.leadImg, el.imgA, el.imgB, el.hotspotImg, el.dragIntroImg, el.dragBg, el.dragItemImg].forEach(im => {
     if (im) im.removeAttribute("src");
   });
@@ -995,10 +975,7 @@ function buildMatchItem(side, it){
   im.draggable = false;
 
   btn.appendChild(im);
-
-  // IMPORTANT: stable background (no sampling)
   setStableTileBg(btn);
-
   return btn;
 }
 
@@ -1062,7 +1039,6 @@ const TYPE = {
             CAL.points = [];
             clearCalMarkers();
           }
-
           updateCalPanel();
           return;
         }
@@ -1099,7 +1075,6 @@ const TYPE = {
 
         el.feedback.hidden = false;
         el.feedback.textContent = (hitIndex !== null) ? t("quiz.correct") : t("quiz.wrong");
-
         el.btnNext.disabled = rt.attempts.length === 0;
         updateHotspotUI(q);
       };
@@ -1299,12 +1274,7 @@ const TYPE = {
         return;
       }
 
-      // play
-      if (el.btnShowChart && el.btnShowChart.parentElement !== el.dragWrap){
-        el.dragWrap.appendChild(el.btnShowChart);
-      }
       el.btnShowChart.hidden = false;
-
       el.dragBg.src = q.bgImg;
       buildDragZonesOnce(q);
       enablePointerDrag();
@@ -1371,7 +1341,7 @@ const TYPE = {
           el.matchError.textContent = "";
         } else {
           el.matchError.hidden = false;
-          el.matchError.textContent = t("match.wrong");
+          el.matchError.textContent = q.wrongMsg || t("match.wrong");
         }
       };
 
@@ -1477,11 +1447,8 @@ const TYPE = {
         target.classList.add("locked");
         try { drag.line.remove(); } catch {}
 
-        const lKey  = drag.key;
-        const rKey  = tKey;
-
-        rt.lockedL.add(lKey);
-        rt.lockedR.add(rKey);
+        rt.lockedL.add(drag.key);
+        rt.lockedR.add(tKey);
 
         rt.count += 1;
         drag = null;
@@ -1620,10 +1587,6 @@ function setDragChartMode(show){
 
   rt.showingChart = !!show;
 
-  if (el.btnShowChart && el.btnShowChart.parentElement !== el.dragWrap){
-    el.dragWrap.appendChild(el.btnShowChart);
-  }
-
   if (rt.showingChart){
     el.dragIntro.hidden = false;
     el.dragPlay.hidden = true;
@@ -1643,9 +1606,7 @@ function onDropToZone(side, zoneEl){
   const it = q.items[rt.itemIndex];
   if (!it) return;
 
-  const correctSide = it.side;
-
-  if (side !== correctSide){
+  if (side !== it.side){
     el.dragFeedback.hidden = false;
     el.dragFeedback.innerHTML = formatSpecial(it.wrongMsg || t("quiz.wrongTryAgain"));
     zoneEl.classList.add("wrong");
@@ -1754,12 +1715,12 @@ function startFromBeginning(){
   state.runtime.mc.selected = [];
   state.runtime.imgMulti.selected = [];
   state.runtime.drag = { phase:"intro", qIdx:-1, itemIndex:0, placed:[], filled:{L:0,R:0}, showingChart:false };
+  state.runtime.match = null;
 
   el.screenStart.hidden = true;
   el.screenResult.hidden = true;
   el.screenQuiz.hidden = false;
 
-  // lock language selector after start (safer)
   const langSelect = document.getElementById("langSelect");
   if (langSelect) langSelect.disabled = true;
 
@@ -1785,7 +1746,6 @@ function renderQuestion(){
     el.feedback.textContent = t("quiz.unknownType", { type });
     return;
   }
-
   handler.render(q);
 }
 
@@ -1809,27 +1769,28 @@ el.twoWrap.addEventListener("click", (e) => {
 el.btnNext.addEventListener("click", onNext);
 
 window.addEventListener("DOMContentLoaded", async () => {
-  // 1) load language packs first (so UI is correct immediately)
+  // bootstrap defaults (so nothing breaks)
   setDocDirAndLang(CURRENT_LANG);
   QUESTIONS = DEFAULT_QUESTIONS_HE;
   I18N = I18N_HE;
 
+  // Load selected language packs (if exist)
   await loadLanguage(CURRENT_LANG);
 
-  // 2) build language selector on home
+  // Build language selector
   ensureLanguageSelector();
 
-  // 3) init rotate overlay
+  // Rotate overlay
   try {
     updateRotateOverlay();
     window.addEventListener("resize", updateRotateOverlay, { passive:true });
     window.addEventListener("orientationchange", updateRotateOverlay, { passive:true });
   } catch {}
 
-  // 4) kitchens list (rid) after language is ready
+  // Kitchens list (rid)
   try { await initKitchenList(); } catch(e){ console.warn(e); }
 
-  // 5) preload (idle)
+  // Preload (idle)
   if ("requestIdleCallback" in window) {
     requestIdleCallback(() => preloadAllQuestionImages(), { timeout: 2000 });
   } else {
@@ -1865,7 +1826,7 @@ async function onStart(){
 
   const kitchenId = sel.value.trim();
   const kitchenNameShown = sel.options[sel.selectedIndex]?.textContent?.trim() || "";
-  const kitchenNameHe = sel.options[sel.selectedIndex]?.dataset?.he?.trim() || (sel.options[sel.selectedIndex]?.dataset?.name?.trim() || "");
+  const kitchenNameHe = sel.options[sel.selectedIndex]?.dataset?.he?.trim() || "";
 
   state.user.kitchenId = kitchenId || "";
   state.user.kitchenName = kitchenNameShown; // display
@@ -1986,7 +1947,7 @@ async function sendResult(force){
       fullName: state.user.fullName,
       personalId: state.user.personalId,
       kitchenId: state.user.kitchenId,
-      kitchenName: state.user.kitchenNameHe || state.user.kitchenName, // send Hebrew if available
+      kitchenName: state.user.kitchenNameHe || state.user.kitchenName,
       submissionId: state.submissionId,
       lang: CURRENT_LANG,
     };
@@ -2037,7 +1998,7 @@ async function sendResult(force){
 const I18N_HE = {
   home: {
     language: "שפה",
-    start: "התחלה",
+    start: "התחל",
     chooseKitchen: "בחר/י מטבח",
     loadingKitchens: "טוען מטבחים…",
     fullNamePlaceholder: "שם מלא",
@@ -2054,8 +2015,12 @@ const I18N_HE = {
       idInvalid: "תעודת הזהות לא תקינה!"
     }
   },
+  rotate: {
+    title: "אנא סובב חזרה לאורך",
+    sub: "השאלון עובד רק לאורך"
+  },
   quiz: {
-    next: "הבא",
+    next: "המשך",
     retry: "נסו שוב",
     correct: "נכון ✅",
     wrong: "לא נכון ❌",
@@ -2078,9 +2043,9 @@ const I18N_HE = {
     showChart: "הצג תרשים",
     backToQuestion: "חזרה לשאלה"
   },
-  match: { wrong: "התאמה לא נכונה. נסה שוב" },
+  match: { wrong: "התאמה לא נכונה. נסו שוב." },
   result: {
-    resend: "שליחה חוזרת",
+    resend: "שלח שוב",
     sending: "שולח תוצאה…",
     alreadySent: "התוצאה כבר נשלחה בניסיון הזה ✅",
     received: "השליחה כבר התקבלה במערכת ✅",
@@ -2100,20 +2065,13 @@ const I18N_HE = {
     copyAll: "העתק ALL BOXES",
     hint: "כיול פעיל רק לשאלות hotspot. כל 4 לחיצות = מרובע. Toggle: Ctrl+K",
     clickPoints: "לחץ/י נקודות… כל 4 נקודות ייצרו מרובע חדש."
-  },
-
-  // Optional: per-kitchen overrides for tricky cases
-  // kitchen_overrides: {
-  //   'מקל"ר': { en:'mekalar', ru:'мекалар', ar:'ميكالار', am:'መካላር' }
-  // }
+  }
 };
 
 /* =========================================================
    Transliteration: Hebrew -> phonetic -> target script
-   (Practical, deterministic, overrideable)
+   (overrideable via I18N kitchen_overrides)
    ========================================================= */
-
-// Normalize Hebrew string
 function normHeb(s){
   return String(s || "")
     .replace(/[״"]/g, '"')
@@ -2123,15 +2081,12 @@ function normHeb(s){
 }
 
 function isLikelyAcronymHeb(s){
-  // Detect gershayim/quotes inside Hebrew word (e.g., מקל"ר)
-  return /[״"]/.test(s) || /[A-Za-z]/.test(s) === false && /[׳']/.test(s);
+  return /[״"]/.test(s) || (/[א-ת]/.test(s) && /[׳']/.test(s));
 }
 
-// Hebrew -> Latin (simple phonetic-ish)
 function hebrewToLatinBase(input){
   const s0 = normHeb(input);
 
-  // If acronym style, create alternating vowels pattern (e.g., מקל"ר -> mekalar)
   if (isLikelyAcronymHeb(s0)){
     const letters = s0.replace(/["׳']/g, "").replace(/[^א-ת]/g, "");
     const cons = letters.split("").map(h => hebLetterToLat(h)).filter(Boolean);
@@ -2146,43 +2101,28 @@ function hebrewToLatinBase(input){
     }
   }
 
-  // General word transliteration
   let out = "";
   const s = s0;
 
   for (let i=0;i<s.length;i++){
     const ch = s[i];
 
-    // keep spaces, hyphen, digits
     if (/[0-9]/.test(ch) || ch === " " || ch === "-" || ch === "/"){
-      out += ch;
-      continue;
+      out += ch; continue;
     }
-
-    // Latin already? keep
     if (/[A-Za-z]/.test(ch)){
-      out += ch.toLowerCase();
-      continue;
+      out += ch.toLowerCase(); continue;
     }
-
-    // Hebrew letter
     if (/[א-ת]/.test(ch)){
-      out += hebLetterToLat(ch);
-      continue;
+      out += hebLetterToLat(ch); continue;
     }
-
-    // ignore punctuation
   }
-
-  // cleanup
-  out = out.replace(/\s+/g, " ").trim();
-  return out.toLowerCase();
+  return out.replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 function hebLetterToLat(h){
-  // very simplified mapping
   switch(h){
-    case "א": case "ע": return "a"; // placeholder vowel
+    case "א": case "ע": return "a";
     case "ב": return "b";
     case "ג": return "g";
     case "ד": return "d";
@@ -2214,53 +2154,34 @@ function transliterateHebrewToTargetScript(heName, lang){
   if (lang === "ru") return latinToCyrillic(latin);
   if (lang === "ar") return latinToArabic(latin);
   if (lang === "am") return latinToAmharic(latin);
-
-  // fallback
   return latin;
 }
 
-/* --- Latin -> Russian Cyrillic (approx) --- */
 function latinToCyrillic(s){
   let x = String(s).toLowerCase();
-
-  // digraphs first
   const rep = [
-    ["sh", "ш"],
-    ["ch", "ч"],
-    ["kh", "х"],
-    ["ts", "ц"],
-    ["ya", "я"],
-    ["yu", "ю"],
-    ["yo", "ё"],
-    ["ye", "е"],
+    ["sh", "ш"], ["ch", "ч"], ["kh", "х"], ["ts", "ц"],
+    ["ya", "я"], ["yu", "ю"], ["yo", "ё"], ["ye", "е"],
   ];
   for (const [a,b] of rep) x = x.replaceAll(a, b);
 
   const map = {
     a:"а", b:"б", v:"в", g:"г", d:"д", e:"е", z:"з", i:"и", y:"й",
-    k:"к", l:"л", m:"м", n:"н", o:"о", p:"п", r:"р", s:"с", t:"т", u:"у", f:"ф", h:"х", j:"дж",
+    k:"к", l:"л", m:"м", n:"н", o:"о", p:"п", r:"р", s:"с", t:"т", u:"у", f:"ф", h:"х",
     " ":" ", "-":"-", "/":"/"
   };
 
   let out = "";
-  for (const ch of x){
-    if (map[ch] != null) out += map[ch];
-    else out += ch;
-  }
+  for (const ch of x) out += (map[ch] != null) ? map[ch] : ch;
   return out;
 }
 
-/* --- Latin -> Arabic (approx, readable) --- */
 function latinToArabic(s){
   const x = String(s).toLowerCase();
-
-  // tokenize into phoneme chunks
   const chunks = [];
   for (let i=0;i<x.length;){
     const two = x.slice(i,i+2);
-    if (two === "sh" || two === "kh" || two === "ts"){
-      chunks.push(two); i+=2; continue;
-    }
+    if (two === "sh" || two === "kh" || two === "ts"){ chunks.push(two); i+=2; continue; }
     chunks.push(x[i]); i+=1;
   }
 
@@ -2293,39 +2214,23 @@ function latinToArabic(s){
   }
 
   let out = "";
-  for (let i=0;i<chunks.length;i++){
-    const c = chunks[i];
+  for (const c of chunks){
     if (c === " " || c === "-" || c === "/"){ out += c; continue; }
-
-    if ("aeiou".includes(c)){
-      out += vowelMap(c);
-      continue;
-    }
-
-    const ar = consMap[c] || "";
-    out += ar || c;
+    if ("aeiou".includes(c)){ out += vowelMap(c); continue; }
+    out += (consMap[c] || c);
   }
-
-  // Arabic prefers RTL; rendering is RTL by page dir (ar is rtl)
   return out.replace(/\s+/g, " ").trim();
 }
 
-/* --- Latin -> Amharic (Ge'ez) (approx) --- */
 function latinToAmharic(s){
   const x = String(s).toLowerCase();
-
-  // phoneme chunks
   const chunks = [];
   for (let i=0;i<x.length;){
     const two = x.slice(i,i+2);
-    if (two === "sh" || two === "kh" || two === "ts"){
-      chunks.push(two); i+=2; continue;
-    }
+    if (two === "sh" || two === "kh" || two === "ts"){ chunks.push(two); i+=2; continue; }
     chunks.push(x[i]); i+=1;
   }
 
-  // map consonant to base ge'ez series (7 orders)
-  // orders: ä, u, i, a, e, ə, o (approx)
   const series = {
     b:["ብ","ቡ","ቢ","ባ","ቤ","ቦ","ቦ"],
     v:["ቭ","ቩ","ቪ","ቫ","ቬ","ቮ","ቮ"],
@@ -2348,9 +2253,7 @@ function latinToAmharic(s){
   };
 
   const vowels = new Set(["a","e","i","o","u"]);
-
   function orderForVowel(v){
-    // ä(u/i/a/e/o) approximations
     if (v === "u") return 1;
     if (v === "i") return 2;
     if (v === "a") return 3;
@@ -2362,25 +2265,21 @@ function latinToAmharic(s){
   let out = "";
   for (let i=0;i<chunks.length;i++){
     const c = chunks[i];
-
     if (c === " " || c === "-" || c === "/"){ out += c; continue; }
 
-    // standalone vowel
     if (vowels.has(c)){
-      // represent as vowel carrier አ/ኡ/ኢ/ኣ/ኤ/ኦ etc
       const carrier = { a:"አ", e:"ኤ", i:"ኢ", o:"ኦ", u:"ኡ" }[c] || "አ";
       out += carrier;
       continue;
     }
 
-    // consonant possibly followed by vowel
     const next = chunks[i+1];
     const v = (next && vowels.has(next)) ? next : null;
     if (v){
       const ord = orderForVowel(v);
       const arr = series[c] || null;
       out += (arr ? (arr[ord] || arr[0]) : c);
-      i += 1; // consume vowel
+      i += 1;
     } else {
       const arr = series[c] || null;
       out += (arr ? arr[0] : c);
