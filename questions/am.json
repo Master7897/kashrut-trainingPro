@@ -1,0 +1,155 @@
+[
+  {
+    "type": "match_lines",
+    "title": "የቬልክሮ ቀለምን ከመሳሪያው ጋር አዛመድ/ድ",
+    "left": [
+      { "key": "red", "img": "images/tape_red.webp", "alt": "ቀይ ቬልክሮ" },
+      { "key": "yellow", "img": "images/tape_yellow.webp", "alt": "ቢጫ ቬልክሮ" },
+      { "key": "blue", "img": "images/tape_blue.webp", "alt": "ሰማያዊ ቬልክሮ" }
+    ],
+    "right": [
+      { "key": "blue", "img": "images/knife_blue.webp", "alt": "ትሬይ" },
+      { "key": "red", "img": "images/knife_red.webp", "alt": "ሳህን" },
+      { "key": "yellow", "img": "images/knife_yellow.webp", "alt": "ቢላ" }
+    ],
+    "wrongMsg": "❌ ትክክል አይደለም። እንደገና ሞክር/ሪ።"
+  },
+  {
+    "type": "two",
+    "title": "ስጋና ዓሣ እንዴት መቀርበት አለባቸው?",
+    "A": { "img": "images/fishandmeatplateW.webp", "caption": "በተለያዩ ትሬይዎች" },
+    "B": { "img": "images/fishandmeatplate.webp", "caption": "በካርቦሃይድሬት መከፋፈል" },
+    "correct": "B",
+    "wrongMsg": "❌ ስጋና ዓሣ አብሮ መቀመጥ ወይም በአንድ ሙቀት ካቢኔ ማኖር ክልክል ነው።"
+  },
+  {
+    "type": "hotspot5",
+    "title": "በምስሉ ላይ ያሉ ስህተቶችን ይጫኑ/ይጫኑ (እስከ 5 ጊዜ)",
+    "img": "images/q3_hotspot.webp",
+    "boxes": [
+      { "x1": 37.01, "y1": 21.68, "x2": 77.71, "y2": 27.35, "label": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ እና በክፍት [P]ፓርቬ[/P] ምግብ ላይ" },
+      { "x1": 16.45, "y1": 58.05, "x2": 52.63, "y2": 68.11, "label": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ" },
+      { "x1": 12.54, "y1": 67.92, "x2": 48.93, "y2": 77.4, "label": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ" },
+      { "x1": 46.88, "y1": 53.7, "x2": 83.47, "y2": 64.68, "label": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ ከ[B]ስጋ[/B] ትሬ በላይ" },
+      { "x1": 49.14, "y1": 72.66, "x2": 83.68, "y2": 83.06, "label": "[B]ስጋ[/B] ትሬ በ[P]ፓርቬ[/P] ጋሪ ላይ ከ[H]የወተት[/H] ምርቶች በታች" }
+    ],
+    "wrongMsg": "❌ የጋሪውን ቀለም ተመልከት/ተመልከቺ — በስህተት ምን ተቀመጠ?"
+  },
+  {
+    "type": "mc_single",
+    "title": "እንዲህ ያለ ትሬ ካገኘህ/ሽ ምን ታደርጋለህ/ሽ?",
+    "leadImg": "images/tavnit.webp",
+    "options": [
+      "ቀዳዳ የሌለው ትሬ ለ[B]ስጋ[/B] ሊሆን ይችላል",
+      "በቤት ማብሰያ ውስጥ ለሌሎች ትሬዎች መሠረት ሊሆን ይችላል",
+      "ምልክት የለውም — ለመርምሮ ኃላፊ ተጠይቅ/ተጠይቂ",
+      "ምልክት የለውም ነገር ግን መጠቀም ይቻላል"
+    ],
+    "correctIndex": 2,
+    "wrongMsg": "❌ ትክክል አይደለም። ምልክት የሌለው ትሬ አይጠቀሙበት — ኃላፊን ያነጋግሩ።"
+  },
+  {
+    "type": "mc_multi",
+    "title": "ለ[B]ስጋ[/B] ትሬ የሚያስፈልጉ ምልክቶች ምንድን ናቸው?",
+    "options": [
+      "ታችኛው ሁሉ ቀይ መሆን አለበት",
+      "በማዕዘኑ 3 ቀዳዳ",
+      "ቀለም እና ስቲከር ሁለቱም",
+      "በማዕዘኑ 4 ቀዳዳ",
+      " '[B]ስጋ[/B]' የሚል ስቲከር"
+    ],
+    "correctIndexes": [1, 4],
+    "wrongMsg": "❌ ትክክል አይደለም። ቀዳዳ እና '[B]ስጋ[/B]' ጽሑፍ መኖር አለበት።"
+  },
+  {
+    "type": "two",
+    "title": "[H]የወተት[/H] ማንኪያውን ምረጥ/ምረጪ",
+    "A": { "img": "images/q1_a1.webp", "caption": "ቀዳዳ ያለው ማንኪያ" },
+    "B": { "img": "images/q1_a2.webp", "caption": "ቀዳዳ የሌለው ማንኪያ" },
+    "correct": "A",
+    "wrongMsg": "❌ ይህ የ[H]ወተት[/H] ማንኪያ አይደለም። ምልክት: ቀዳዳ / ቀዳዳ የለም"
+  },
+  {
+    "type": "drag_shelves",
+    "title": "እያንዳንዱን ምርት በትክክለኛው ሸልፍ ላይ ጎትት/ጎትቺ",
+    "introTitle": "መጀመሪያ ግራፉን ተመልከት/ተመልከቺ ከዚያ «ቀጣይ» ጫን/ጫኚ።",
+    "introImg": "images/intro_chart.webp",
+    "bgImg": "images/roomshelves.webp",
+    "zones": [
+      { "side": "L", "left": 6, "top": 24, "w": 22, "h": 9 },
+      { "side": "L", "left": 6, "top": 38, "w": 22, "h": 9 },
+      { "side": "L", "left": 6, "top": 52, "w": 22, "h": 9 },
+      { "side": "L", "left": 6, "top": 66, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 24, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 38, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 52, "w": 22, "h": 9 },
+      { "side": "R", "left": 72, "top": 66, "w": 22, "h": 9 }
+    ],
+    "items": [
+      { "img": "images/prod1.webp", "caption": "ወተት", "side": "R", "wrongMsg": "❌ ወተት [H]የወተት[/H] ነው። በቀኝ በኩል አስቀምጥ/አስቀምጪ።" },
+      { "img": "images/prod2.webp", "caption": "መጠጥ", "side": "L", "wrongMsg": "❌ መጠጦች [P]ፓርቬ[/P] ናቸው። በግራ በኩል።" },
+      { "img": "images/prod3.webp", "caption": "ሁሙስ", "side": "L", "wrongMsg": "❌ ሁሙስ/ሰላጣ [P]ፓርቬ[/P] ናቸው። በግራ በኩል።" },
+      { "img": "images/prod4.webp", "caption": "ኮተጅ", "side": "R", "wrongMsg": "❌ ኮተጅ [H]የወተት[/H] ነው። በቀኝ በኩል።" },
+      { "img": "images/prod5.webp", "caption": "የሶይ ወተት", "side": "L", "wrongMsg": "❌ ሶይ [P]ፓርቬ[/P] ነው። በግራ በኩል።" },
+      { "img": "images/prod6.webp", "caption": "የወተት ደስርት", "side": "R", "wrongMsg": "❌ ወተት ያለበት ነው — [H]የወተት[/H] ነው። በቀኝ።" },
+      { "img": "images/prod7.webp", "caption": "ቢጫ አይብ", "side": "R", "wrongMsg": "❌ አይብ [H]የወተት[/H] ነው። በቀኝ።" },
+      { "img": "images/prod8.webp", "caption": "የሶይ ደስርት", "side": "L", "wrongMsg": "❌ ሶይ [P]ፓርቬ[/P] ነው። ከወተት ጋር አትባል/አትባልቺ። በግራ።" }
+    ]
+  },
+  {
+    "type": "two",
+    "title": "የትኛው ጋስትሮኖርም [P]ፓርቬ[/P] ነው?",
+    "A": { "img": "images/q2_a.webp", "caption": "3 ቀዳዳ" },
+    "B": { "img": "images/q2_b.webp", "caption": "2 ቀዳዳ" },
+    "correct": "B",
+    "wrongMsg": "❌ ይህ [P]ፓርቬ[/P] አይደለም። ምልክት: [B]ስጋ[/B]=3 ቀዳዳ, [H]ወተት[/H]=1 ቀዳዳ"
+  },
+  {
+    "type": "mc_single",
+    "title": "የ[B]ስጋ[/B] መሳሪያዎችን ወደ [P]ፓርቬ[/P] ክፍል እንዴት ማስገባት ይቻላል?",
+    "options": [
+      "የ[B]ስጋ[/B] መሳሪያ ወደ [P]ፓርቬ[/P] ክፍል ማስገባት ክልክል ነው",
+      "ብቻ በ[B]ስጋ[/B] ጋሪ",
+      "ብቻ በመሬት ላይ ካደረግን",
+      "በንጹህ ወለል ላይ ብቻ እና መሳሪያው ንጹህ/ደረቅ መሆኑን ካረጋገጥን"
+    ],
+    "correctIndex": 1,
+    "wrongMsg": "❌ ትክክል አይደለም። ወደ [P]ፓርቬ[/P] ክፍል የ[B]ስጋ[/B] መሳሪያ መግባት ብቻ በስጋ ጋሪ ይፈቀዳል።"
+  },
+  {
+    "type": "img_multi10",
+    "title": "ወደ [P]ፓርቬ[/P] ፍሪጅ ሊገቡ የሚችሉ ምርቶችን ሁሉ ምረጥ/ምረጪ",
+    "items": [
+      { "img": "images/pp1.webp", "alt": "የወተት ደስርት", "caption": "የወተት ደስርት" },
+      { "img": "images/pp2.webp", "alt": "ኩኩምበር", "caption": "ኩኩምበር" },
+      { "img": "images/pp3.webp", "alt": "የሶይ ወተት", "caption": "የሶይ ወተት", "fit": "contain" },
+      { "img": "images/pp4.webp", "alt": "ሳንድዊች", "caption": "ሳንድዊች" },
+      { "img": "images/pp5.webp", "alt": "አይብ", "caption": "አይብ" },
+      { "img": "images/pp6.webp", "alt": "መጠጥ", "caption": "መጠጥ" },
+      { "img": "images/pp7.webp", "alt": "ካርሎ ደስርት", "caption": "ካርሎ ደስርት" },
+      { "img": "images/pp8.webp", "alt": "ጄሊ", "caption": "ጄሊ" },
+      { "img": "images/pp9.webp", "alt": "ተሪያኪ ሶስ", "caption": "ተሪያኪ ሶስ" },
+      { "img": "images/pp10.webp", "alt": "እንቁላል", "caption": "እንቁላል" }
+    ],
+    "correctIndexes": [1, 2, 5, 7, 8, 9],
+    "wrongMsgByIndex": {
+      "0": "❌ የወተት ደስርቶች አይፈቀዱም!",
+      "3": "❌ ሳንድዊቹ ውስጥ ምን እንዳለ ተመልከት/ተመልከቺ — የወተት ነው!",
+      "4": "❌ የወተት ምርቶች ሁሉ ክልክል ናቸው!",
+      "6": "❌ ካርሎ ደስርት የወተት ነው!"
+    },
+    "wrongMsg": "❌ ስህተት ምርጫ አለ። እንደገና ሞክር/ሪ።"
+  },
+  {
+    "type": "mc_multi",
+    "title": "በአንድ ፍሪጅ ውስጥ [H]የወተት[/H] እና [P]ፓርቬ[/P] መኖር ይፈቀዳል?",
+    "options": [
+      "አይ፣ በፍጹም አይፈቀድም",
+      "አይ፣ ኃላፊ ካፀደቀ ብቻ",
+      "በተለያዩ ጎኖች ሸልፎች ላይ፣ በፍሪጅ ላይ ግራፍ ካለ እና በእሱ መሰረት ካዘጋጁ",
+      "በአንድ ጎን ሸልፍ ላይ ነገር ግን [P]ፓርቬ[/P] ሁልጊዜ ከላይ እና በጥብቅ የተዘጋ"
+    ],
+    "correctIndexes": [2, 3],
+    "wrongMsg": "❌ ትክክል አይደለም። ግልጽ መከፋፈል እና ቋሚ ስርዓት ካለ ብቻ ይፈቀዳል (እንዳይ滴/እንዳይነካ)."
+  }
+]
