@@ -1,6 +1,3 @@
-/* =========================================================
-   Base + Theme
-   ========================================================= */
 [hidden] { display: none !important; }
 
 :root{
@@ -11,11 +8,6 @@
   --primary:#0b74de;
   --danger:#d92d20;
   --border:#e6e8ec;
-
-  --radius:14px;
-  --shadow: 0 4px 14px rgba(16,24,40,0.06);
-  --shadow-press: 0 1px 0 rgba(0,0,0,0.18), 0 6px 14px rgba(0,0,0,0.10);
-  --shadow-btn: 0 4px 0 rgba(0,0,0,0.18), 0 10px 22px rgba(0,0,0,0.12);
 }
 
 @font-face{
@@ -25,23 +17,17 @@
   font-style: normal;
 }
 
-/* =========================================================
-   Layout
-   ========================================================= */
-*{ box-sizing: border-box; }
-
 body{
   margin:0;
-  font-family: 'Assistant', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   direction: rtl;
   background: var(--bg);
   color: var(--text);
-  -webkit-text-size-adjust: 100%;
 }
 
 .container{
-  max-width: 560px;
+  max-width: 520px;
   margin: 18px auto;
   padding: 12px;
 }
@@ -49,51 +35,20 @@ body{
 .card{
   background: var(--card);
   border:1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   padding: 16px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 14px rgba(16,24,40,0.06);
 }
 
-/* =========================================================
-   Typography
-   ========================================================= */
-h1{
-  margin: 0 0 8px;
-  font-size: clamp(34px, 7vw, 54px);
-  line-height: 1.05;
-}
-h2{
-  margin: 8px 0 14px;
-  font-size: clamp(22px, 5vw, 30px);
-  text-align:center;
-  line-height: 1.15;
-}
-
-label{
-  display:block;
-  margin-top: 10px;
-  font-size: 18px;
-}
-
-.muted{
-  color: var(--muted);
-  font-size: 13px;
-  margin: 6px 0 0;
-}
-.error{
-  color: var(--danger);
-  margin-top: 10px;
-  font-weight: 700;
-}
+h1{ margin: 0 0 8px; font-size: 60px; }
+h2{ margin: 8px 0 14px; font-size: 30px; text-align:center; }
 
 #screen-start{ text-align:center; }
-#questionTitle{ line-height: 1.3; margin-bottom: 16px; }
 
-/* =========================================================
-   Inputs
-   ========================================================= */
+label{ display:block; margin-top: 10px; font-size: 20px; }
 input, select{
   width:100%;
+  box-sizing: border-box;
   padding: 12px;
   border:1px solid var(--border);
   border-radius: 10px;
@@ -102,38 +57,12 @@ input, select{
   background: #fff;
 }
 
-/* =========================================================
-   Buttons (single source of truth)
-   ========================================================= */
 button{
-  border: 1px solid rgba(0,0,0,0.15);
+  border: none;
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 16px;
   cursor:pointer;
-
-  box-shadow: var(--shadow-btn);
-  transform: translateY(0);
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
-  -webkit-tap-highlight-color: transparent;
-}
-button:hover{ filter: brightness(1.03); }
-button:active{
-  transform: translateY(3px);
-  box-shadow: var(--shadow-press);
-}
-button:disabled{
-  opacity: 0.55;
-  box-shadow: none;
-  transform: none;
-  cursor: not-allowed;
-}
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible{
-  outline: 3px solid rgba(11,116,222,0.28);
-  outline-offset: 2px;
 }
 
 .primary{
@@ -150,40 +79,30 @@ select:focus-visible{
   color:#1f2a37;
 }
 
-/* =========================================================
-   Topbar / Actions
-   ========================================================= */
-.topbar{
-  display:flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.actions{ margin-top: 12px; }
-
-.feedback{
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-}
-.feedback.errorbox{
-  border-color: rgba(217,45,32,0.35);
-  background: rgba(217,45,32,0.06);
+button:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* =========================================================
-   Lead image
-   ========================================================= */
+.muted{ color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+.error{ color: var(--danger); margin-top: 10px; font-weight: 700; }
+.topbar{ display:flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+
+#questionTitle{ line-height: 1.3; margin-bottom: 16px; }
+
+/* ✅ תמונה לפני השאלה */
 .lead{
   margin-top: 10px;
-  border-radius: var(--radius);
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border);
   background: #f2f4f7;
 }
-.lead img{ width:100%; height:auto; display:block; }
+.lead img{
+  width:100%;
+  height:auto;
+  display:block;
+}
 .lead-cap{
   padding: 10px;
   background:#fff;
@@ -193,9 +112,17 @@ select:focus-visible{
   text-align:center;
 }
 
-/* =========================================================
-   Two images
-   ========================================================= */
+.actions{ margin-top: 12px; }
+
+.feedback{
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+}
+
+/* Two images */
 .two-images{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -211,9 +138,10 @@ select:focus-visible{
   padding: 10px;
   background: #fff;
   border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   text-align: center;
 }
+
 .img-choice img{
   width: 100%;
   height: 180px;
@@ -221,23 +149,23 @@ select:focus-visible{
   border-radius: 12px;
   background: #f2f4f7;
 }
+
 .img-choice.selected{
   border-color: var(--primary);
   box-shadow: 0 0 0 4px rgba(11,116,222,0.12);
 }
+
 .img-caption{
   margin-top: 8px;
   font-size: 14px;
   color: var(--muted);
 }
 
-/* =========================================================
-   Hotspot
-   ========================================================= */
+/* Hotspot */
 .hotspot-stage{
   position: relative;
   width: 100%;
-  border-radius: var(--radius);
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border);
   background: #f2f4f7;
@@ -284,9 +212,7 @@ select:focus-visible{
   font-weight: 700;
 }
 
-/* =========================================================
-   MC
-   ========================================================= */
+/* MC */
 .mc{ margin-top: 10px; }
 .mc-options{
   margin-top: 10px;
@@ -332,9 +258,7 @@ select:focus-visible{
   font-weight: 700;
 }
 
-/* =========================================================
-   IMG MULTI 10
-   ========================================================= */
+/* IMG MULTI 10 */
 .img-multi{ margin-top: 10px; }
 .img-multi-grid{
   margin-top: 10px;
@@ -342,12 +266,9 @@ select:focus-visible{
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
-@media (max-width: 360px){
-  .img-multi-grid{ grid-template-columns: 1fr; }
-}
 .img-multi-card{
   border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   background: #fff;
   padding: 10px;
   cursor: pointer;
@@ -368,19 +289,20 @@ select:focus-visible{
   border-color: var(--danger);
   box-shadow: 0 0 0 4px rgba(217,45,32,0.12);
 }
+@media (max-width: 360px){
+  .img-multi-grid{ grid-template-columns: 1fr; }
+}
 .img-multi-caption{
   margin-top: 8px;
   font-size: 14px;
   color: var(--muted);
 }
 
-/* =========================================================
-   DRAG
-   ========================================================= */
+/* DRAG */
 .drag-stage{
   position: relative;
   width: 100%;
-  border-radius: var(--radius);
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border);
   background: #f2f4f7;
@@ -413,7 +335,7 @@ select:focus-visible{
   max-width: 260px;
   background: #fff;
   border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   padding: 10px;
   box-shadow: 0 10px 25px rgba(16,24,40,0.12);
   cursor: grab;
@@ -430,63 +352,134 @@ select:focus-visible{
   border-radius: 12px;
   background: #f8fafc;
 }
+
 .drag-cap{
   margin-top: 8px;
   font-size: 14px;
   color: var(--muted);
 }
+#adminMeta {
+  font-size: 18px;
+  margin-top: 12px;   /* אפשר 8 / 16 לפי הטעם */
+}
 
-/* =========================================================
+/* ===== Admin submissions table lines ===== */
+
+#subsBody {
+  border-top: 1px solid #e0e0e0;
+}
+
+#subsBody tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#subsBody td {
+  padding: 10px 12px;
+}
+
+/* קווים אנכיים */
+#subsBody td:not(:last-child),
+thead th:not(:last-child) {
+  border-left: 1px solid #e0e0e0;
+}
+
+/* כותרת */
+thead th {
+  padding: 10px 12px;
+  border-bottom: 2px solid #cfcfcf;
+}
+
+.date-cell{
+  direction:ltr;
+  text-align:left;
+  unicode-bidi:embed;
+}
+button{
+  border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.18), 0 10px 22px rgba(0,0,0,0.12);
+  transform: translateY(0);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+button:hover{
+  filter: brightness(1.03);
+}
+
+button:active{
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.18), 0 6px 14px rgba(0,0,0,0.10);
+}
+
+button:disabled{
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+#btnAddKitchen{
+  margin-top: 12px;
+}
+/* =========================
    MATCH LINES (3x3)
-   ========================================================= */
+   ========================= */
 .match{ margin-top: 10px; }
 
 .match-stage{
   position: relative;
   display: grid;
+  /* 3 עמודות: שמאל | רווח לקווים | ימין */
   grid-template-columns: 1fr clamp(70px, 14vw, 120px) 1fr;
   gap: 12px;
   align-items: stretch;
+  /* שלא תהיה גלילה – גובה שמותאם למסך */
   height: min(62vh, 520px);
   min-height: 320px;
-  touch-action: none;
+  touch-action: none; /* חשוב לגרירה במובייל */
 }
 
 .match-col{
   display: grid;
   gap: 12px;
+
+  /* 3 שורות שוות – הכל ייכנס בגובה ה-stage */
   grid-template-rows: repeat(3, 1fr);
   height: 100%;
 }
-.match-mid{ height: 100%; }
+
+.match-mid{
+  height: 100%;
+}
+
 
 .match-item{
   width: 100%;
   border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   background: var(--tile-bg, #fff);
   padding: 0;
   overflow: hidden;
   touch-action: none;
   transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
-
 .match-item.errflash{
   border-color: #e4002b !important;
   background: rgba(228, 0, 43, 0.08) !important;
   box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.18) !important;
 }
-
 .match-item img{
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: contain; /* לא לחתוך! */
   display: block;
+
   user-select: none;
   -webkit-user-drag: none;
+
   background: transparent;
-  padding: 6px;
+  padding: 6px; /* כדי שלא “יידבק” למסגרת */
+  box-sizing: border-box;
 }
+
 
 .match-item.active{
   border-color: var(--primary);
@@ -495,7 +488,7 @@ select:focus-visible{
 
 .match-item.locked{
   border-color: rgba(0, 160, 80, 0.95);
-  background: rgba(0, 160, 80, 0.10);
+  background: rgba(0, 160, 80, 0.10); /* ירוק שקוף */
   box-shadow: 0 0 0 4px rgba(0, 160, 80, 0.15);
   pointer-events: none;
   opacity: 0.85;
@@ -519,34 +512,13 @@ select:focus-visible{
   stroke-dasharray: none;
   opacity: 1;
 }
-
-/* =========================================================
-   Admin (kept, but isolated)
-   ========================================================= */
-#adminMeta { font-size: 18px; margin-top: 12px; }
-
-#subsBody { border-top: 1px solid #e0e0e0; }
-#subsBody tr { border-bottom: 1px solid #e0e0e0; }
-#subsBody td { padding: 10px 12px; }
-#subsBody td:not(:last-child),
-thead th:not(:last-child){ border-left: 1px solid #e0e0e0; }
-thead th{ padding: 10px 12px; border-bottom: 2px solid #cfcfcf; }
-
-.date-cell{
-  direction:ltr;
-  text-align:left;
-  unicode-bidi:embed;
-}
-
-#btnAddKitchen{ margin-top: 12px; }
-
-/* =========================================================
+/* =========================
    Portrait-only (Quiz)
-   ========================================================= */
+   ========================= */
 .rotate-overlay{
   position: fixed;
   inset: 0;
-  display: none; /* default hidden, we enable via body.quiz-lock in landscape */
+  display: grid;
   place-items: center;
   background: rgba(0,0,0,0.75);
   z-index: 9999;
@@ -561,13 +533,7 @@ thead th{ padding: 10px 12px; border-bottom: 2px solid #cfcfcf; }
 .rotate-title{ font-weight: 800; margin-bottom: 6px; font-size: 18px; }
 .rotate-sub{ opacity: 0.85; font-size: 14px; }
 
+/* רק אם הגוף במצב "quiz-lock" וגם המסך לנדסקייפ */
 @media (orientation: landscape){
   body.quiz-lock #rotateOverlay{ display: grid; }
-}
-
-/* =========================================================
-   Reduced motion
-   ========================================================= */
-@media (prefers-reduced-motion: reduce){
-  *{ transition: none !important; }
 }
