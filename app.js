@@ -1497,7 +1497,7 @@ const TYPE = {
       return state.runtime.two.selected === q.correct;
     }
   },
-  match: { pairs: [], lockedL: new Set(), lockedR: new Set(), done: false },
+  match_runtime: { pairs: [], lockedL: new Set(), lockedR: new Set(), done: false },
   hotspot5: {
     render(q){
       el.hotspotWrap.hidden = false;
@@ -2021,7 +2021,11 @@ const TYPE = {
       return !!state.runtime.match?.done;
     }
   }
+  
 };
+
+// Backward-compatible aliases
+TYPE.match = TYPE.match_lines;
 
 // =========================
 // HOTSPOT UI
