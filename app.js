@@ -312,11 +312,159 @@ function formatSpecial(text) {
   return s;
 }
 // =========================
-// PATCH: spacing + quotes around highlighted terms (LTR only)
+// PATCHES (run after translation) - single insertion point
 // Fixes:
-// 1) Hebrew prefixes stuck to [B]/[H]/[P] -> adds space in LTR (forMeat -> for meat)
-// 2) Quotes like '[B]בשרי[/B]' -> quotes move inside the colored span (so only the word is quoted/styled)
+// A) double '?' in titles with highlighted spans
+// B) move surrounding quotes into highlighted spans + keep spaces
+// C) move hl-term before the last noun (parve fridge / meat tray) in LTR
 // =========================
+
+function escapeRegExp(s){
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function patchDoubleQuestionMarkInTitle(titleEl){
+  if (!titleEl) return;
+  const dir = (document.documentElement.getAttribute("dir") || "rtl");
+  if (dir !== "ltr") return;
+
+  // Find last non-empty text node
+  const nodes = Array.from(titleEl.childNodes);
+  const lastText = [...nodes].reverse().find(n => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim() !== "");
+  if (!lastText) return;
+
+  // If the title ends with a standalone "?", remove any other "?" that got injected earlier
+  if (lastText.nodeValue.trim() === "?"){
+    for (const n of nodes){
+      if (n === lastText) continue;
+      if (n.nodeType === Node.TEXT_NODE && n.nodeValue.includes("?")){
+        n.nodeValue = n.nodeValue.replace(/\?/g, "");
+      }
+    }
+  }
+}
+
+function patchQuotesAndSpacing(root){
+  if (!root || I18N.isHebrew(I18N.lang)) return;
+  const dir = (document.documentElement.getAttribute("dir") || "rtl");
+  if (dir !== "ltr") return;
+
+  const spans = root.querySelectorAll?.(".hl-meat, .hl-dairy, .hl-parve");
+  if (!spans || spans.length === 0) return;
+
+  const isWordChar = (ch) => /[A-Za-z0-9\u00C0-\u024F\u0400-\u04FF]/.test(ch); // Latin + Cyrillic + digits
+  const lastChar = (s) => (s ? s[s.length - 1] : "");
+  const firstChar = (s) => (s ? s[0] : "");
+
+  const QUOTES = ["'", '"', "“", "”", "׳", "״"];
+
+  for (const sp of spans){
+    // (1) add space between prev text and span if "word"+"word" became stuck (forMeat)
+    const prev = sp.previousSibling;
+    if (prev && prev.nodeType === Node.TEXT_NODE){
+      const t = prev.nodeValue || "";
+      const a = lastChar(t);
+      const b = firstChar(sp.textContent || "");
+      if (a && b && isWordChar(a) && isWordChar(b) && !/\s$/.test(t)){
+        prev.nodeValue = t + " ";
+      }
+    }
+
+    // (2) move surrounding quotes into the span:  ' + <span>meat</span> + '  =>  <span>'meat'</span>
+    const prev2 = sp.previousSibling;
+    const next2 = sp.nextSibling;
+
+    if (prev2 && next2 && prev2.nodeType === Node.TEXT_NODE && next2.nodeType === Node.TEXT_NODE){
+      const lt = prev2.nodeValue || "";
+      const rt = next2.nodeValue || "";
+
+      const lTrimEnd = lt.replace(/\s+$/,"");
+      const rTrimStart = rt.replace(/^\s+/,"");
+
+      const lch = lastChar(lTrimEnd);
+      const rch = firstChar(rTrimStart);
+
+      const hasL = QUOTES.includes(lch);
+      const hasR = QUOTES.includes(rch);
+
+      if (hasL && hasR){
+        // remove only the quote char (keep spaces)
+        prev2.nodeValue = lt.replace(new RegExp(`${escapeRegExp(lch)}(?=\\s*$)`), "");
+        next2.nodeValue = rt.replace(new RegExp(`^(\\s*)${escapeRegExp(rch)}`), "$1");
+
+        const cur = sp.textContent || "";
+        const preWS = (cur.match(/^\s+/)?.[0]) || "";
+        const sufWS = (cur.match(/\s+$/)?.[0]) || "";
+        const core = cur.trim();
+
+        // avoid double wrapping
+        const alreadyL = QUOTES.includes(firstChar(core));
+        const alreadyR = QUOTES.includes(lastChar(core));
+
+        let newCore = core;
+        if (!alreadyL) newCore = lch + newCore;
+        if (!alreadyR) newCore = newCore + rch;
+
+        sp.textContent = preWS + newCore + sufWS;
+      }
+    }
+
+    // (3) add space after span if stuck (rare, but safe)
+    const next = sp.nextSibling;
+    if (next && next.nodeType === Node.TEXT_NODE){
+      const t = next.nodeValue || "";
+      const a = lastChar(sp.textContent || "");
+      const b = firstChar(t);
+      if (a && b && isWordChar(a) && isWordChar(b) && !/^\s/.test(t)){
+        next.nodeValue = " " + t;
+      }
+    }
+  }
+}
+
+function patchTermBeforeNoun(root){
+  if (!root || I18N.isHebrew(I18N.lang)) return;
+  const dir = (document.documentElement.getAttribute("dir") || "rtl");
+  if (dir !== "ltr") return;
+
+  const spans = root.querySelectorAll?.(".hl-meat, .hl-dairy, .hl-parve");
+  if (!spans || spans.length === 0) return;
+
+  spans.forEach(sp => {
+    // only if span is at the end (ignoring punctuation/space)
+    const next = sp.nextSibling;
+    const nextIsOnlyPunct = next && next.nodeType === Node.TEXT_NODE && /^[\s\?\.\!,:;]*$/.test(next.nodeValue);
+    const isLastMeaningful = (!sp.nextSibling) || nextIsOnlyPunct;
+    if (!isLastMeaningful) return;
+
+    const prev = sp.previousSibling;
+    if (!prev || prev.nodeType !== Node.TEXT_NODE) return;
+
+    const t = prev.nodeValue || "";
+    // grab the last word before the span
+    const m = t.match(/^(.*\b)([A-Za-z\u00C0-\u024F\u0400-\u04FF]+)\s*$/);
+    if (!m) return;
+
+    const before = m[1];
+    const noun = m[2];
+
+    // "... fridge " + <span>parve</span>  =>  "... " + <span>parve</span> + " fridge"
+    prev.nodeValue = before;
+
+    const nounNode = document.createTextNode(" " + noun);
+    sp.parentNode.insertBefore(nounNode, next || null);
+  });
+}
+
+function applyI18NPatches(root){
+  patchQuotesAndSpacing(root);
+  patchTermBeforeNoun(root);
+  // specifically for the question title (double '?')
+  if (typeof el !== "undefined" && el.questionTitle){
+    patchDoubleQuestionMarkInTitle(el.questionTitle);
+  }
+}
+
 function patchHighlightedTypography(root){
   if (!root || I18N.isHebrew(I18N.lang)) return;
   const dir = (document.documentElement.getAttribute("dir") || "rtl");
@@ -714,6 +862,7 @@ function translateDom(root = document.body){
         });
       });
     });
+    applyI18NPatches(root);
     patchHighlightedTypography(root);
   } finally {
     _translateBusy = false;
