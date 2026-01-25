@@ -257,7 +257,7 @@ async function initKitchenList(){
         const netMsg = (!r || r.error === "TIMEOUT" || r.error === "NETWORK_ERROR")
       ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
       : "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.";
-    el.startError.textContent = netMsg;
+    setTextSmart(el.startError, netMsg);
     el.btnStart.disabled = true;
     return;
   }
@@ -294,21 +294,194 @@ const DRAG_ZONES_4x2 = [
 // SPECIAL TEXT FORMATTER
 // =========================
 function formatSpecial(text) {
+  // Converts lightweight markup to HTML, keeping Hebrew as source of truth.
+  // NOTE: We do NOT trim or “fix” spaces here (it caused missing spaces near colored words).
   let s = String(text ?? "");
 
-  s = s.replace(/\[P\](.*?)\[\/P\]/g, '<span class="hl-parve">$1</span>');
-  s = s.replace(/\[B\](.*?)\[\/B\]/g, '<span class="hl-meat">$1</span>');
-  s = s.replace(/\[H\](.*?)\[\/H\]/g, '<span class="hl-dairy">$1</span>');
-
-  // מחיקת רווח אחרי אות יחס לפני תגית
-  s = s.replace(
-    /(^|[^\u0590-\u05FF])([הכמוש])\s+(<span class="hl-(?:parve|dairy|meat)">)/g,
-    "$1$2$3"
-  );
+  // Highlight markup: [P]..[/P]=parve, [B]..[/B]=meat, [H]..[/H]=dairy
+  s = s.replace(/\[P\]([\s\S]*?)\[\/P\]/g, '<span class="hl-parve" data-kterm="parve" data-he="$1">$1</span>');
+  s = s.replace(/\[B\]([\s\S]*?)\[\/B\]/g, '<span class="hl-meat"  data-kterm="meat"  data-he="$1">$1</span>');
+  s = s.replace(/\[H\]([\s\S]*?)\[\/H\]/g, '<span class="hl-dairy" data-kterm="dairy" data-he="$1">$1</span>');
 
   return s;
 }
 
+
+
+// =========================
+// KASHRUT TERM HIGHLIGHTER (auto style for all inflections)
+// =========================
+const KASHRUT_TERMS = {
+  dairy: [
+    "חלב", "חלבי", "חלבית", "חלבים", "חלבות", "חלבייים", "חלבייים", "חלבייות", "חלבייות"
+  ],
+  meat: [
+    "בשר", "בשרי", "בשרית", "בשרים", "בשריות", "בשריים", "בשריים", "בשריות"
+  ],
+  parve: [
+    "פרווה", "פרבי"
+  ]
+};
+
+function _isInsideKterm(node){
+  let el = (node && node.nodeType === 1) ? node : node?.parentElement;
+  while (el){
+    if (el.classList && (el.classList.contains("hl-dairy") || el.classList.contains("hl-meat") || el.classList.contains("hl-parve"))) return true;
+    el = el.parentElement;
+  }
+  return false;
+}
+
+function applyKashrutHighlights(root){
+  if (!root) return;
+
+  const HEB = /[\u0590-\u05FF]/;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      if (!node || node.nodeValue == null) return NodeFilter.FILTER_REJECT;
+      if (_isSkippableNode(node)) return NodeFilter.FILTER_REJECT;
+      if (_isInsideKterm(node)) return NodeFilter.FILTER_REJECT;
+      const v = node.nodeValue;
+      if (!v || !v.trim()) return NodeFilter.FILTER_REJECT;
+      if (!HEB.test(v)) return NodeFilter.FILTER_REJECT;
+      // quick check for any keyword
+      if (/(חלב|חלבי|חלבית|בשר|בשרי|בשרית|פרווה|פרבי)/.test(v)) return NodeFilter.FILTER_ACCEPT;
+      return NodeFilter.FILTER_REJECT;
+    }
+  });
+
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  for (const tn of nodes){
+    const text = tn.nodeValue;
+    if (!text) continue;
+
+    // Build one regex that captures all relevant forms
+    const re = /(חלב(?:י(?:ים|ות)?|ית)?|חלבי(?:ים|ות)?|חלבית|בשר(?:י(?:ים|ות)?|ית)?|בשרי(?:ים|ות)?|בשרית|פרווה|פרבי)/g;
+    let m;
+    let last = 0;
+    const frag = document.createDocumentFragment();
+    while ((m = re.exec(text)) !== null){
+      const start = m.index;
+      const end = start + m[0].length;
+
+      if (start > last){
+        frag.appendChild(document.createTextNode(text.slice(last, start)));
+      }
+
+      const word = m[0];
+      const termType =
+        word.startsWith("חלב") || word.startsWith("חלבי") ? "dairy" :
+        word.startsWith("בשר") || word.startsWith("בשרי") ? "meat" :
+        "parve";
+
+      const sp = document.createElement("span");
+      sp.className = termType === "dairy" ? "hl-dairy" : (termType === "meat" ? "hl-meat" : "hl-parve");
+      sp.setAttribute("data-kterm", termType);
+      sp.setAttribute("data-no-translate", "1");
+      sp.setAttribute("data-he", word);
+      sp.textContent = word;
+
+      frag.appendChild(sp);
+      last = end;
+    }
+    if (last === 0) continue; // no matches
+    if (last < text.length){
+      frag.appendChild(document.createTextNode(text.slice(last)));
+    }
+
+    tn.parentNode?.replaceChild(frag, tn);
+  }
+}
+
+const KASHRUT_GLOSSARY = {
+  en:   { dairy: "dairy",    meat: "meat",    parve: "parve" },
+  ru:   { dairy: "молочное", meat: "мясное",  parve: "парве" },
+  am:   { dairy: "ወተት",     meat: "ሥጋ",      parve: "Parve" },
+  ar:   { dairy: "لبني",     meat: "لحمي",    parve: "بارفي" },
+  he:   { dairy: null,       meat: null,      parve: null }
+};
+
+
+function _isKashrutHeWord(s){
+  const v = String(s || "").trim();
+  return /^(חלב|חלבי|חלבית|בשר|בשרי|בשרית|פרווה|פרבי)/.test(v);
+}
+
+function _mappedKashrutTerm(termType, lang, fallbackHe){
+  if (I18N.isHebrew(lang)) return fallbackHe;
+  const dict = KASHRUT_GLOSSARY[lang] || KASHRUT_GLOSSARY.en;
+  return (dict && dict[termType]) ? dict[termType] : (KASHRUT_GLOSSARY.en[termType] || fallbackHe);
+}
+
+
+function updateKashrutGlossary(root){
+  const lang = I18N.lang;
+  const dict = KASHRUT_GLOSSARY[lang] || KASHRUT_GLOSSARY.en;
+
+  (root || document).querySelectorAll?.('span[data-kterm][data-no-translate="1"]')?.forEach(sp => {
+    const k = sp.getAttribute("data-kterm");
+    const he = sp.getAttribute("data-he") || sp.textContent;
+
+    if (I18N.isHebrew(lang)){
+      sp.textContent = he;
+      return;
+    }
+    const mapped = dict?.[k] || KASHRUT_GLOSSARY.en[k];
+    sp.textContent = mapped || he;
+  });
+}
+
+// Apply cached translations only (no network). Used to prevent Hebrew→translated “blink”.
+function translateDomCachedOnly(root = document.body){
+  if (I18N.isHebrew(I18N.lang)) return;
+
+  // TEXT NODES
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node){
+      if (!node || node.nodeValue == null) return NodeFilter.FILTER_REJECT;
+      if (_isSkippableNode(node)) return NodeFilter.FILTER_REJECT;
+      const v = node.nodeValue;
+      if (!v || !v.trim()) return NodeFilter.FILTER_REJECT;
+
+      const orig = _ORIG_TEXT.get(node);
+      if (orig) return NodeFilter.FILTER_ACCEPT;
+      if (_looksHebrew(v)) return NodeFilter.FILTER_ACCEPT;
+      return NodeFilter.FILTER_REJECT;
+    }
+  });
+
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+  for (const tn of textNodes){
+    const cur = tn.nodeValue;
+    const orig = _ORIG_TEXT.get(tn) || cur;
+    if (!_ORIG_TEXT.has(tn)) _ORIG_TEXT.set(tn, orig);
+
+    if (!_looksHebrew(orig) && !_looksHebrew(cur)) continue;
+    const cached = trTextCached(orig);
+    if (cached !== null) tn.nodeValue = cached;
+  }
+
+  // ATTRIBUTES
+  const ATTRS = ["placeholder","title","aria-label","alt"];
+  root.querySelectorAll?.("*")?.forEach(elm => {
+    if (_isSkippableNode(elm)) return;
+    ATTRS.forEach(attr => {
+      if (!elm.hasAttribute(attr)) return;
+      const origKey = `data-orig-${attr}`;
+      const cur = elm.getAttribute(attr) || "";
+      const orig = elm.getAttribute(origKey) || cur;
+      if (!elm.hasAttribute(origKey)) elm.setAttribute(origKey, orig);
+
+      if (!_looksHebrew(orig) && !_looksHebrew(cur)) return;
+      const cached = trTextCached(orig);
+      if (cached !== null) elm.setAttribute(attr, cached);
+    });
+  });
+}
 
 // =========================
 // I18N (AUTO TRANSLATION)
@@ -385,12 +558,14 @@ async function trText(src){
       const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache" });
       const data = await res.json();
       const out = (data?.[0] || []).map(seg => seg?.[0] || "").join("");
-      const txt = (out && out.trim()) ? out : core;
+      let txt = (out && out.trim()) ? out : core;
+      txt = _postprocessTranslationCore(txt, lang);
       _TR_CORE_CACHE.set(key, txt);
       return txt;
     } catch {
-      _TR_CORE_CACHE.set(key, core);
-      return core;
+      const fallback = _postprocessTranslationCore(core, lang);
+      _TR_CORE_CACHE.set(key, fallback);
+      return fallback;
     } finally {
       _TR_PENDING.delete(key);
     }
@@ -443,6 +618,20 @@ function _splitWs(s){
   return { pre, core, suf };
 }
 
+function _postprocessTranslationCore(txt, lang){
+  let t = String(txt ?? "");
+
+  // Remove Hebrew geresh-style trailing apostrophes that become useless after translation
+  // (keeps real contractions like don't, since they have letters after the apostrophe).
+  if (!I18N.isHebrew(lang)) {
+    t = t.replace(/([A-Za-z\u00C0-\u024F])['\u05F3]+(?=\s|$|[\.,!\?;:\)\]\}])/g, "$1");
+    t = t.replace(/\u05F3/g, ""); // ׳
+  }
+
+  return t;
+}
+
+
 
 // Translate element subtree text nodes + common attributes.
 // Runs non-blocking: if translation isn't cached yet, it updates when available.
@@ -491,6 +680,19 @@ function translateDom(root = document.body){
       // Only translate Hebrew originals (avoid mangling things like codes/urls)
       if (!_looksHebrew(orig) && !_looksHebrew(current)) continue;
 
+      // Kashrut terms inside styled spans: override with glossary to prevent wrong auto-translation (e.g. פרווה→fur)
+      const pEl = tn.parentElement;
+      if (pEl && pEl.hasAttribute && pEl.hasAttribute("data-kterm")){
+        const termType = pEl.getAttribute("data-kterm");
+        const heWord = (pEl.getAttribute("data-he") || orig || current || "").trim();
+        if (_isKashrutHeWord(heWord) && termType){
+          const { pre, core, suf } = _splitWs(orig);
+          const mapped = _mappedKashrutTerm(termType, I18N.lang, core || heWord);
+          tn.nodeValue = pre + mapped + suf;
+          continue;
+        }
+      }
+
       // Instant apply when cached
       const cached = trTextCached(orig);
       if (cached !== null) {
@@ -536,6 +738,8 @@ function translateDom(root = document.body){
         });
       });
     });
+    // Ensure kashrut terms use glossary (prevents wrong auto-translation like 'fur')
+    updateKashrutGlossary(root);
   } finally {
     _translateBusy = false;
   }
@@ -842,7 +1046,7 @@ function startPreloadTranslations(){
   const set = new Set();
 
   // Frequently used dynamic labels (not always present in DOM/QUESTIONS at preload time)
-  ["נכון ✅","לא נכון ❌","לא תקלה","תקלה","מחק","שאלה","מתוך"].forEach(s => set.add(s));
+  ["נכון ✅","לא נכון ❌","לא תקלה","תקלה","מחק","שאלה","מתוך","פגיעות:","לחיצות:","הצג תרשים","חזרה לשאלה","שולח תוצאה…","התוצאה נשלחה בהצלחה ✅","השליחה כבר התקבלה במערכת ✅","התוצאה כבר נשלחה בניסיון הזה ✅","לא נכון ❌","לא נכון ❌ נסו שוב.","טוען מטבחים…"].forEach(s => set.add(s));
 
   // Current UI (start screen / question screen / etc.)
   _addHebrewStringsFromDom(document.body, set);
@@ -1238,48 +1442,23 @@ function renderLead(q){
 }
 
 function failAndRetry(q, fallbackMsg){
-  const msg = q?.wrongMsg || fallbackMsg || "לא נכון ❌ נסו שוב.";
+  // Show an error message, but DO NOT render a redundant “Try again” button.
+  // User can simply change selection / interact again.
+  const msg = q?.wrongMsg || fallbackMsg || "לא נכון ❌";
 
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
-  el.feedback.innerHTML = `
-    <div>${formatSpecial(msg)}</div>
-    <div style="margin-top:10px;">
-      <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
-    </div>
-  `;
+  el.feedback.innerHTML = `<div>${formatSpecial(msg)}</div>`;
+
+  // Ensure kashrut highlights + glossary, then apply cached translations immediately (no blink)
+  applyKashrutHighlights(el.feedback);
+  updateKashrutGlossary(el.feedback);
+  translateDomCachedOnly(el.feedback);
+  scheduleTranslate(el.feedback);
 
   el.btnNext.disabled = true;
-
-  const btn = document.getElementById("btnRetryNow");
-  if (btn){
-    btn.onclick = () => {
-      el.feedback.hidden = true;
-      el.feedback.classList.remove("errorbox");
-      renderQuestion();
-    };
-  }
 }
-function buildMatchItem(side, it){
-  const key = String(it?.key ?? "").trim();
-  const img = String(it?.img ?? "").trim();
-  const alt = String(it?.alt ?? key).trim();
 
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "match-item";
-  btn.dataset.side = side; // "L" / "R"
-  btn.dataset.key = key;
-
-  const im = document.createElement("img");
-  im.src = img;
-  im.alt = alt;
-  im.draggable = false;
-
-  btn.appendChild(im);
-  applyTileBgFromImage(btn, im);
-  return btn;
-}
 
 // CSS.escape לא תמיד קיים
 function cssEsc(s){
@@ -1424,14 +1603,26 @@ const TYPE = {
         const txt = document.createElement("div");
         txt.className = "txt";
         txt.innerHTML = formatSpecial(opt); // innerHTML חובה
+        applyKashrutHighlights(txt);
+        updateKashrutGlossary(txt);
+        if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(txt); scheduleTranslate(txt); }
 
         row.appendChild(inp);
         row.appendChild(txt);
 
-        row.addEventListener("click", () => {
-          inp.checked = true;
-          state.runtime.mc.selected = [i];
-          el.btnNext.disabled = false;
+        row.addEventListener("click", (e) => {
+          // Make the whole row clickable, including the text itself
+          e.preventDefault();
+          if (!inp.checked) inp.checked = true;
+          inp.dispatchEvent(new Event("change", { bubbles:true }));
+        });
+
+        inp.addEventListener("change", () => {
+          if (inp.checked){
+            state.runtime.mc.selected = [i];
+            el.btnNext.disabled = false;
+            clearFeedback();
+          }
         });
 
         el.mcOptions.appendChild(row);
@@ -1463,6 +1654,9 @@ const TYPE = {
         const txt = document.createElement("div");
         txt.className = "txt";
         txt.innerHTML = formatSpecial(opt); // innerHTML חובה
+        applyKashrutHighlights(txt);
+        updateKashrutGlossary(txt);
+        if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(txt); scheduleTranslate(txt); }
 
         row.appendChild(inp);
         row.appendChild(txt);
@@ -1517,6 +1711,9 @@ const TYPE = {
         const cap = document.createElement("div");
         cap.className = "img-multi-caption";
         cap.innerHTML = formatSpecial(it.caption || it.alt || "");
+        applyKashrutHighlights(cap);
+        updateKashrutGlossary(cap);
+        if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(cap); scheduleTranslate(cap); }
 
         card.appendChild(im);
         card.appendChild(cap);
@@ -1588,6 +1785,9 @@ const TYPE = {
         el.dragIntro.hidden = false;
         el.dragPlay.hidden = true;
         el.questionTitle.innerHTML = formatSpecial(q.introTitle || "התבוננו בתרשים ואז לחצו המשך.");
+        applyKashrutHighlights(el.questionTitle);
+        updateKashrutGlossary(el.questionTitle);
+        if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(el.questionTitle); scheduleTranslate(el.questionTitle); }
         el.btnNext.disabled = false;
         return;
       }
@@ -1608,7 +1808,7 @@ const TYPE = {
       if (rt.showingChart){
         el.dragIntro.hidden = false;
         el.dragPlay.hidden = true;
-        el.btnShowChart.textContent = "חזרה לשאלה";
+        setTextSmart(el.btnShowChart, "חזרה לשאלה");
         el.btnNext.disabled = true;
         return;
       }
@@ -1616,7 +1816,7 @@ const TYPE = {
       // מצב רגיל (שאלה)
       el.dragIntro.hidden = true;
       el.dragPlay.hidden = false;
-      el.btnShowChart.textContent = "הצג תרשים";
+      setTextSmart(el.btnShowChart, "הצג תרשים");
 
       showCurrentDragItem(q);
       el.btnNext.disabled = true;
@@ -1839,7 +2039,7 @@ function updateHotspotUI(q){
 
     const hitsLbl = document.createElement("span");
     hitsLbl.className = "hs-lbl";
-    hitsLbl.textContent = "פגיעות:";
+    setTextSmart(hitsLbl, "פגיעות:");
 
     const hitsNum = document.createElement("span");
     hitsNum.className = "hs-num";
@@ -1848,7 +2048,7 @@ function updateHotspotUI(q){
 
     const clicksLbl = document.createElement("span");
     clicksLbl.className = "hs-lbl";
-    clicksLbl.textContent = "לחיצות:";
+    setTextSmart(clicksLbl, "לחיצות:");
 
     const clicksNum = document.createElement("span");
     clicksNum.className = "hs-num";
@@ -1868,8 +2068,7 @@ function updateHotspotUI(q){
   el.hotspotStatus._hitsNum.textContent = `${hits}/${boxes.length}`;
   el.hotspotStatus._clicksNum.textContent = `${attempts}/${HOTSPOT_MAX_CLICKS}`;
 
-  // translate the labels instantly if cached, otherwise async
-  if (!I18N.isHebrew(I18N.lang)) translateDom(el.hotspotStatus);
+  // labels are set via setTextSmart (cached/preloaded), avoid re-translating each update
 
   el.hotspotMarks.innerHTML = "";
   rt.attempts.forEach((a, idx) => {
@@ -1888,6 +2087,12 @@ function updateHotspotUI(q){
     
     txt.innerHTML = `${idx + 1}) ${s} ${formatSpecial(label)}`;
 
+    applyKashrutHighlights(txt);
+    updateKashrutGlossary(txt);
+    translateDomCachedOnly(txt);
+    scheduleTranslate(txt);
+
+
 
     const del = document.createElement("button");
     del.className = "btn-del";
@@ -1898,7 +2103,7 @@ function updateHotspotUI(q){
     row.appendChild(txt);
     row.appendChild(del);
     el.hotspotMarks.appendChild(row);
-    if (!I18N.isHebrew(I18N.lang)) translateDom(row);
+    if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(row); scheduleTranslate(row); }
   });
 }
 
@@ -1967,6 +2172,9 @@ function showCurrentDragItem(q){
   el.dragItem.style.display = "block";
   el.dragItemImg.src = it.img;
   el.dragItemCap.innerHTML = formatSpecial(it.caption || "");
+  applyKashrutHighlights(el.dragItemCap);
+  updateKashrutGlossary(el.dragItemCap);
+  if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(el.dragItemCap); scheduleTranslate(el.dragItemCap); }
 
   el.dragFeedback.hidden = true;
   el.dragFeedback.innerHTML = "";
@@ -1988,12 +2196,12 @@ function setDragChartMode(show){
   if (rt.showingChart){
     el.dragIntro.hidden = false;
     el.dragPlay.hidden = true;
-    el.btnShowChart.textContent = "חזרה לשאלה";
+    setTextSmart(el.btnShowChart, "חזרה לשאלה");
     el.btnNext.disabled = true; // שלא “יתקע” על ולידציה בזמן צפייה בתרשים
   } else {
     el.dragIntro.hidden = true;
     el.dragPlay.hidden = false;
-    el.btnShowChart.textContent = "הצג תרשים";
+    setTextSmart(el.btnShowChart, "הצג תרשים");
 
     // מחזיר את מצב Next לפי התקדמות אמיתית
     showCurrentDragItem(q);
@@ -2011,6 +2219,9 @@ function onDropToZone(side, zoneEl){
   if (side !== correctSide){
     el.dragFeedback.hidden = false;
     el.dragFeedback.innerHTML = formatSpecial(it.wrongMsg || "❌ לא נכון. נסו שוב.");
+    applyKashrutHighlights(el.dragFeedback);
+    updateKashrutGlossary(el.dragFeedback);
+    if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(el.dragFeedback); scheduleTranslate(el.dragFeedback); }
     zoneEl.classList.add("wrong");
     setTimeout(()=> zoneEl.classList.remove("wrong"), 600);
     return;
@@ -2160,6 +2371,9 @@ function renderQuestion(){
   if (!I18N.isHebrew(I18N.lang)) translateDom(el.progress);
 
   el.questionTitle.innerHTML = formatSpecial(q.title); // innerHTML חובה
+  applyKashrutHighlights(el.questionTitle);
+  updateKashrutGlossary(el.questionTitle);
+  if (!I18N.isHebrew(I18N.lang)) { translateDomCachedOnly(el.questionTitle); scheduleTranslate(el.questionTitle); }
 
   // lead image optional
   renderLead(q);
@@ -2215,6 +2429,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
       // Restore Hebrew first (single source of truth), then translate again if needed
       restoreHebrew(document.body);
+      updateKashrutGlossary(document.body);
       if (!I18N.isHebrew(code)) {
         // Start preloading translations for the whole quiz in the background
         startPreloadTranslations();
@@ -2287,32 +2502,32 @@ async function onStart(){
 
   if (!fullName){
     el.startError.hidden = false;
-    el.startError.textContent = "נא למלא שם.";
+    setTextSmart(el.startError, "נא למלא שם.");
     return;
   }
   if (!personalId){
     el.startError.hidden = false;
-    el.startError.textContent = "נא למלא ת.ז/מספר אישי.";
+    setTextSmart(el.startError, "נא למלא ת.ז/מספר אישי.");
     return;
   }
   if (!state.user.kitchenId){
     el.startError.hidden = false;
-    el.startError.textContent = "נא לבחור מטבח.";
+    setTextSmart(el.startError, "נא לבחור מטבח.");
     return;
   }
   if (!isFullNameValid(fullName)){
     el.startError.hidden = false;
-    el.startError.textContent = "נא להזין שם מלא (לפחות שתי מילים).";
+    setTextSmart(el.startError, "נא להזין שם מלא (לפחות שתי מילים).");
     return;
   }
   if (!isDigitsOnly(personalId) || !(personalId.length === 7 || personalId.length === 9)){
     el.startError.hidden = false;
-    el.startError.textContent = "ת.ז/מ.א חייב להיות 9 או 7 ספרות (ספרות בלבד).";
+    setTextSmart(el.startError, "ת.ז/מ.א חייב להיות 9 או 7 ספרות (ספרות בלבד).");
     return;
   }
   if (personalId.length === 9 && !isIsraeliIdValid(personalId)){
     el.startError.hidden = false;
-    el.startError.textContent = "תעודת הזהות לא תקינה!";
+    setTextSmart(el.startError, "תעודת הזהות לא תקינה!");
     return;
   }
 
@@ -2379,11 +2594,11 @@ async function finish(){
 async function sendResult(force){
   // אם כבר נשלח בהצלחה באותו ריצה ולא ביקשו force — לא שולחים שוב
   if (state.sentThisRun && !force){
-    el.sendStatus.textContent = "התוצאה כבר נשלחה בניסיון הזה ✅";
+    setTextSmart(el.sendStatus, "התוצאה כבר נשלחה בניסיון הזה ✅");
     if (el.btnResend) el.btnResend.hidden = true;
     return;
   }
-  el.sendStatus.textContent = "שולח תוצאה…";
+  setTextSmart(el.sendStatus, "שולח תוצאה…");
   if (el.btnResend){
     el.btnResend.hidden = true;
     el.btnResend.disabled = true;
@@ -2410,7 +2625,7 @@ async function sendResult(force){
       if (r && r.ok && r.already){
       // כבר התקבל בעבר (ניסיון חוזר/timeout) -> זה עדיין הצלחה מבחינת המשתמש
       state.sentThisRun = true;
-      el.sendStatus.textContent = "השליחה כבר התקבלה במערכת ✅";
+      setTextSmart(el.sendStatus, "השליחה כבר התקבלה במערכת ✅");
       if (el.btnResend) el.btnResend.hidden = true;
       return;
       }
@@ -2425,7 +2640,7 @@ async function sendResult(force){
       if (!res.ok) throw new Error("HTTP " + res.status);
     }
     state.sentThisRun = true;
-    el.sendStatus.textContent = "התוצאה נשלחה בהצלחה ✅";
+    setTextSmart(el.sendStatus, "התוצאה נשלחה בהצלחה ✅");
     if (el.btnResend) el.btnResend.hidden = true;
   } catch (e) {
     state.sentThisRun = false; // מאפשר ניסיון חוזר
