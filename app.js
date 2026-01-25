@@ -1968,17 +1968,14 @@ const TYPE = {
 // =========================
 // HOTSPOT UI
 // =========================
+// =========================
 function updateHotspotUI(q){
   const rt = state.runtime.hotspot;
   const hits = rt.hit.filter(Boolean).length;
   const boxes = q.boxes || [];
   const attempts = rt.attempts.length;
 
-  // No Hebrew->translated blink: use template + sync cache
-  const tpl = "פגיעות: {hits}/{total} | לחיצות: {attempts}/{max}";
-  el.hotspotStatus.textContent = trTemplateSync(tpl, {
-    hits, total: boxes.length, attempts, max: HOTSPOT_MAX_CLICKS
-  });
+  el.hotspotStatus.textContent = `פגיעות: ${hits}/${boxes.length} | לחיצות: ${attempts}/${HOTSPOT_MAX_CLICKS}`;
 
   el.hotspotMarks.innerHTML = "";
   rt.attempts.forEach((a, idx) => {
@@ -1989,28 +1986,26 @@ function updateHotspotUI(q){
     txt.className = "txt";
     const s = (a.hitIndex !== null) ? "✅" : "❌";
 
-    // For misses: don't show "לא תקלה" (per request)
-    let label = "";
+    let label = "לא תקלה";
     if (a.hitIndex !== null) {
       const box = (q.boxes || [])[a.hitIndex];
       label = box?.label || `תקלה ${a.hitIndex + 1}`;
     }
+    
+    txt.innerHTML = `${idx + 1}) ${s} ${formatSpecial(label)}`;
 
-    const line = label ? `${idx + 1}) ${s} ${formatSpecial(label)}` : `${idx + 1}) ${s}`;
-    txt.innerHTML = line;
+
+    const del = document.createElement("button");
+    del.className = "btn-del";
+    del.type = "button";
+    del.textContent = "מחק";
+    del.onclick = () => deleteAttempt(q, idx);
 
     row.appendChild(txt);
+    row.appendChild(del);
     el.hotspotMarks.appendChild(row);
   });
-
-  // Translate newly inserted markup immediately if needed
-  scheduleTranslate(el.hotspotMarks);
 }
-
-
-// (deleted) deleteAttempt was removed (no delete button per UX)
-
-
 // =========================
 function buildDragZonesOnce(q){
   if (el.dragZones.childElementCount > 0) return;
