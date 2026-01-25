@@ -1366,30 +1366,22 @@ function renderLead(q){
     el.leadCap.innerHTML = "";
   }
 }
-
 function failAndRetry(q, fallbackMsg){
   const msg = q?.wrongMsg || fallbackMsg || "לא נכון ❌ נסו שוב.";
 
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
-  el.feedback.innerHTML = `
-    <div>${formatSpecial(msg)}</div>
-    <div style="margin-top:10px;">
-      <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
-    </div>
-  `;
+
+  // רק הודעה – בלי כפתור "נסו שוב"
+  el.feedback.innerHTML = `<div>${formatSpecial(msg)}</div>`;
 
   el.btnNext.disabled = true;
 
-  const btn = document.getElementById("btnRetryNow");
-  if (btn){
-    btn.onclick = () => {
-      el.feedback.hidden = true;
-      el.feedback.classList.remove("errorbox");
-      renderQuestion();
-    };
-  }
+  // תרגום מיידי אם צריך (כי innerHTML דינמי)
+  scheduleTranslate(el.feedback);
+  patchHighlightedTypography?.(el.feedback);
 }
+
 function buildMatchItem(side, it){
   const key = String(it?.key ?? "").trim();
   const img = String(it?.img ?? "").trim();
