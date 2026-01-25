@@ -1497,7 +1497,10 @@ const TYPE = {
       return state.runtime.two.selected === q.correct;
     }
   },
-  match_runtime: { pairs: [], lockedL: new Set(), lockedR: new Set(), done: false },
+  match: {
+    render(q){ return TYPE.match_lines.render(q); },
+    validate(q){ return TYPE.match_lines.validate(q); }
+  },
   hotspot5: {
     render(q){
       el.hotspotWrap.hidden = false;
