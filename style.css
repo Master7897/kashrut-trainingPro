@@ -539,3 +539,13 @@ button:disabled{
 @media (orientation: landscape){
   body.quiz-lock #rotateOverlay{ display: grid; }
 }
+
+/* I18N helpers */
+.i18n-pending{
+  opacity: 0;
+  pointer-events: none;
+}
+
+.he-prefix-space{ display: inline; }
+/* In Hebrew we hide the "prefix space" so ב + חלב looks natural (בחלבי) */
+html[lang="he"] .he-prefix-space{ display: none; }
