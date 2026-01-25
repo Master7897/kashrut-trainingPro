@@ -300,10 +300,12 @@ function formatSpecial(text) {
   s = s.replace(/\[B\](.*?)\[\/B\]/g, '<span class="hl-meat">$1</span>');
   s = s.replace(/\[H\](.*?)\[\/H\]/g, '<span class="hl-dairy">$1</span>');
 
-  // מחיקת רווח אחרי אות יחס לפני תגית
+  // שמירת רווחים סביב תוויות צבעוניות (כדי שבתרגום לא ידבקו מילים)
+// בעברית אותיות יחס נצמדות למילה (ב/כ/ל/מ/ש/ו/ה). במקום למחוק רווח,
+// אנחנו משאירים "רווח עברי" שמוסתר רק בעברית.
   s = s.replace(
     /(^|[^\u0590-\u05FF])([הכמוש])\s+(<span class="hl-(?:parve|dairy|meat)">)/g,
-    "$1$2$3"
+    '$1$2<span class="he-prefix-space"> </span>$3'
   );
 
   return s;
@@ -343,7 +345,129 @@ const _TR_CACHE = new Map();
 const _TR_PENDING = new Map(); // key -> Promise<string>
 const _ORIG_TEXT = new WeakMap(); // Text node -> Hebrew original
 
+let _PRELOAD_TOKEN = 0;
+
+function _yieldToUI(){
+  return new Promise(r => requestAnimationFrame(() => r()));
+}
+
+// Extract text-node-like segments from a Hebrew string after applying formatSpecial.
+// This matches what actually gets translated (node-by-node), including punctuation.
+function _extractSegmentsFromHebrewString(s){
+  const out = [];
+  const div = document.createElement("div");
+  div.innerHTML = formatSpecial(String(s ?? ""));
+  const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT, null);
+  while (walker.nextNode()){
+    const v = walker.currentNode.nodeValue;
+    if (v && v.trim()) out.push(v);
+  }
+  return out;
+}
+
+function _collectQuestionSegments(startIdx = 0){
+  const set = new Set();
+
+  const add = (v) => {
+    if (typeof v !== "string") return;
+    if (!v.trim()) return;
+    if (!_looksHebrew(v)) return;
+    // break into DOM segments so cache keys match runtime text nodes
+    _extractSegmentsFromHebrewString(v).forEach(seg => {
+      if (seg && seg.trim() && _looksHebrew(seg)) set.add(seg);
+    });
+  };
+
+  const walk = (obj) => {
+    if (obj == null) return;
+    if (typeof obj === "string"){ add(obj); return; }
+    if (Array.isArray(obj)){ obj.forEach(walk); return; }
+    if (typeof obj === "object"){
+      for (const [k,v] of Object.entries(obj)){
+        // skip non-user-facing/meta fields
+        if (k === "img" || k === "key" || k === "value" || k === "id") continue;
+        walk(v);
+      }
+    }
+  };
+
+  for (let i = Math.max(0, startIdx); i < QUESTIONS.length; i++){
+    walk(QUESTIONS[i]);
+  }
+
+  // Also include very common feedback strings (appear during rapid clicks)
+  [
+    "נכון ✅",
+    "לא נכון ❌",
+    "נסו שוב",
+    "נמחק. אפשר ללחוץ שוב.",
+    "הגעת למספר הלחיצות המקסימלי."
+  ].forEach(add);
+
+  return Array.from(set);
+}
+
+// Preload translations for upcoming questions without blocking UI.
+// Runs in small chunks and stops automatically if language changes.
+function preloadTranslationsFromQuestion(startIdx = 0){
+  if (I18N.isHebrew(I18N.lang)) return;
+  const langAtStart = I18N.lang;
+  const token = ++_PRELOAD_TOKEN;
+  const list = _collectQuestionSegments(startIdx);
+
+  const run = async () => {
+    // mild concurrency
+    const limit = 4;
+    let cursor = 0;
+
+    const worker = async () => {
+      while (cursor < list.length){
+        const i = cursor++;
+        if (token !== _PRELOAD_TOKEN) return;
+        if (I18N.lang !== langAtStart || I18N.isHebrew(I18N.lang)) return;
+
+        const s = list[i];
+        // Skip if already cached
+        if (trTextSync(s) != null) continue;
+
+        await trText(s);
+
+        // yield often to keep UI responsive
+        if (i % 8 === 0) await _yieldToUI();
+      }
+    };
+
+    const workers = Array.from({ length: limit }, () => worker());
+    await Promise.allSettled(workers);
+  };
+
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(() => run(), { timeout: 2000 });
+  } else {
+    setTimeout(() => run(), 200);
+  }
+}
+
 function _looksHebrew(s){ return /[\u0590-\u05FF]/.test(String(s || "")); }
+function _nodeHasHebrew(node){
+  if (!node) return false;
+  // text
+  if (node.nodeType === 3) return _looksHebrew(node.nodeValue);
+  if (node.nodeType !== 1) return false;
+
+  if (_isSkippableNode(node)) return false;
+
+  // attributes we translate
+  for (const attr of ["placeholder","title","aria-label","alt"]){
+    if (node.hasAttribute && node.hasAttribute(attr)){
+      const v = node.getAttribute(attr) || "";
+      if (_looksHebrew(v)) return true;
+    }
+  }
+
+  const txt = node.textContent || "";
+  return _looksHebrew(txt);
+}
 function _isSkippableNode(node){
   if (!node) return true;
   // Skip if element or any parent has data-no-translate
@@ -356,139 +480,66 @@ function _isSkippableNode(node){
   return false;
 }
 
+// Public: translate a single string (Hebrew source) into current language
+function trTextSync(src){
+  const lang = I18N.lang;
+  const s = String(src ?? "");
+  if (!s) return s;
+  if (I18N.isHebrew(lang)) return s;
+
+  const m = s.match(/^(\s*)([\s\S]*?)(\s*)$/);
+  const lead = m ? m[1] : "";
+  const core = m ? m[2] : s;
+  const tail = m ? m[3] : "";
+  if (!core) return s;
+
+  const key = `${lang}||${core}`;
+  if (_TR_CACHE.has(key)) return lead + _TR_CACHE.get(key) + tail;
+  return null; // not cached yet
+}
+
 // Public: translate a single string (Hebrew source) into current language.
-// Returns a Promise<string>. Preserves leading/trailing whitespace.
+// Preserves leading/trailing whitespace so spacing doesn't get "eaten" by translation.
 async function trText(src){
   const lang = I18N.lang;
-  const sRaw = String(src ?? "");
-  if (!sRaw) return sRaw;
-  if (I18N.isHebrew(lang)) return sRaw;
+  const s = String(src ?? "");
+  if (!s) return s;
+  if (I18N.isHebrew(lang)) return s;
 
-  // Preserve whitespace around the core text (fixes lost spaces around colored <span> labels)
-  const m = sRaw.match(/^(\s*)([\s\S]*?)(\s*)$/);
-  const pre = m ? m[1] : "";
-  const core = m ? m[2] : sRaw;
-  const post = m ? m[3] : "";
+  const m = s.match(/^(\s*)([\s\S]*?)(\s*)$/);
+  const lead = m ? m[1] : "";
+  const core = m ? m[2] : s;
+  const tail = m ? m[3] : "";
+  if (!core) return s;
 
-  if (!core.trim()) return sRaw;
+  const key = `${lang}||${core}`;
+  if (_TR_CACHE.has(key)) return lead + _TR_CACHE.get(key) + tail;
 
-  // Normalize numbers so rapidly-changing counters (e.g., "3", "4", "5") don't trigger a new translation every click.
-  const nums = [];
-  const coreNorm = core.replace(/\d+(?:[\.,]\d+)?/g, (m) => {
-    nums.push(m);
-    return `__NUM${nums.length - 1}__`;
-  });
-
-  const key = `${lang}||${coreNorm}`;
-  if (_TR_CACHE.has(key)){
-    let cached = _TR_CACHE.get(key);
-    nums.forEach((n,i) => { cached = cached.split(`__NUM${i}__`).join(n); });
-    return pre + cached + post;
-  }
-  if (_TR_PENDING.has(key)){
-    let pending = await _TR_PENDING.get(key);
-    nums.forEach((n,i) => { pending = pending.split(`__NUM${i}__`).join(n); });
-    return pre + pending + post;
+  if (_TR_PENDING.has(key)) {
+    return _TR_PENDING.get(key).then(t => lead + t + tail);
   }
 
-  const p = _enqueueTranslateCore(lang, coreNorm, key);
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(core)}`;
+
+  const p = (async () => {
+    try{
+      const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache" });
+      const data = await res.json();
+      const out = (data?.[0] || []).map(seg => seg?.[0] || "").join("");
+      const txt = (out && out.trim()) ? out : core;
+      _TR_CACHE.set(key, txt);
+      return txt;
+    } catch {
+      _TR_CACHE.set(key, core);
+      return core;
+    } finally {
+      _TR_PENDING.delete(key);
+    }
+  })();
+
   _TR_PENDING.set(key, p);
-
-  try{
-    let out = await p;
-    nums.forEach((n,i) => { out = out.split(`__NUM${i}__`).join(n); });
-    return pre + out + post;
-  } finally {
-    _TR_PENDING.delete(key);
-  }
+  return p.then(t => lead + t + tail);
 }
-
-// -------- Queue + concurrency limit (prevents UI freezes) --------
-const _TR_BATCH = new Map(); // key -> { lang, core, resolvers: [] }
-let _TR_BATCH_TIMER = null;
-
-function _enqueueTranslateCore(lang, core, key){
-  if (_TR_CACHE.has(key)) return Promise.resolve(_TR_CACHE.get(key));
-
-  return new Promise((resolve) => {
-    const existing = _TR_BATCH.get(key);
-    if (existing){
-      existing.resolvers.push(resolve);
-    } else {
-      _TR_BATCH.set(key, { lang, core, resolvers: [resolve] });
-    }
-    _scheduleBatchFlush();
-  });
-}
-
-function _scheduleBatchFlush(){
-  if (_TR_BATCH_TIMER) return;
-  _TR_BATCH_TIMER = setTimeout(() => {
-    _TR_BATCH_TIMER = null;
-    _flushTranslateBatch().catch(() => {});
-  }, 25);
-}
-
-async function _flushTranslateBatch(){
-  if (_TR_BATCH.size === 0) return;
-
-  // Snapshot and clear queue
-  const entries = Array.from(_TR_BATCH.entries()).map(([key, val]) => ({ key, ...val }));
-  _TR_BATCH.clear();
-
-  // Group by lang (usually one)
-  const byLang = new Map();
-  for (const e of entries){
-    if (!byLang.has(e.lang)) byLang.set(e.lang, []);
-    byLang.get(e.lang).push(e);
-  }
-
-  for (const [lang, group] of byLang.entries()){
-    // Concurrency-limited pool
-    const CONC = 4;
-    let idx = 0;
-
-    async function worker(){
-      while (idx < group.length){
-        const my = group[idx++];
-        const { key, core, resolvers } = my;
-
-        let t = core;
-        try{
-          t = await _fetchTranslateOne(core, lang);
-        } catch {
-          t = core;
-        }
-
-        _TR_CACHE.set(key, t);
-        resolvers.forEach(fn => fn(t));
-      }
-    }
-
-    const workers = Array.from({length: Math.min(CONC, group.length)}, () => worker());
-    await Promise.all(workers);
-  }
-}
-
-async function _fetchTranslateOne(s, lang){
-  const ctrl = new AbortController();
-  const to = setTimeout(() => ctrl.abort(), 8000);
-
-  try{
-    const url =
-      `https://translate.googleapis.com/translate_a/single` +
-      `?client=gtx&sl=iw&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(s)}`;
-
-    const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache", signal: ctrl.signal });
-    const data = await res.json();
-    const out = (data?.[0] || []).map(seg => seg?.[0] || "").join("");
-    const txt = (out || s);
-    return (String(txt).trim() ? txt : s);
-  } finally {
-    clearTimeout(to);
-  }
-}
-
 
 // Translate element subtree text nodes + common attributes.
 // Runs non-blocking: if translation isn't cached yet, it updates when available.
@@ -506,100 +557,183 @@ function scheduleTranslate(root = document.body){
   });
 }
 
-function _getVisibleTranslateRoots(){
-  // Translate only what the user currently sees (prevents long freezes)
-  const roots = [];
-  const ids = ["screen-start","screen-quiz","screen-finish","screen-summary"];
-  ids.forEach(id => {
-    const elx = document.getElementById(id);
-    if (elx && !elx.hidden && elx.offsetParent !== null) roots.push(elx);
-  });
-
-  // Fallback: visible cards
-  if (roots.length === 0 && document.querySelectorAll){
-    document.querySelectorAll(".card, section").forEach(elx => {
-      if (!elx || elx.hidden) return;
-      if (elx.offsetParent === null) return;
-      roots.push(elx);
-    });
-  }
-
-  if (roots.length === 0) roots.push(document.body);
-  return roots;
-}
-
 function translateDom(root = document.body){
   if (I18N.isHebrew(I18N.lang)) return;
 
   _translateBusy = true;
   try{
-    const roots = (root === document.body) ? _getVisibleTranslateRoots() : [root];
-    roots.forEach(r => _translateRoot(r));
+    // TEXT NODES
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if (!node || !node.nodeValue) return NodeFilter.FILTER_REJECT;
+        if (_isSkippableNode(node)) return NodeFilter.FILTER_REJECT;
+        const v = node.nodeValue;
+        if (!v.trim()) return NodeFilter.FILTER_REJECT;
+        // Translate anything that originally had Hebrew OR currently has Hebrew
+        const orig = _ORIG_TEXT.get(node);
+        if (orig) return NodeFilter.FILTER_ACCEPT;
+        if (_looksHebrew(v)) return NodeFilter.FILTER_ACCEPT;
+        return NodeFilter.FILTER_REJECT;
+      }
+    });
+
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+    for (const tn of textNodes){
+      const current = tn.nodeValue;
+      const orig = _ORIG_TEXT.get(tn) || current;
+      if (!_ORIG_TEXT.has(tn)) _ORIG_TEXT.set(tn, orig);
+
+      // Always translate from Hebrew original (single source of truth)
+      trText(orig).then(t => {
+        // If user switched back to Hebrew mid-flight, don't apply.
+        if (I18N.isHebrew(I18N.lang)) return;
+        // Don't overwrite if node was removed
+        if (!tn.parentNode) return;
+        tn.nodeValue = t;
+      });
+    }
+
+    // ATTRIBUTES (placeholder / title / aria-label / alt)
+    const attrEls = root.querySelectorAll
+      ? root.querySelectorAll("[placeholder],[title],[aria-label],[alt]")
+      : [];
+    attrEls.forEach(elm => {
+      if (!elm || _isSkippableNode(elm)) return;
+
+      ["placeholder","title","aria-label","alt"].forEach(attr => {
+        if (!elm.hasAttribute(attr)) return;
+
+        const cur = elm.getAttribute(attr) || "";
+        const origKey = `data-i18n-orig-${attr}`;
+        const orig = elm.getAttribute(origKey) || cur;
+
+        if (!elm.hasAttribute(origKey)) elm.setAttribute(origKey, orig);
+
+        // Only translate if the Hebrew original contains Hebrew (avoid touching image URLs etc)
+        if (!_looksHebrew(orig) && !_looksHebrew(cur)) return;
+
+        trText(orig).then(t => {
+          if (I18N.isHebrew(I18N.lang)) return;
+          if (!elm.isConnected) return;
+          elm.setAttribute(attr, t);
+        });
+      });
+    });
   } finally {
     _translateBusy = false;
   }
 }
 
-function _translateRoot(root){
-  if (!root) return;
 
-  // TEXT NODES
+// Translate subtree and return a Promise that resolves when all current translations were applied.
+// Useful to avoid "Hebrew flash" by translating while element is hidden.
+async function translateDomAsync(root = document.body){
+  if (I18N.isHebrew(I18N.lang)) return;
+
+  // Collect translatable text nodes
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node){
-      if (!node || !node.nodeValue) return NodeFilter.FILTER_REJECT;
-      if (_isSkippableNode(node)) return NodeFilter.FILTER_REJECT;
+      const parent = node.parentNode;
+      if (!parent || _isSkippableNode(parent)) return NodeFilter.FILTER_REJECT;
       const v = node.nodeValue;
-      if (!v.trim()) return NodeFilter.FILTER_REJECT;
-
+      if (!v || !v.trim()) return NodeFilter.FILTER_REJECT;
       const orig = _ORIG_TEXT.get(node);
-      if (orig && _looksHebrew(orig)) return NodeFilter.FILTER_ACCEPT;
+      if (orig) return NodeFilter.FILTER_ACCEPT;
       if (_looksHebrew(v)) return NodeFilter.FILTER_ACCEPT;
       return NodeFilter.FILTER_REJECT;
     }
   });
 
-  let tn;
-  while ((tn = walker.nextNode())){
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+  const tasks = [];
+  for (const tn of textNodes){
     const current = tn.nodeValue;
     const orig = _ORIG_TEXT.get(tn) || current;
     if (!_ORIG_TEXT.has(tn)) _ORIG_TEXT.set(tn, orig);
 
-    // Translate from Hebrew original
-    trText(orig).then(t => {
-      if (I18N.isHebrew(I18N.lang)) return;
-      if (!tn.parentNode) return;
-      tn.nodeValue = t;
-    });
+    tasks.push(
+      trText(orig).then(t => {
+        if (I18N.isHebrew(I18N.lang)) return;
+        if (!tn.parentNode) return;
+        tn.nodeValue = t;
+      })
+    );
   }
 
-  // ATTRIBUTES (placeholder / title / aria-label / alt)
+  // Translate attributes
   const attrEls = root.querySelectorAll
     ? root.querySelectorAll("[placeholder],[title],[aria-label],[alt]")
     : [];
-
   attrEls.forEach(elm => {
     if (!elm || _isSkippableNode(elm)) return;
-
     ["placeholder","title","aria-label","alt"].forEach(attr => {
       if (!elm.hasAttribute(attr)) return;
-
       const cur = elm.getAttribute(attr) || "";
-      const origKey = `data-i18n-orig-${attr}`;
-      const orig = elm.getAttribute(origKey) || cur;
+      const orig = (elm.dataset && elm.dataset["orig_" + attr]) || cur;
+      if (elm.dataset && !elm.dataset["orig_" + attr]) elm.dataset["orig_" + attr] = orig;
+      if (!_looksHebrew(orig)) return;
 
-      if (!elm.hasAttribute(origKey)) elm.setAttribute(origKey, orig);
-
-      if (!_looksHebrew(orig) && !_looksHebrew(cur)) return;
-
-      trText(orig).then(t => {
-        if (I18N.isHebrew(I18N.lang)) return;
-        if (!elm.isConnected) return;
-        elm.setAttribute(attr, t);
-      });
+      tasks.push(
+        trText(orig).then(t => {
+          if (I18N.isHebrew(I18N.lang)) return;
+          if (!elm.isConnected) return;
+          elm.setAttribute(attr, t);
+        })
+      );
     });
+  });
+
+  await Promise.allSettled(tasks);
+}
+
+function _setI18nPending(elm, on){
+  if (!elm) return;
+  if (on) elm.classList.add("i18n-pending");
+  else elm.classList.remove("i18n-pending");
+}
+
+// Set feedback (text) without Hebrew flash: if translation cached -> set immediately; else show nothing until ready.
+function setFeedbackText(heText){
+  el.feedback.classList.remove("errorbox");
+  el.feedback.hidden = false;
+
+  if (I18N.isHebrew(I18N.lang)) {
+    el.feedback.textContent = heText;
+    return;
+  }
+
+  const cached = trTextSync(heText);
+  if (cached != null) {
+    el.feedback.textContent = cached;
+    return;
+  }
+
+  el.feedback.textContent = ""; // avoid Hebrew flash
+  trText(heText).then(t => {
+    if (I18N.isHebrew(I18N.lang)) return;
+    el.feedback.textContent = t;
   });
 }
 
+// Set feedback (HTML) and translate before revealing (avoids Hebrew flash).
+function setFeedbackHTML(heHtml){
+  el.feedback.hidden = false;
+
+  if (I18N.isHebrew(I18N.lang)) {
+    el.feedback.innerHTML = heHtml;
+    return;
+  }
+
+  _setI18nPending(el.feedback, true);
+  el.feedback.innerHTML = heHtml;
+  translateDomAsync(el.feedback).finally(() => {
+    if (!I18N.isHebrew(I18N.lang)) _setI18nPending(el.feedback, false);
+  });
+}
 
 // Restore everything back to Hebrew (original) when user selects Hebrew.
 function restoreHebrew(root = document.body){
@@ -645,12 +779,38 @@ function startTranslationObserver(){
     if (I18N.isHebrew(I18N.lang)) return;
     if (_translateBusy) return;
 
-    // Fast-path: if something changed inside a no-translate zone, ignore.
+    // Only translate when Hebrew text/attrs appeared/changed.
     for (const m of mutations){
       const t = m.target;
       if (_isSkippableNode(t)) continue;
-      scheduleTranslate(document.body);
-      break;
+
+      if (m.type === "characterData"){
+        if (_looksHebrew(t.nodeValue || "")){
+          scheduleTranslate(document.body);
+          break;
+        }
+        continue;
+      }
+
+      if (m.type === "attributes"){
+        const attr = m.attributeName || "";
+        const v = (t && t.getAttribute) ? (t.getAttribute(attr) || "") : "";
+        if (_looksHebrew(v)){
+          scheduleTranslate(document.body);
+          break;
+        }
+        continue;
+      }
+
+      // childList
+      if (m.addedNodes && m.addedNodes.length){
+        let needs = false;
+        m.addedNodes.forEach(n => { if (!needs && _nodeHasHebrew(n)) needs = true; });
+        if (needs){
+          scheduleTranslate(document.body);
+          break;
+        }
+      }
     }
   });
 
@@ -835,54 +995,6 @@ const QUESTIONS = [
     wrongMsg: "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע."
   }
 ];
-
-// =========================
-// I18N Preload helpers (avoid "Hebrew flash" before translation)
-// =========================
-function _collectHebStrings(val, out){
-  if (val == null) return;
-  if (typeof val === "string"){
-    if (_looksHebrew(val) && val.trim()) out.add(val);
-    return;
-  }
-  if (Array.isArray(val)){
-    for (const v of val) _collectHebStrings(v, out);
-    return;
-  }
-  if (typeof val === "object"){
-    for (const k in val){
-      if (!Object.prototype.hasOwnProperty.call(val, k)) continue;
-      // Skip non-text fields
-      if (k === "img" || k === "src" || k === "href" || k === "id") continue;
-      _collectHebStrings(val[k], out);
-    }
-  }
-}
-
-async function preloadQuestionsTranslations(fromIdx, count){
-  if (I18N.isHebrew(I18N.lang)) return;
-  const start = Math.max(0, fromIdx|0);
-  const end = Math.min(QUESTIONS.length, start + (count|0));
-  const set = new Set();
-
-  for (let i=start; i<end; i++){
-    _collectHebStrings(QUESTIONS[i], set);
-  }
-
-  // Also preload common UI phrases that appear after clicks
-  ["נכון","לא נכון","המשך","נסו שוב","טעות","הצלחה","שגיאה"].forEach(s => set.add(s));
-
-  const arr = Array.from(set);
-  // Don’t block UI: run in small batches
-  const B = 40;
-  for (let i=0; i<arr.length; i+=B){
-    const batch = arr.slice(i, i+B);
-    await Promise.all(batch.map(s => trText(s)));
-    // yield to keep the UI responsive
-    await new Promise(r => setTimeout(r, 0));
-  }
-}
-
 
 // =========================
 // DOM
@@ -1239,14 +1351,13 @@ function failAndRetry(q, fallbackMsg){
 
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
-  el.feedback.innerHTML = `
-    <div>${formatSpecial(msg)}</div>
+  setFeedbackHTML(`
+<div>${formatSpecial(msg)}</div>
     <div style="margin-top:10px;">
       <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
     </div>
-  `;
-
-  el.btnNext.disabled = true;
+  `);
+el.btnNext.disabled = true;
 
   const btn = document.getElementById("btnRetryNow");
   if (btn){
@@ -1360,7 +1471,7 @@ const TYPE = {
     
       if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
         el.feedback.hidden = false;
-        el.feedback.textContent = "הגעת למספר הלחיצות המקסימלי.";
+        setFeedbackText("הגעת למספר הלחיצות המקסימלי.");
         return;
       }
     
@@ -1386,7 +1497,7 @@ const TYPE = {
       rt.attempts.push({ hitIndex, markerEl: marker });
     
       el.feedback.hidden = false;
-      el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
+      setFeedbackText((hitIndex !== null) ? "נכון ✅" : "לא נכון ❌");
     
       el.btnNext.disabled = rt.attempts.length === 0;
       updateHotspotUI(q);
@@ -1873,7 +1984,7 @@ function deleteAttempt(q, idx){
 
   el.btnNext.disabled = rt.attempts.length === 0;
   el.feedback.hidden = false;
-  el.feedback.textContent = "נמחק. אפשר ללחוץ שוב.";
+  setFeedbackText("נמחק. אפשר ללחוץ שוב.");
   updateHotspotUI(q);
 }
 
@@ -2088,6 +2199,10 @@ function startFromBeginning(){
 function renderQuestion(){
   const q = QUESTIONS[state.idx];
 
+  // Avoid "Hebrew flash" in non-Hebrew languages: hide quiz card while translating
+  if (!I18N.isHebrew(I18N.lang)) _setI18nPending(el.screenQuiz, true);
+  else _setI18nPending(el.screenQuiz, false);
+
   hideAllQuestionUIs();
 
   el.progress.textContent = `שאלה ${state.idx + 1} מתוך ${QUESTIONS.length}`;
@@ -2100,22 +2215,21 @@ function renderQuestion(){
   const type = q.type || "two";
   const handler = TYPE[type];
   if (!handler) {
-    el.feedback.hidden = false;
-    el.feedback.textContent = `Type לא מוכר: ${type}`;
-    if (!I18N.isHebrew(I18N.lang)) translateDom(el.feedback);
+    setFeedbackText(`Type לא מוכר: ${type}`);
     return;
   }
 
   handler.render(q);
 
-  // If we're in a translated language: translate visible question immediately
-  // and preload the next questions so they won't flash Hebrew.
-  if (!I18N.isHebrew(I18N.lang)){
-    const quizScreen = document.getElementById("screen-quiz") || document.body;
-    translateDom(quizScreen);
-    preloadQuestionsTranslations(state.idx + 1, 6);
+  // Translate only the quiz screen, then reveal
+  if (!I18N.isHebrew(I18N.lang)) {
+    translateDomAsync(el.screenQuiz).finally(() => {
+      if (!I18N.isHebrew(I18N.lang)) _setI18nPending(el.screenQuiz, false);
+    });
   }
 }
+
+
 
 function goNext(){
   state.idx++;
@@ -2151,33 +2265,39 @@ window.addEventListener("DOMContentLoaded", async () => {
       I18N.applyDocAttrs();
       updateDocumentTitle();
 
-      // Restore Hebrew first (single source of truth), then translate visible UI
-      _getVisibleTranslateRoots().forEach(r => restoreHebrew(r));
+      // Restore Hebrew first (single source of truth)
+      restoreHebrew(document.body);
 
-      if (!I18N.isHebrew(code)){
-        // Translate the start screen immediately (so you see English right away)
-        const startScreen = document.getElementById("screen-start") || document.body;
-        translateDom(startScreen);
+      // Translate ONLY the currently visible screen to avoid "Hebrew flash"
+      const visibleRoot =
+        (!el.screenQuiz.hidden) ? el.screenQuiz :
+        (!el.screenResult.hidden) ? el.screenResult :
+        el.screenStart;
 
-        // Preload translations for upcoming questions (prevents "Hebrew flash" per question)
-        const idx = (typeof state !== "undefined" && state && typeof state.idx === "number") ? state.idx : 0;
-        preloadQuestionsTranslations(idx, 10);
+      if (!I18N.isHebrew(code)) {
+        _setI18nPending(visibleRoot, true);
+        translateDomAsync(visibleRoot).finally(() => {
+          if (!I18N.isHebrew(I18N.lang)) _setI18nPending(visibleRoot, false);
+        });
 
-        // Also translate the visible parts now (no full-document scan)
-        scheduleTranslate(document.body);
+        // Kick off background preloading for the rest of the quiz
+        const startIdx = (typeof state !== "undefined" && typeof state.idx === "number") ? state.idx : 0;
+        preloadTranslationsFromQuestion(startIdx);
       }
 
-      // Update kitchen placeholder only (names stay no-translate)
+      // Also update kitchens placeholder (names stay no-translate)
       scheduleTranslate(el.kitchen);
+
+      // Optional: translate the rest lazily
+      if (!I18N.isHebrew(code)) scheduleTranslate(document.body);
+
     });
   }
 
   // Translate initial static UI if needed
-  if (!I18N.isHebrew(I18N.lang)){
-    const startScreen = document.getElementById("screen-start") || document.body;
-    translateDom(startScreen);
-    preloadQuestionsTranslations(0, 10);
+  if (!I18N.isHebrew(I18N.lang)) {
     scheduleTranslate(document.body);
+    preloadTranslationsFromQuestion(0);
   }
 
   // קודם כל: אם יש rid – להביא מטבחים מהשיטס ולהחליף את ה-HTML
