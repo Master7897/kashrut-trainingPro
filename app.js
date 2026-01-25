@@ -862,9 +862,9 @@ function translateDom(root = document.body){
         });
       });
     });
-    applyI18NPatches(root);
-    patchHighlightedTypography(root);
-  } finally {
+      patchHighlightedTypography(root);
+      applyI18NPatches(root);
+    } finally {
     _translateBusy = false;
   }
 }
