@@ -311,6 +311,98 @@ function formatSpecial(text) {
 
   return s;
 }
+// =========================
+// PATCH: spacing + quotes around highlighted terms (LTR only)
+// Fixes:
+// 1) Hebrew prefixes stuck to [B]/[H]/[P] -> adds space in LTR (forMeat -> for meat)
+// 2) Quotes like '[B]בשרי[/B]' -> quotes move inside the colored span (so only the word is quoted/styled)
+// =========================
+function patchHighlightedTypography(root){
+  if (!root || I18N.isHebrew(I18N.lang)) return;
+  const dir = (document.documentElement.getAttribute("dir") || "rtl");
+  if (dir !== "ltr") return; // Only needed for English/Russian/Amharic (LTR). Arabic stays RTL.
+
+  const spans = root.querySelectorAll?.(".hl-meat, .hl-dairy, .hl-parve");
+  if (!spans || spans.length === 0) return;
+
+  const isWordChar = (ch) => /[A-Za-z0-9\u00C0-\u024F\u0400-\u04FF]/.test(ch); // Latin + Cyrillic + digits
+  const lastChar = (s) => (s ? s[s.length - 1] : "");
+  const firstChar = (s) => (s ? s[0] : "");
+
+  const QUOTES = ["'", "״", "׳", '"', "“", "”"];
+
+  for (const sp of spans){
+    // ---------- (A) prefix spacing: add space between prev text and the span if needed ----------
+    const prev = sp.previousSibling;
+    if (prev && prev.nodeType === Node.TEXT_NODE){
+      const t = prev.nodeValue || "";
+      const a = lastChar(t);
+      const b = firstChar(sp.textContent || "");
+      // Only when both sides look like a word: "for" + "meat" => "for meat"
+      if (a && b && isWordChar(a) && isWordChar(b) && !/\s$/.test(t)){
+        prev.nodeValue = t + " ";
+      }
+    }
+
+    // ---------- (B) quotes scope: move surrounding quotes into the colored span ----------
+    // Pattern: ... "'" + <span class="hl-...">word</span> + "'" ...
+    const prev2 = sp.previousSibling;
+    const next2 = sp.nextSibling;
+
+    if (prev2 && next2 && prev2.nodeType === Node.TEXT_NODE && next2.nodeType === Node.TEXT_NODE){
+      let lt = prev2.nodeValue || "";
+      let rt = next2.nodeValue || "";
+
+      const lch = lastChar(lt.trimEnd());
+      const rch = firstChar(rt.trimStart());
+
+      const hasL = QUOTES.includes(lch);
+      const hasR = QUOTES.includes(rch);
+
+      if (hasL && hasR){
+        // remove the quote from edges
+        // left: remove last quote char
+        prev2.nodeValue = lt.replace(new RegExp(`${escapeRegExp(lch)}\\s*$`), ""); 
+        // right: remove first quote char
+        next2.nodeValue = rt.replace(new RegExp(`^\\s*${escapeRegExp(rch)}`), "");
+
+        // ensure span text wrapped with the same quote chars
+        const cur = sp.textContent || "";
+        const curTrimL = cur.trimStart();
+        const curTrimR = cur.trimEnd();
+
+        // Don't double-wrap if already quoted
+        const alreadyL = QUOTES.includes(firstChar(curTrimL));
+        const alreadyR = QUOTES.includes(lastChar(curTrimR));
+
+        const preWS = (cur.match(/^\s+/)?.[0]) || "";
+        const sufWS = (cur.match(/\s+$/)?.[0]) || "";
+        const core = cur.trim();
+
+        let newCore = core;
+        if (!alreadyL) newCore = lch + newCore;
+        if (!alreadyR) newCore = newCore + rch;
+
+        sp.textContent = preWS + newCore + sufWS;
+      }
+    }
+
+    // ---------- (C) optional: also ensure space AFTER span if stuck (rare) ----------
+    const next = sp.nextSibling;
+    if (next && next.nodeType === Node.TEXT_NODE){
+      const t = next.nodeValue || "";
+      const a = lastChar(sp.textContent || "");
+      const b = firstChar(t);
+      if (a && b && isWordChar(a) && isWordChar(b) && !/^\s/.test(t)){
+        next.nodeValue = " " + t;
+      }
+    }
+  }
+}
+
+function escapeRegExp(s){
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 // =========================
 // I18N (AUTO TRANSLATION)
@@ -622,6 +714,7 @@ function translateDom(root = document.body){
         });
       });
     });
+    patchHighlightedTypography(root);
   } finally {
     _translateBusy = false;
   }
