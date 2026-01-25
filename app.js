@@ -357,37 +357,226 @@ function _isSkippableNode(node){
 }
 
 // Public: translate a single string (Hebrew source) into current language
+function _splitWS(s){
+  const str = String(s ?? "");
+  const m = str.match(/^(\s*)([\s\S]*?)(\s*)$/);
+  return { lead: m ? m[1] : "", core: m ? m[2].trim() : str.trim(), trail: m ? m[3] : "" };
+}
+function _cacheKey(lang, core){ return `${lang}||${core}`; }
+function trTextSync(src){
+  const lang = I18N.lang;
+  const { lead, core, trail } = _splitWS(src);
+  if (!core) return String(src ?? "");
+  if (I18N.isHebrew(lang)) return String(src ?? "");
+  const k = _cacheKey(lang, core);
+  if (_TR_CACHE.has(k)) return lead + _TR_CACHE.get(k) + trail;
+  return null;
+}
+function _parseGTranslate(resJson){
+  // Expected: [ [ [translated, original, ...], ... ], ... ]
+  try{
+    const arr = Array.isArray(resJson) ? resJson : null;
+    const segs = arr && Array.isArray(arr[0]) ? arr[0] : null;
+    if (!segs) return null;
+    return segs.map(s => (Array.isArray(s) ? (s[0] ?? "") : "")).join("");
+  } catch { return null; }
+}
+async function _translateCore(core, lang){
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(core)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`translate_http_${res.status}`);
+  const j = await res.json();
+  const t = _parseGTranslate(j);
+  if (typeof t !== "string") throw new Error("translate_parse_error");
+  return t;
+}
+
+// Public: translate a single string (Hebrew source) into current language
 async function trText(src){
   const lang = I18N.lang;
   const s = String(src ?? "");
   if (!s) return s;
   if (I18N.isHebrew(lang)) return s;
 
-  const key = `${lang}||${s}`;
-  if (_TR_CACHE.has(key)) return _TR_CACHE.get(key);
-  if (_TR_PENDING.has(key)) return _TR_PENDING.get(key);
+  const { lead, core, trail } = _splitWS(s);
+  if (!core) return s;
 
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(s)}`;
+  const key = _cacheKey(lang, core);
+  if (_TR_CACHE.has(key)) return lead + _TR_CACHE.get(key) + trail;
+  if (_TR_PENDING.has(key)) return _TR_PENDING.get(key).then(t => lead + t + trail);
 
   const p = (async () => {
     try{
-      const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache" });
-      const data = await res.json();
-      const out = (data?.[0] || []).map(seg => seg?.[0] || "").join("");
-      const txt = (out || s).trim() ? out : s;
-      _TR_CACHE.set(key, txt);
-      return txt;
-    } catch {
-      _TR_CACHE.set(key, s);
-      return s;
+      const t = await _translateCore(core, lang);
+      _TR_CACHE.set(key, t);
+      return t;
     } finally {
       _TR_PENDING.delete(key);
     }
   })();
 
   _TR_PENDING.set(key, p);
-  return p;
+  const out = await p;
+  return lead + out + trail;
 }
+
+// Preload a set of Hebrew strings into the cache so the UI can render translated instantly.
+async function preloadTranslations(strings){
+  const lang = I18N.lang;
+  if (I18N.isHebrew(lang)) return;
+  const uniq = [];
+  const seen = new Set();
+  for (const s of (strings || [])){
+    const { core } = _splitWS(s);
+    if (!core) continue;
+    if (!/[\u0590-\u05FF]/.test(core)) continue; // only Hebrew sources
+    const k = _cacheKey(lang, core);
+    if (_TR_CACHE.has(k) || _TR_PENDING.has(k)) continue;
+    if (seen.has(core)) continue;
+    seen.add(core);
+    uniq.push(core);
+  }
+  if (uniq.length === 0) return;
+
+  // Chunk to keep URLs reasonable
+  const CHUNK = 25;
+  for (let i=0;i<uniq.length;i+=CHUNK){
+    const batch = uniq.slice(i, i+CHUNK);
+
+    // Join using stable markers to split after translation
+    const markers = batch.map((_, idx) => `<<<${idx}>>>`);
+    const joined = batch.map((t, idx) => `${markers[idx]}${t}`).join("\n");
+
+    const joinedPromise = _translateCore(joined, lang);
+    // Prevent duplicate concurrent work: mark each core as pending via the same promise
+    const pendingPromises = batch.map((core) => {
+      const k = _cacheKey(lang, core);
+      const p = joinedPromise.then(full => {
+        // Split translated string back into parts by markers
+        const re = /<<<\s*(\d+)\s*>>>/g;
+        const matches = [...full.matchAll(re)];
+        const out = new Array(batch.length).fill("");
+        for (let mIdx=0; mIdx<matches.length; mIdx++){
+          const thisM = matches[mIdx];
+          const idx = parseInt(thisM[1], 10);
+          const start = thisM.index + thisM[0].length;
+          const end = (mIdx+1 < matches.length) ? matches[mIdx+1].index : full.length;
+          if (!Number.isNaN(idx) && idx >= 0 && idx < out.length){
+            out[idx] = full.slice(start, end).replace(/^\s*\n?/, "").replace(/\n?\s*$/, "");
+          }
+        }
+        const ti = out[batch.indexOf(core)];
+        // Fallback: if parsing failed, translate individually
+        if (!ti) return _translateCore(core, lang);
+        return ti;
+      }).then(t => {
+        _TR_CACHE.set(k, t);
+        return t;
+      }).finally(() => {
+        _TR_PENDING.delete(k);
+      });
+      _TR_PENDING.set(k, p);
+      return p;
+    });
+
+    await Promise.allSettled(pendingPromises);
+  }
+}
+
+function _collectStringsDeep(x, out){
+  if (!x) return;
+  const t = typeof x;
+  if (t === "string"){
+    if (/[\u0590-\u05FF]/.test(x)) out.push(x);
+    return;
+  }
+  if (Array.isArray(x)){
+    for (const v of x) _collectStringsDeep(v, out);
+    return;
+  }
+  if (t === "object"){
+    for (const k in x){
+      if (!Object.prototype.hasOwnProperty.call(x,k)) continue;
+      _collectStringsDeep(x[k], out);
+    }
+  }
+}
+function collectHebrewStringsFromQuestions(fromIdx, toIdx){
+  const out = [];
+  const start = Math.max(0, fromIdx|0);
+  const end = Math.min(QUESTIONS.length, (toIdx==null ? QUESTIONS.length : (toIdx|0)));
+  for (let i=start;i<end;i++){
+    _collectStringsDeep(QUESTIONS[i], out);
+  }
+  return out;
+}
+function collectHebrewStringsFromDOM(root){
+  const out = [];
+  try{
+    const r = root || document.body;
+    // Text nodes
+    const walker = document.createTreeWalker(r, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if (_isSkippableNode(node)) return NodeFilter.FILTER_REJECT;
+        const v = node.nodeValue || "";
+        const orig = _ORIG_TEXT.get(node) || v;
+        if (/[\u0590-\u05FF]/.test(orig)) return NodeFilter.FILTER_ACCEPT;
+        return NodeFilter.FILTER_REJECT;
+      }
+    });
+    while (walker.nextNode()){
+      const tn = walker.currentNode;
+      const v = tn.nodeValue || "";
+      const orig = _ORIG_TEXT.get(tn) || v;
+      out.push(orig);
+    }
+    // Attributes we translate
+    const els = r.querySelectorAll ? r.querySelectorAll("[placeholder],[title],[aria-label],[alt]") : [];
+    els.forEach(elm => {
+      if (_isSkippableNode(elm)) return;
+      ["placeholder","title","aria-label","alt"].forEach(attr => {
+        if (!elm.hasAttribute(attr)) return;
+        const cur = elm.getAttribute(attr) || "";
+        const origKey = `data-i18n-orig-${attr}`;
+        const orig = elm.getAttribute(origKey) || cur;
+        if (/[\u0590-\u05FF]/.test(orig)) out.push(orig);
+      });
+    });
+  } catch {}
+  return out;
+}
+
+function idlePreloadAllQuestions(startIdx=0){
+  if (I18N.isHebrew(I18N.lang)) return;
+  const start = startIdx|0;
+  if (start >= QUESTIONS.length) return;
+  const run = async () => {
+    await preloadTranslations(collectHebrewStringsFromQuestions(start, Math.min(QUESTIONS.length, start+10)));
+    idlePreloadAllQuestions(start+10);
+  };
+  if ("requestIdleCallback" in window){
+    requestIdleCallback(() => run(), { timeout: 1200 });
+  } else {
+    setTimeout(() => run(), 0);
+  }
+}
+
+async function warmupTranslations(){
+  if (I18N.isHebrew(I18N.lang)) return;
+  const common = [
+    "נכון ✅","לא נכון ❌","נסו שוב",
+    "לא נכון ❌ נסו שוב.","לא נכון ❌","לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.",
+    "בדוק את חיבור האינטרנט שלך, ונסה שוב"
+  ];
+  const domStrings = collectHebrewStringsFromDOM(document.body);
+  const firstQs = collectHebrewStringsFromQuestions(0, Math.min(QUESTIONS.length, 6));
+  await preloadTranslations([...common, ...domStrings, ...firstQs]);
+  // After cache is warm, translate immediately (sync path)
+  translateNow(document.body);
+  // Keep preloading the rest in idle time
+  idlePreloadAllQuestions(6);
+}
+
 
 // Translate element subtree text nodes + common attributes.
 // Runs non-blocking: if translation isn't cached yet, it updates when available.
@@ -403,6 +592,13 @@ function scheduleTranslate(root = document.body){
     _translateScheduled = false;
     translateDom(root);
   });
+}
+
+
+function translateNow(root = document.body){
+  if (I18N.isHebrew(I18N.lang)) return;
+  if (_translateBusy){ scheduleTranslate(root); return; }
+  translateDom(root);
 }
 
 function translateDom(root = document.body){
@@ -434,13 +630,18 @@ function translateDom(root = document.body){
       if (!_ORIG_TEXT.has(tn)) _ORIG_TEXT.set(tn, orig);
 
       // Always translate from Hebrew original (single source of truth)
-      trText(orig).then(t => {
-        // If user switched back to Hebrew mid-flight, don't apply.
-        if (I18N.isHebrew(I18N.lang)) return;
-        // Don't overwrite if node was removed
-        if (!tn.parentNode) return;
-        tn.nodeValue = t;
-      });
+      const syncT = trTextSync(orig);
+      if (syncT !== null){
+        tn.nodeValue = syncT;
+      } else {
+        trText(orig).then(t => {
+          // If user switched back to Hebrew mid-flight, don't apply.
+          if (I18N.isHebrew(I18N.lang)) return;
+          // Don't overwrite if node was removed
+          if (!tn.parentNode) return;
+          tn.nodeValue = t;
+        });
+      }
     }
 
     // ATTRIBUTES (placeholder / title / aria-label / alt)
@@ -462,11 +663,16 @@ function translateDom(root = document.body){
         // Only translate if the Hebrew original contains Hebrew (avoid touching image URLs etc)
         if (!_looksHebrew(orig) && !_looksHebrew(cur)) return;
 
-        trText(orig).then(t => {
-          if (I18N.isHebrew(I18N.lang)) return;
-          if (!elm.isConnected) return;
-          elm.setAttribute(attr, t);
-        });
+        const syncA = trTextSync(orig);
+        if (syncA !== null){
+          elm.setAttribute(attr, syncA);
+        } else {
+          trText(orig).then(t => {
+            if (I18N.isHebrew(I18N.lang)) return;
+            if (!elm.isConnected) return;
+            elm.setAttribute(attr, t);
+          });
+        }
       });
     });
   } finally {
@@ -522,7 +728,7 @@ function startTranslationObserver(){
     for (const m of mutations){
       const t = m.target;
       if (_isSkippableNode(t)) continue;
-      scheduleTranslate(document.body);
+      translateNow(document.body);
       break;
     }
   });
@@ -1070,6 +1276,7 @@ function failAndRetry(q, fallbackMsg){
       <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
     </div>
   `;
+  if (!I18N.isHebrew(I18N.lang)) translateNow(el.feedback);
 
   el.btnNext.disabled = true;
 
@@ -1186,6 +1393,7 @@ const TYPE = {
       if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
         el.feedback.hidden = false;
         el.feedback.textContent = "הגעת למספר הלחיצות המקסימלי.";
+        if (!I18N.isHebrew(I18N.lang)) translateNow(el.feedback);
         return;
       }
     
@@ -1212,6 +1420,7 @@ const TYPE = {
     
       el.feedback.hidden = false;
       el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
+      if (!I18N.isHebrew(I18N.lang)) translateNow(el.feedback);
     
       el.btnNext.disabled = rt.attempts.length === 0;
       updateHotspotUI(q);
@@ -1927,10 +2136,19 @@ function renderQuestion(){
   if (!handler) {
     el.feedback.hidden = false;
     el.feedback.textContent = `Type לא מוכר: ${type}`;
+    if (!I18N.isHebrew(I18N.lang)) translateNow(el.feedback);
     return;
   }
 
   handler.render(q);
+
+  // If we're in a translated language, apply cached translations immediately (no flicker)
+  if (!I18N.isHebrew(I18N.lang)){
+    translateNow(el.screenQuiz || document.body);
+    // Preload translations for the next few questions so they appear already translated
+    const nextStrings = collectHebrewStringsFromQuestions(state.idx + 1, Math.min(QUESTIONS.length, state.idx + 6));
+    preloadTranslations(nextStrings);
+  }
 }
 
 function goNext(){
@@ -1969,15 +2187,17 @@ window.addEventListener("DOMContentLoaded", async () => {
 
       // Restore Hebrew first (single source of truth), then translate again if needed
       restoreHebrew(document.body);
-      if (!I18N.isHebrew(code)) scheduleTranslate(document.body);
+      if (!I18N.isHebrew(code)){
+        await warmupTranslations();
+      }
 
       // Also update kitchens placeholder (names stay no-translate)
       scheduleTranslate(el.kitchen);
     });
   }
 
-  // Translate initial static UI if needed
-  if (!I18N.isHebrew(I18N.lang)) scheduleTranslate(document.body);
+  // Translate initial static UI if needed (with cache warmup to avoid flicker)
+  if (!I18N.isHebrew(I18N.lang)) { warmupTranslations(); }
 
   // קודם כל: אם יש rid – להביא מטבחים מהשיטס ולהחליף את ה-HTML
   try { 
