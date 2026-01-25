@@ -255,7 +255,7 @@ async function initKitchenList(){
   if (!r || !r.ok || !Array.isArray(r.kitchens) || r.kitchens.length === 0){
     el.startError.hidden = false;
         const netMsg = (!r || r.error === "TIMEOUT" || r.error === "NETWORK_ERROR")
-      ? trTextSync("בדוק את חיבור האינטרנט שלך, ונסה שוב")
+      ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
       : "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.";
     el.startError.textContent = netMsg;
     el.btnStart.disabled = true;
@@ -296,14 +296,11 @@ const DRAG_ZONES_4x2 = [
 function formatSpecial(text) {
   let s = String(text ?? "");
 
-  // Convert markup tokens to styled spans
   s = s.replace(/\[P\](.*?)\[\/P\]/g, '<span class="hl-parve">$1</span>');
   s = s.replace(/\[B\](.*?)\[\/B\]/g, '<span class="hl-meat">$1</span>');
   s = s.replace(/\[H\](.*?)\[\/H\]/g, '<span class="hl-dairy">$1</span>');
 
-  // Hebrew-only cosmetic: merge a leading prefix letter (ה/כ/מ/ו/ש) with the next word
-  // ONLY when the prefix letter is immediately followed by whitespace and then a highlight span.
-  // (Keeps normal spaces in translated languages.)
+  // מחיקת רווח אחרי אות יחס לפני תגית
   s = s.replace(
     /(^|[^\u0590-\u05FF])([הכמוש])\s+(<span class="hl-(?:parve|dairy|meat)">)/g,
     "$1$2$3"
@@ -311,246 +308,7 @@ function formatSpecial(text) {
 
   return s;
 }
-// =========================
-// PATCHES (run after translation) - single insertion point
-// Fixes:
-// A) double '?' in titles with highlighted spans
-// B) move surrounding quotes into highlighted spans + keep spaces
-// C) move hl-term before the last noun (parve fridge / meat tray) in LTR
-// =========================
 
-function escapeRegExp(s){
-  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function patchDoubleQuestionMarkInTitle(titleEl){
-  if (!titleEl) return;
-  const dir = (document.documentElement.getAttribute("dir") || "rtl");
-  if (dir !== "ltr") return;
-
-  // Find last non-empty text node
-  const nodes = Array.from(titleEl.childNodes);
-  const lastText = [...nodes].reverse().find(n => n.nodeType === Node.TEXT_NODE && n.nodeValue.trim() !== "");
-  if (!lastText) return;
-
-  // If the title ends with a standalone "?", remove any other "?" that got injected earlier
-  if (lastText.nodeValue.trim() === "?"){
-    for (const n of nodes){
-      if (n === lastText) continue;
-      if (n.nodeType === Node.TEXT_NODE && n.nodeValue.includes("?")){
-        n.nodeValue = n.nodeValue.replace(/\?/g, "");
-      }
-    }
-  }
-}
-
-function patchQuotesAndSpacing(root){
-  if (!root || I18N.isHebrew(I18N.lang)) return;
-  const dir = (document.documentElement.getAttribute("dir") || "rtl");
-  if (dir !== "ltr") return;
-
-  const spans = root.querySelectorAll?.(".hl-meat, .hl-dairy, .hl-parve");
-  if (!spans || spans.length === 0) return;
-
-  const isWordChar = (ch) => /[A-Za-z0-9\u00C0-\u024F\u0400-\u04FF]/.test(ch); // Latin + Cyrillic + digits
-  const lastChar = (s) => (s ? s[s.length - 1] : "");
-  const firstChar = (s) => (s ? s[0] : "");
-
-  const QUOTES = ["'", '"', "“", "”", "׳", "״"];
-
-  for (const sp of spans){
-    // (1) add space between prev text and span if "word"+"word" became stuck (forMeat)
-    const prev = sp.previousSibling;
-    if (prev && prev.nodeType === Node.TEXT_NODE){
-      const t = prev.nodeValue || "";
-      const a = lastChar(t);
-      const b = firstChar(sp.textContent || "");
-      if (a && b && isWordChar(a) && isWordChar(b) && !/\s$/.test(t)){
-        prev.nodeValue = t + " ";
-      }
-    }
-
-    // (2) move surrounding quotes into the span:  ' + <span>meat</span> + '  =>  <span>'meat'</span>
-    const prev2 = sp.previousSibling;
-    const next2 = sp.nextSibling;
-
-    if (prev2 && next2 && prev2.nodeType === Node.TEXT_NODE && next2.nodeType === Node.TEXT_NODE){
-      const lt = prev2.nodeValue || "";
-      const rt = next2.nodeValue || "";
-
-      const lTrimEnd = lt.replace(/\s+$/,"");
-      const rTrimStart = rt.replace(/^\s+/,"");
-
-      const lch = lastChar(lTrimEnd);
-      const rch = firstChar(rTrimStart);
-
-      const hasL = QUOTES.includes(lch);
-      const hasR = QUOTES.includes(rch);
-
-      if (hasL && hasR){
-        // remove only the quote char (keep spaces)
-        prev2.nodeValue = lt.replace(new RegExp(`${escapeRegExp(lch)}(?=\\s*$)`), "");
-        next2.nodeValue = rt.replace(new RegExp(`^(\\s*)${escapeRegExp(rch)}`), "$1");
-
-        const cur = sp.textContent || "";
-        const preWS = (cur.match(/^\s+/)?.[0]) || "";
-        const sufWS = (cur.match(/\s+$/)?.[0]) || "";
-        const core = cur.trim();
-
-        // avoid double wrapping
-        const alreadyL = QUOTES.includes(firstChar(core));
-        const alreadyR = QUOTES.includes(lastChar(core));
-
-        let newCore = core;
-        if (!alreadyL) newCore = lch + newCore;
-        if (!alreadyR) newCore = newCore + rch;
-
-        sp.textContent = preWS + newCore + sufWS;
-      }
-    }
-
-    // (3) add space after span if stuck (rare, but safe)
-    const next = sp.nextSibling;
-    if (next && next.nodeType === Node.TEXT_NODE){
-      const t = next.nodeValue || "";
-      const a = lastChar(sp.textContent || "");
-      const b = firstChar(t);
-      if (a && b && isWordChar(a) && isWordChar(b) && !/^\s/.test(t)){
-        next.nodeValue = " " + t;
-      }
-    }
-  }
-}
-
-function patchTermBeforeNoun(root){
-  if (!root || I18N.isHebrew(I18N.lang)) return;
-  const dir = (document.documentElement.getAttribute("dir") || "rtl");
-  if (dir !== "ltr") return;
-
-  const spans = root.querySelectorAll?.(".hl-meat, .hl-dairy, .hl-parve");
-  if (!spans || spans.length === 0) return;
-
-  spans.forEach(sp => {
-    // only if span is at the end (ignoring punctuation/space)
-    const next = sp.nextSibling;
-    const nextIsOnlyPunct = next && next.nodeType === Node.TEXT_NODE && /^[\s\?\.\!,:;]*$/.test(next.nodeValue);
-    const isLastMeaningful = (!sp.nextSibling) || nextIsOnlyPunct;
-    if (!isLastMeaningful) return;
-
-    const prev = sp.previousSibling;
-    if (!prev || prev.nodeType !== Node.TEXT_NODE) return;
-
-    const t = prev.nodeValue || "";
-    // grab the last word before the span
-    const m = t.match(/^(.*\b)([A-Za-z\u00C0-\u024F\u0400-\u04FF]+)\s*$/);
-    if (!m) return;
-
-    const before = m[1];
-    const noun = m[2];
-
-    // "... fridge " + <span>parve</span>  =>  "... " + <span>parve</span> + " fridge"
-    prev.nodeValue = before;
-
-    const nounNode = document.createTextNode(" " + noun);
-    sp.parentNode.insertBefore(nounNode, next || null);
-  });
-}
-
-function applyI18NPatches(root){
-  patchQuotesAndSpacing(root);
-  patchTermBeforeNoun(root);
-  // specifically for the question title (double '?')
-  if (typeof el !== "undefined" && el.questionTitle){
-    patchDoubleQuestionMarkInTitle(el.questionTitle);
-  }
-}
-
-function patchHighlightedTypography(root){
-  if (!root || I18N.isHebrew(I18N.lang)) return;
-  const dir = (document.documentElement.getAttribute("dir") || "rtl");
-  if (dir !== "ltr") return; // Only needed for English/Russian/Amharic (LTR). Arabic stays RTL.
-
-  const spans = root.querySelectorAll?.(".hl-meat, .hl-dairy, .hl-parve");
-  if (!spans || spans.length === 0) return;
-
-  const isWordChar = (ch) => /[A-Za-z0-9\u00C0-\u024F\u0400-\u04FF]/.test(ch); // Latin + Cyrillic + digits
-  const lastChar = (s) => (s ? s[s.length - 1] : "");
-  const firstChar = (s) => (s ? s[0] : "");
-
-  const QUOTES = ["'", "״", "׳", '"', "“", "”"];
-
-  for (const sp of spans){
-    // ---------- (A) prefix spacing: add space between prev text and the span if needed ----------
-    const prev = sp.previousSibling;
-    if (prev && prev.nodeType === Node.TEXT_NODE){
-      const t = prev.nodeValue || "";
-      const a = lastChar(t);
-      const b = firstChar(sp.textContent || "");
-      // Only when both sides look like a word: "for" + "meat" => "for meat"
-      if (a && b && isWordChar(a) && isWordChar(b) && !/\s$/.test(t)){
-        prev.nodeValue = t + " ";
-      }
-    }
-
-    // ---------- (B) quotes scope: move surrounding quotes into the colored span ----------
-    // Pattern: ... "'" + <span class="hl-...">word</span> + "'" ...
-    const prev2 = sp.previousSibling;
-    const next2 = sp.nextSibling;
-
-    if (prev2 && next2 && prev2.nodeType === Node.TEXT_NODE && next2.nodeType === Node.TEXT_NODE){
-      let lt = prev2.nodeValue || "";
-      let rt = next2.nodeValue || "";
-
-      const lch = lastChar(lt.trimEnd());
-      const rch = firstChar(rt.trimStart());
-
-      const hasL = QUOTES.includes(lch);
-      const hasR = QUOTES.includes(rch);
-
-      if (hasL && hasR){
-        // remove the quote from edges
-        // left: remove last quote char
-        prev2.nodeValue = lt.replace(new RegExp(`${escapeRegExp(lch)}\\s*$`), ""); 
-        // right: remove first quote char
-        next2.nodeValue = rt.replace(new RegExp(`^\\s*${escapeRegExp(rch)}`), "");
-
-        // ensure span text wrapped with the same quote chars
-        const cur = sp.textContent || "";
-        const curTrimL = cur.trimStart();
-        const curTrimR = cur.trimEnd();
-
-        // Don't double-wrap if already quoted
-        const alreadyL = QUOTES.includes(firstChar(curTrimL));
-        const alreadyR = QUOTES.includes(lastChar(curTrimR));
-
-        const preWS = (cur.match(/^\s+/)?.[0]) || "";
-        const sufWS = (cur.match(/\s+$/)?.[0]) || "";
-        const core = cur.trim();
-
-        let newCore = core;
-        if (!alreadyL) newCore = lch + newCore;
-        if (!alreadyR) newCore = newCore + rch;
-
-        sp.textContent = preWS + newCore + sufWS;
-      }
-    }
-
-    // ---------- (C) optional: also ensure space AFTER span if stuck (rare) ----------
-    const next = sp.nextSibling;
-    if (next && next.nodeType === Node.TEXT_NODE){
-      const t = next.nodeValue || "";
-      const a = lastChar(sp.textContent || "");
-      const b = firstChar(t);
-      if (a && b && isWordChar(a) && isWordChar(b) && !/^\s/.test(t)){
-        next.nodeValue = " " + t;
-      }
-    }
-  }
-}
-
-function escapeRegExp(s){
-  return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 // =========================
 // I18N (AUTO TRANSLATION)
@@ -599,176 +357,37 @@ function _isSkippableNode(node){
 }
 
 // Public: translate a single string (Hebrew source) into current language
-function _splitWS(s){
-  const str = String(s ?? "");
-  const m1 = str.match(/^\s+/);
-  const m2 = str.match(/\s+$/);
-  const pre = m1 ? m1[0] : "";
-  const suf = m2 ? m2[0] : "";
-  const core = str.trim();
-  return { pre, core, suf };
-}
-
-function _cleanQuoteArtifacts(srcCore, translatedCore){
-  // Hebrew source sometimes uses ASCII quotes '...'
-  // In non-Hebrew languages these quotes are usually unwanted (e.g., around "בשרי").
-  // Remove ONLY when the Hebrew source contains a quote and the translated text doesn't look like a contraction.
-  if (!srcCore.includes("'")) return translatedCore;
-  // If translated core contains typical contractions (don't, I'm) keep.
-  if (/\b\w+'\w+\b/.test(translatedCore)) return translatedCore;
-  return translatedCore.replace(/'/g, "");
-}
-
-const _KASHRUT_GLOSSARY = {
-  en: { parve: "parve", dairy: "dairy", meat: "meat" },
-  ru: { parve: "парве", dairy: "молочное", meat: "мясное" },
-  am: { parve: "ፓርቬ", dairy: "ወተት", meat: "ስጋ" },
-  ar: { parve: "بارفي", dairy: "حليبي", meat: "لحمي" },
-};
-
-function _applyGlossaryIfHighlighted(parentEl, lang, translatedText){
-  if (!parentEl) return translatedText;
-  const g = _KASHRUT_GLOSSARY[lang];
-  if (!g) return translatedText;
-
-  const { pre, core, suf } = _splitWS(translatedText);
-  if (!core) return translatedText;
-
-  let repl = null;
-  if (parentEl.classList?.contains("hl-parve")) repl = g.parve;
-  else if (parentEl.classList?.contains("hl-dairy")) repl = g.dairy;
-  else if (parentEl.classList?.contains("hl-meat")) repl = g.meat;
-
-  if (!repl) return translatedText;
-  return pre + repl + suf;
-}
-
-
-// Public: translate a single string (Hebrew source) into current language
 async function trText(src){
   const lang = I18N.lang;
   const s = String(src ?? "");
   if (!s) return s;
   if (I18N.isHebrew(lang)) return s;
 
-  const { pre, core, suf } = _splitWS(s);
-  if (!core) return s;
+  const key = `${lang}||${s}`;
+  if (_TR_CACHE.has(key)) return _TR_CACHE.get(key);
+  if (_TR_PENDING.has(key)) return _TR_PENDING.get(key);
 
-  const key = `${lang}||${core}`;
-  if (_TR_CACHE.has(key)) return pre + _TR_CACHE.get(key) + suf;
-  if (_TR_PENDING.has(key)) return (await _TR_PENDING.get(key)).replace(/^/, pre).replace(/$/, suf);
-
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(core)}`;
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(s)}`;
 
   const p = (async () => {
     try{
       const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache" });
       const data = await res.json();
       const out = (data?.[0] || []).map(seg => seg?.[0] || "").join("");
-      const raw = (out && out.trim()) ? out : core;
-      const cleaned = _cleanQuoteArtifacts(core, raw);
-      _TR_CACHE.set(key, cleaned);
-      return cleaned;
+      const txt = (out || s).trim() ? out : s;
+      _TR_CACHE.set(key, txt);
+      return txt;
     } catch {
-      _TR_CACHE.set(key, core);
-      return core;
+      _TR_CACHE.set(key, s);
+      return s;
     } finally {
       _TR_PENDING.delete(key);
     }
   })();
 
   _TR_PENDING.set(key, p);
-  const translatedCore = await p;
-  return pre + translatedCore + suf;
+  return p;
 }
-
-// Synchronous best-effort translation (used to avoid "Hebrew then blink")
-function trTextSync(src){
-  const lang = I18N.lang;
-  const s = String(src ?? "");
-  if (!s || I18N.isHebrew(lang)) return s;
-
-  const { pre, core, suf } = _splitWS(s);
-  if (!core) return s;
-
-  const key = `${lang}||${core}`;
-  if (_TR_CACHE.has(key)) return pre + _TR_CACHE.get(key) + suf;
-
-  // Fire-and-forget warm
-  trText(s);
-  return s;
-}
-
-// Batch prefetch (non-blocking). Translates many Hebrew strings at once into current language.
-async function trBatch(texts, lang){
-  if (!texts || texts.length === 0) return;
-  if (I18N.isHebrew(lang)) return;
-
-  // Unique + split whitespace before caching
-  const cores = [];
-  const seen = new Set();
-  for (const t of texts){
-    const { core } = _splitWS(t);
-    if (!core) continue;
-    const key = `${lang}||${core}`;
-    if (_TR_CACHE.has(key) || _TR_PENDING.has(key)) continue;
-    if (seen.has(core)) continue;
-    seen.add(core);
-    cores.push(core);
-  }
-  if (cores.length === 0) return;
-
-  // Chunk to avoid gigantic URLs
-  const CHUNK = 22;
-  for (let i = 0; i < cores.length; i += CHUNK){
-    const chunk = cores.slice(i, i + CHUNK);
-    const qs = chunk.map(c => `q=${encodeURIComponent(c)}`).join("&");
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&${qs}`;
-
-    try{
-      const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache" });
-      const data = await res.json();
-
-      // data[0] is array of segments for FIRST input; when multiple q, response is array per input
-      // In practice for multi-q, translate.googleapis returns an array-of-arrays.
-      // We'll handle both shapes defensively.
-      const outArr = data?.[0];
-
-      if (Array.isArray(outArr) && Array.isArray(outArr[0]) && typeof outArr[0][0] === "string"){
-        // single-q shape -> fallback map 1:1 (rare here)
-        const joined = outArr.map(seg => seg?.[0] || "").join("");
-        const core = chunk[0];
-        _TR_CACHE.set(`${lang}||${core}`, _cleanQuoteArtifacts(core, joined));
-      } else if (Array.isArray(outArr) && Array.isArray(outArr[0]) && Array.isArray(outArr[0][0])) {
-        // multi-q shape: outArr[i] is segments for i-th input
-        outArr.forEach((segments, idx) => {
-          const core = chunk[idx];
-          const joined = (segments || []).map(seg => seg?.[0] || "").join("");
-          const raw = (joined && joined.trim()) ? joined : core;
-          _TR_CACHE.set(`${lang}||${core}`, _cleanQuoteArtifacts(core, raw));
-        });
-      } else if (Array.isArray(data) && Array.isArray(data[0]) && Array.isArray(data[0][0]) && Array.isArray(data[0][0][0])) {
-        // some variants: data is already per-input
-        data.forEach((item, idx) => {
-          const core = chunk[idx];
-          const segments = item?.[0] || [];
-          const joined = (segments || []).map(seg => seg?.[0] || "").join("");
-          const raw = (joined && joined.trim()) ? joined : core;
-          _TR_CACHE.set(`${lang}||${core}`, _cleanQuoteArtifacts(core, raw));
-        });
-      } else {
-        // unknown shape -> skip, cache Hebrew fallback
-        chunk.forEach(core => _TR_CACHE.set(`${lang}||${core}`, core));
-      }
-    } catch {
-      chunk.forEach(core => _TR_CACHE.set(`${lang}||${core}`, core));
-    }
-
-    // Yield to UI
-    await new Promise(r => setTimeout(r, 0));
-  }
-}
-
 
 // Translate element subtree text nodes + common attributes.
 // Runs non-blocking: if translation isn't cached yet, it updates when available.
@@ -815,19 +434,12 @@ function translateDom(root = document.body){
       if (!_ORIG_TEXT.has(tn)) _ORIG_TEXT.set(tn, orig);
 
       // Always translate from Hebrew original (single source of truth)
-      // 1) Try sync from cache (preloaded) to avoid Hebrew->translated blink
-      const immediate = trTextSync(orig);
-      if (immediate !== orig) {
-        tn.nodeValue = _applyGlossaryIfHighlighted(tn.parentElement, I18N.lang, immediate);
-        continue;
-      }
-
-      // 2) Async fetch if not cached yet
       trText(orig).then(t => {
+        // If user switched back to Hebrew mid-flight, don't apply.
         if (I18N.isHebrew(I18N.lang)) return;
+        // Don't overwrite if node was removed
         if (!tn.parentNode) return;
-        const finalTxt = _applyGlossaryIfHighlighted(tn.parentElement, I18N.lang, t);
-        tn.nodeValue = finalTxt;
+        tn.nodeValue = t;
       });
     }
 
@@ -850,11 +462,6 @@ function translateDom(root = document.body){
         // Only translate if the Hebrew original contains Hebrew (avoid touching image URLs etc)
         if (!_looksHebrew(orig) && !_looksHebrew(cur)) return;
 
-        const immediate = trTextSync(orig);
-        if (immediate !== orig) {
-          elm.setAttribute(attr, immediate);
-          return;
-        }
         trText(orig).then(t => {
           if (I18N.isHebrew(I18N.lang)) return;
           if (!elm.isConnected) return;
@@ -862,9 +469,7 @@ function translateDom(root = document.body){
         });
       });
     });
-      patchHighlightedTypography(root);
-      applyI18NPatches(root);
-    } finally {
+  } finally {
     _translateBusy = false;
   }
 }
@@ -908,68 +513,6 @@ function updateDocumentTitle(){
 }
 
 // Observe DOM changes so dynamic UI (questions / errors / feedback) always gets translated.
-// =========================
-// TRANSLATION PRELOAD (no UI blocking)
-// =========================
-function collectQuestionStrings(){
-  const out = [];
-  const push = (v) => {
-    if (typeof v === "string" && v.trim()) out.push(v);
-  };
-
-  const walk = (obj) => {
-    if (obj == null) return;
-    if (typeof obj === "string") { push(obj); return; }
-    if (Array.isArray(obj)) { obj.forEach(walk); return; }
-    if (typeof obj === "object") {
-      Object.values(obj).forEach(walk);
-    }
-  };
-
-  walk(QUESTIONS);
-
-  // Common runtime messages/templates that are built in JS
-  [
-    "נכון ✅",
-    "לא נכון ❌",
-    "הגעת למספר הלחיצות המקסימלי.",
-    "פגיעות: {hits}/{total} | לחיצות: {attempts}/{max}",
-    "שימו ❤️: יש יותר מתשובה אחת נכונה.",
-    "הצג תרשים",
-    "חזרה לשאלה",
-    "שולח תוצאה…",
-    "נשלח בהצלחה ✅",
-    "שליחה נכשלה ❌",
-    "בדוק את חיבור האינטרנט שלך, ונסה שוב",
-    "התאמה לא נכונה. נסה שוב",
-    "התוצאה כבר נשלחה בניסיון הזה ✅",
-    "השליחה כבר התקבלה במערכת ✅",
-    "התוצאה נשלחה בהצלחה ✅",
-    "(בדוק הרשאות Deploy / Anyone)",
-  ].forEach(push);
-
-  return out;
-}
-
-function preloadTranslations(){
-  if (I18N.isHebrew(I18N.lang)) return;
-
-  const lang = I18N.lang;
-  const strings = collectQuestionStrings();
-
-  const run = () => trBatch(strings, lang).catch(()=>{});
-  if ("requestIdleCallback" in window) {
-    requestIdleCallback(() => run(), { timeout: 1200 });
-  } else {
-    setTimeout(run, 0);
-  }
-}
-
-// Template translation with placeholders {x}
-function trTemplateSync(heTemplate, vars){
-  const raw = trTextSync(heTemplate);
-  return raw.replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k] != null) ? String(vars[k]) : `{${k}}`);
-}
 function startTranslationObserver(){
   const obs = new MutationObserver((mutations) => {
     if (I18N.isHebrew(I18N.lang)) return;
@@ -1515,22 +1058,30 @@ function renderLead(q){
     el.leadCap.innerHTML = "";
   }
 }
+
 function failAndRetry(q, fallbackMsg){
   const msg = q?.wrongMsg || fallbackMsg || "לא נכון ❌ נסו שוב.";
 
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
-
-  // רק הודעה – בלי כפתור "נסו שוב"
-  el.feedback.innerHTML = `<div>${formatSpecial(msg)}</div>`;
+  el.feedback.innerHTML = `
+    <div>${formatSpecial(msg)}</div>
+    <div style="margin-top:10px;">
+      <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
+    </div>
+  `;
 
   el.btnNext.disabled = true;
 
-  // תרגום מיידי אם צריך (כי innerHTML דינמי)
-  scheduleTranslate(el.feedback);
-  patchHighlightedTypography?.(el.feedback);
+  const btn = document.getElementById("btnRetryNow");
+  if (btn){
+    btn.onclick = () => {
+      el.feedback.hidden = true;
+      el.feedback.classList.remove("errorbox");
+      renderQuestion();
+    };
+  }
 }
-
 function buildMatchItem(side, it){
   const key = String(it?.key ?? "").trim();
   const img = String(it?.img ?? "").trim();
@@ -1634,7 +1185,7 @@ const TYPE = {
     
       if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
         el.feedback.hidden = false;
-        el.feedback.textContent = trTextSync("הגעת למספר הלחיצות המקסימלי.");
+        el.feedback.textContent = "הגעת למספר הלחיצות המקסימלי.";
         return;
       }
     
@@ -1660,7 +1211,7 @@ const TYPE = {
       rt.attempts.push({ hitIndex, markerEl: marker });
     
       el.feedback.hidden = false;
-      el.feedback.textContent = (hitIndex !== null) ? trTextSync("נכון ✅") : trTextSync("לא נכון ❌");
+      el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
     
       el.btnNext.disabled = rt.attempts.length === 0;
       updateHotspotUI(q);
@@ -1684,10 +1235,8 @@ const TYPE = {
       el.mcOptions.innerHTML = "";
 
       q.options.forEach((opt, i) => {
-        const row = document.createElement("div");
+        const row = document.createElement("label");
         row.className = "mc-option";
-        row.setAttribute("role","button");
-        row.tabIndex = 0;
 
         const inp = document.createElement("input");
         inp.type = "radio";
@@ -1701,17 +1250,10 @@ const TYPE = {
         row.appendChild(inp);
         row.appendChild(txt);
 
-        row.addEventListener("click", (e) => {
-          e.preventDefault();
+        row.addEventListener("click", () => {
           inp.checked = true;
           state.runtime.mc.selected = [i];
           el.btnNext.disabled = false;
-        });
-        row.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            row.click();
-          }
         });
 
         el.mcOptions.appendChild(row);
@@ -1729,14 +1271,12 @@ const TYPE = {
       state.runtime.mc.selected = [];
       el.btnNext.disabled = true;
 
-      el.mcHint.textContent = trTextSync("שימו ❤️: יש יותר מתשובה אחת נכונה.");
+      el.mcHint.textContent = "שימו ❤️: יש יותר מתשובה אחת נכונה.";
       el.mcOptions.innerHTML = "";
 
       q.options.forEach((opt, i) => {
-        const row = document.createElement("div");
+        const row = document.createElement("label");
         row.className = "mc-option";
-        row.setAttribute("role","button");
-        row.tabIndex = 0;
 
         const inp = document.createElement("input");
         inp.type = "checkbox";
@@ -1750,9 +1290,7 @@ const TYPE = {
         row.appendChild(txt);
 
         row.addEventListener("click", (e) => {
-          e.preventDefault();
-          // Toggle ONLY once (avoid label default double-toggle)
-          inp.checked = !inp.checked;
+          if (e.target !== inp) inp.checked = !inp.checked;
 
           if (inp.checked){
             if (!state.runtime.mc.selected.includes(i)) state.runtime.mc.selected.push(i);
@@ -1761,13 +1299,6 @@ const TYPE = {
           }
 
           el.btnNext.disabled = state.runtime.mc.selected.length === 0;
-        });
-
-        row.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            row.click();
-          }
         });
 
         el.mcOptions.appendChild(row);
@@ -1899,7 +1430,7 @@ const TYPE = {
       if (rt.showingChart){
         el.dragIntro.hidden = false;
         el.dragPlay.hidden = true;
-        el.btnShowChart.textContent = trTextSync("חזרה לשאלה");
+        el.btnShowChart.textContent = "חזרה לשאלה";
         el.btnNext.disabled = true;
         return;
       }
@@ -1907,7 +1438,7 @@ const TYPE = {
       // מצב רגיל (שאלה)
       el.dragIntro.hidden = true;
       el.dragPlay.hidden = false;
-      el.btnShowChart.textContent = trTextSync("הצג תרשים");
+      el.btnShowChart.textContent = "הצג תרשים";
 
       showCurrentDragItem(q);
       el.btnNext.disabled = true;
@@ -1963,7 +1494,7 @@ const TYPE = {
           el.matchError.textContent = "";
         } else {
           el.matchError.hidden = false;
-          el.matchError.textContent = trTextSync("התאמה לא נכונה. נסה שוב");
+          el.matchError.textContent = "התאמה לא נכונה. נסה שוב";
         }
       };
       const flashMismatch = (a, b) => {
@@ -2117,7 +1648,6 @@ const TYPE = {
 // =========================
 // HOTSPOT UI
 // =========================
-// =========================
 function updateHotspotUI(q){
   const rt = state.runtime.hotspot;
   const hits = rt.hit.filter(Boolean).length;
@@ -2155,6 +1685,25 @@ function updateHotspotUI(q){
     el.hotspotMarks.appendChild(row);
   });
 }
+
+function deleteAttempt(q, idx){
+  const rt = state.runtime.hotspot;
+  const a = rt.attempts[idx];
+  if (!a) return;
+
+  try { a.markerEl.remove(); } catch {}
+  if (a.hitIndex !== null) rt.hit[a.hitIndex] = false;
+
+  rt.attempts.splice(idx, 1);
+
+  el.btnNext.disabled = rt.attempts.length === 0;
+  el.feedback.hidden = false;
+  el.feedback.textContent = "נמחק. אפשר ללחוץ שוב.";
+  updateHotspotUI(q);
+}
+
+// =========================
+// DRAG LOGIC
 // =========================
 function buildDragZonesOnce(q){
   if (el.dragZones.childElementCount > 0) return;
@@ -2223,12 +1772,12 @@ function setDragChartMode(show){
   if (rt.showingChart){
     el.dragIntro.hidden = false;
     el.dragPlay.hidden = true;
-    el.btnShowChart.textContent = trTextSync("חזרה לשאלה");
+    el.btnShowChart.textContent = "חזרה לשאלה";
     el.btnNext.disabled = true; // שלא “יתקע” על ולידציה בזמן צפייה בתרשים
   } else {
     el.dragIntro.hidden = true;
     el.dragPlay.hidden = false;
-    el.btnShowChart.textContent = trTextSync("הצג תרשים");
+    el.btnShowChart.textContent = "הצג תרשים";
 
     // מחזיר את מצב Next לפי התקדמות אמיתית
     showCurrentDragItem(q);
@@ -2418,13 +1967,8 @@ window.addEventListener("DOMContentLoaded", async () => {
       I18N.applyDocAttrs();
       updateDocumentTitle();
 
-      // Restore Hebrew first (single source of truth)
+      // Restore Hebrew first (single source of truth), then translate again if needed
       restoreHebrew(document.body);
-
-      // Preload translations for ALL questions + runtime messages (non-blocking)
-      preloadTranslations();
-
-      // Translate current UI
       if (!I18N.isHebrew(code)) scheduleTranslate(document.body);
 
       // Also update kitchens placeholder (names stay no-translate)
@@ -2433,10 +1977,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Translate initial static UI if needed
-  if (!I18N.isHebrew(I18N.lang)) {
-    preloadTranslations();
-    scheduleTranslate(document.body);
-  }
+  if (!I18N.isHebrew(I18N.lang)) scheduleTranslate(document.body);
 
   // קודם כל: אם יש rid – להביא מטבחים מהשיטס ולהחליף את ה-HTML
   try { 
@@ -2580,11 +2121,11 @@ async function finish(){
 async function sendResult(force){
   // אם כבר נשלח בהצלחה באותו ריצה ולא ביקשו force — לא שולחים שוב
   if (state.sentThisRun && !force){
-    el.sendStatus.textContent = trTextSync("התוצאה כבר נשלחה בניסיון הזה ✅");
+    el.sendStatus.textContent = "התוצאה כבר נשלחה בניסיון הזה ✅";
     if (el.btnResend) el.btnResend.hidden = true;
     return;
   }
-  el.sendStatus.textContent = trTextSync("שולח תוצאה…");
+  el.sendStatus.textContent = "שולח תוצאה…";
   if (el.btnResend){
     el.btnResend.hidden = true;
     el.btnResend.disabled = true;
@@ -2611,7 +2152,7 @@ async function sendResult(force){
       if (r && r.ok && r.already){
       // כבר התקבל בעבר (ניסיון חוזר/timeout) -> זה עדיין הצלחה מבחינת המשתמש
       state.sentThisRun = true;
-      el.sendStatus.textContent = trTextSync("השליחה כבר התקבלה במערכת ✅");
+      el.sendStatus.textContent = "השליחה כבר התקבלה במערכת ✅";
       if (el.btnResend) el.btnResend.hidden = true;
       return;
       }
@@ -2626,7 +2167,7 @@ async function sendResult(force){
       if (!res.ok) throw new Error("HTTP " + res.status);
     }
     state.sentThisRun = true;
-    el.sendStatus.textContent = trTextSync("התוצאה נשלחה בהצלחה ✅");
+    el.sendStatus.textContent = "התוצאה נשלחה בהצלחה ✅";
     if (el.btnResend) el.btnResend.hidden = true;
   } catch (e) {
     state.sentThisRun = false; // מאפשר ניסיון חוזר
@@ -2636,8 +2177,8 @@ async function sendResult(force){
     const msg = (e && e.message) ? e.message : "";
     const isNet = (msg === "TIMEOUT" || msg === "NETWORK_ERROR");
     el.sendStatus.textContent = isNet
-      ? trTextSync("בדוק את חיבור האינטרנט שלך, ונסה שוב")
-      : (trTextSync("שליחה נכשלה ❌") + " " + (msg ? `(${msg})` : trTextSync("(בדוק הרשאות Deploy / Anyone)")));
+      ? "בדוק את חיבור האינטרנט שלך, ונסה שוב"
+      : ("שליחה נכשלה ❌ " + (msg ? `(${msg})` : "(בדוק הרשאות Deploy / Anyone)"));
 
     if (el.btnResend){
       el.btnResend.hidden = false;
