@@ -542,7 +542,20 @@ function startTranslationObserver(){
 // אפשר לשים בכל שאלה (במיוחד mc_single/mc_multi)
 // =========================
 const QUESTIONS = [
-    {
+  {
+    type: "mc_single",
+    title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
+    leadImg: "images/fishPic.webp",
+    options: [
+      "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]",
+      "על עגלה [B]בשרית[/B] בלבד",
+      "רק כאשר מניחים על הרצפה",
+      "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש"
+    ],
+    correctIndex: 1,
+    wrongMsg: "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית."
+  },  
+  {
     type: "match_lines",
     title: "התאימו בין הסקוטש לכלי",
     left: [
