@@ -326,7 +326,7 @@ const QUESTIONS = [
     ],
     correctIndex: 3,
     wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
-  }
+  },
   {
     type: "match_lines",
     title: "התאימו בין הסקוטש לכלי",
