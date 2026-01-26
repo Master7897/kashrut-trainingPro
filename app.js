@@ -557,7 +557,7 @@ const QUESTIONS = [
     ],
     wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
   },
-  {
+  /*{
     type: "mc_single",
     title: "איפה אסור לאחסן את הדגים בזמן הארוחה כדי לשמור על חומם?",
     leadImg: "images/fishPic.webp",
@@ -569,7 +569,7 @@ const QUESTIONS = [
     ],
     correctIndex: 3,
     wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
-  },
+  },*/
   {
     type: "two",
     title: "איך צריך להגיש בשר ודגים",
