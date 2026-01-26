@@ -207,24 +207,26 @@ function setKitchenOptions(kitchens){
   // חדש: [{id,name}]
   // ישן: ["מטבח א", "מטבח ב"]
 
-  // Placeholder (Hebrew source-of-truth; gets auto-translated by I18N)
-  const placeholderHe = "בחר/י מטבח";
+  const first = el.kitchen.querySelector("option[value='']") || el.kitchen.options[0];
+
+  // אם ה-placeholder הנוכחי הוא "טוען..." — מחזירים לברירת מחדל
+  const placeholderText =
+    (first && first.textContent && !first.textContent.includes("טוען"))
+      ? first.textContent
+      : "בחר/י מטבח";
 
   el.kitchen.innerHTML = "";
 
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = placeholderHe;
-  // allow translating ONLY this placeholder
-  opt0.setAttribute("data-i18n", "1");
+  opt0.textContent = placeholderText;
   el.kitchen.appendChild(opt0);
 
   (Array.isArray(kitchens) ? kitchens : []).forEach(k => {
     const opt = document.createElement("option");
-    opt.setAttribute("data-no-translate", "1"); // kitchen names MUST NOT be translated
 
     if (typeof k === "string"){
-      opt.value = ""; // אין ID בישן
+      opt.value = "";             // אין ID בישן
       opt.dataset.name = k;
       opt.textContent = k;
     } else {
@@ -235,9 +237,6 @@ function setKitchenOptions(kitchens){
 
     el.kitchen.appendChild(opt);
   });
-
-  // If current UI language isn't Hebrew, translate the placeholder immediately
-  scheduleTranslate(el.kitchen);
 }
 async function initKitchenList(){
   if (!RID) return;
@@ -309,249 +308,13 @@ function formatSpecial(text) {
   return s;
 }
 
-
-// =========================
-// I18N (AUTO TRANSLATION)
-// Hebrew is the single source of truth.
-// Everything shown to the user is translated on-the-fly via a translation endpoint,
-// so you don't need to maintain per-language copies.
-// =========================
-const I18N = {
-  key: "kashrut_lang_v1",
-  lang: "he", // default
-  getDir(code){ return (code === "he" || code === "ar") ? "rtl" : "ltr"; },
-  isHebrew(code){ return code === "he"; },
-  load(){
-    try{
-      const saved = (localStorage.getItem(this.key) || "").trim();
-      if (saved) this.lang = saved;
-    } catch {}
-  },
-  save(code){
-    this.lang = code;
-    try{ localStorage.setItem(this.key, code); } catch {}
-  },
-  applyDocAttrs(){
-    const dir = this.getDir(this.lang);
-    document.documentElement.lang = this.lang;
-    document.documentElement.dir = dir;
-  }
-};
-
-// Simple cache: (lang + "||" + src) -> translated
-const _TR_CACHE = new Map();
-const _TR_PENDING = new Map(); // key -> Promise<string>
-const _ORIG_TEXT = new WeakMap(); // Text node -> Hebrew original
-
-function _looksHebrew(s){ return /[\u0590-\u05FF]/.test(String(s || "")); }
-function _isSkippableNode(node){
-  if (!node) return true;
-  // Skip if element or any parent has data-no-translate
-  let el = (node.nodeType === 1) ? node : node.parentElement;
-  while (el){
-    if (el.hasAttribute && el.getAttribute("data-no-translate") === "1") return true;
-    if (el.id === "language") return true; // don't translate language picker labels
-    el = el.parentElement;
-  }
-  return false;
-}
-
-// Public: translate a single string (Hebrew source) into current language
-async function trText(src){
-  const lang = I18N.lang;
-  const s = String(src ?? "");
-  if (!s) return s;
-  if (I18N.isHebrew(lang)) return s;
-
-  const key = `${lang}||${s}`;
-  if (_TR_CACHE.has(key)) return _TR_CACHE.get(key);
-  if (_TR_PENDING.has(key)) return _TR_PENDING.get(key);
-
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=he&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(s)}`;
-
-  const p = (async () => {
-    try{
-      const res = await fetch(url, { method:"GET", mode:"cors", cache:"force-cache" });
-      const data = await res.json();
-      const out = (data?.[0] || []).map(seg => seg?.[0] || "").join("");
-      const txt = (out || s).trim() ? out : s;
-      _TR_CACHE.set(key, txt);
-      return txt;
-    } catch {
-      _TR_CACHE.set(key, s);
-      return s;
-    } finally {
-      _TR_PENDING.delete(key);
-    }
-  })();
-
-  _TR_PENDING.set(key, p);
-  return p;
-}
-
-// Translate element subtree text nodes + common attributes.
-// Runs non-blocking: if translation isn't cached yet, it updates when available.
-let _translateBusy = false;
-let _translateScheduled = false;
-
-function scheduleTranslate(root = document.body){
-  if (I18N.isHebrew(I18N.lang)) return;
-  if (_translateBusy) return;
-  if (_translateScheduled) return;
-  _translateScheduled = true;
-  requestAnimationFrame(() => {
-    _translateScheduled = false;
-    translateDom(root);
-  });
-}
-
-function translateDom(root = document.body){
-  if (I18N.isHebrew(I18N.lang)) return;
-
-  _translateBusy = true;
-  try{
-    // TEXT NODES
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode(node){
-        if (!node || !node.nodeValue) return NodeFilter.FILTER_REJECT;
-        if (_isSkippableNode(node)) return NodeFilter.FILTER_REJECT;
-        const v = node.nodeValue;
-        if (!v.trim()) return NodeFilter.FILTER_REJECT;
-        // Translate anything that originally had Hebrew OR currently has Hebrew
-        const orig = _ORIG_TEXT.get(node);
-        if (orig) return NodeFilter.FILTER_ACCEPT;
-        if (_looksHebrew(v)) return NodeFilter.FILTER_ACCEPT;
-        return NodeFilter.FILTER_REJECT;
-      }
-    });
-
-    const textNodes = [];
-    while (walker.nextNode()) textNodes.push(walker.currentNode);
-
-    for (const tn of textNodes){
-      const current = tn.nodeValue;
-      const orig = _ORIG_TEXT.get(tn) || current;
-      if (!_ORIG_TEXT.has(tn)) _ORIG_TEXT.set(tn, orig);
-
-      // Always translate from Hebrew original (single source of truth)
-      trText(orig).then(t => {
-        // If user switched back to Hebrew mid-flight, don't apply.
-        if (I18N.isHebrew(I18N.lang)) return;
-        // Don't overwrite if node was removed
-        if (!tn.parentNode) return;
-        tn.nodeValue = t;
-      });
-    }
-
-    // ATTRIBUTES (placeholder / title / aria-label / alt)
-    const attrEls = root.querySelectorAll
-      ? root.querySelectorAll("[placeholder],[title],[aria-label],[alt]")
-      : [];
-    attrEls.forEach(elm => {
-      if (!elm || _isSkippableNode(elm)) return;
-
-      ["placeholder","title","aria-label","alt"].forEach(attr => {
-        if (!elm.hasAttribute(attr)) return;
-
-        const cur = elm.getAttribute(attr) || "";
-        const origKey = `data-i18n-orig-${attr}`;
-        const orig = elm.getAttribute(origKey) || cur;
-
-        if (!elm.hasAttribute(origKey)) elm.setAttribute(origKey, orig);
-
-        // Only translate if the Hebrew original contains Hebrew (avoid touching image URLs etc)
-        if (!_looksHebrew(orig) && !_looksHebrew(cur)) return;
-
-        trText(orig).then(t => {
-          if (I18N.isHebrew(I18N.lang)) return;
-          if (!elm.isConnected) return;
-          elm.setAttribute(attr, t);
-        });
-      });
-    });
-  } finally {
-    _translateBusy = false;
-  }
-}
-
-// Restore everything back to Hebrew (original) when user selects Hebrew.
-function restoreHebrew(root = document.body){
-  // Restore text nodes
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-  const nodes = [];
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-
-  nodes.forEach(tn => {
-    const orig = _ORIG_TEXT.get(tn);
-    if (orig != null) tn.nodeValue = orig;
-  });
-
-  // Restore attributes
-  const attrEls = root.querySelectorAll
-    ? root.querySelectorAll("[data-i18n-orig-placeholder],[data-i18n-orig-title],[data-i18n-orig-aria-label],[data-i18n-orig-alt]")
-    : [];
-  attrEls.forEach(elm => {
-    ["placeholder","title","aria-label","alt"].forEach(attr => {
-      const origKey = `data-i18n-orig-${attr}`;
-      if (!elm.hasAttribute(origKey)) return;
-      elm.setAttribute(attr, elm.getAttribute(origKey) || "");
-    });
-  });
-}
-
-
-let _ORIG_DOC_TITLE = null;
-function updateDocumentTitle(){
-  if (_ORIG_DOC_TITLE == null) _ORIG_DOC_TITLE = document.title || "לומדת כשרות – צוות מטבח";
-  if (I18N.isHebrew(I18N.lang)){
-    document.title = _ORIG_DOC_TITLE;
-    return;
-  }
-  trText(_ORIG_DOC_TITLE).then(t => {
-    if (!I18N.isHebrew(I18N.lang)) document.title = t;
-  });
-}
-
-// Observe DOM changes so dynamic UI (questions / errors / feedback) always gets translated.
-function startTranslationObserver(){
-  const obs = new MutationObserver((mutations) => {
-    if (I18N.isHebrew(I18N.lang)) return;
-    if (_translateBusy) return;
-
-    // Fast-path: if something changed inside a no-translate zone, ignore.
-    for (const m of mutations){
-      const t = m.target;
-      if (_isSkippableNode(t)) continue;
-      scheduleTranslate(document.body);
-      break;
-    }
-  });
-
-  obs.observe(document.body, {
-    subtree: true,
-    childList: true,
-    characterData: true,
-    attributes: true,
-    attributeFilter: ["placeholder","title","aria-label","alt"]
-  });
-}
 // =========================
 // QUESTIONS (DATA ONLY)
+// ✅ תוספת חדשה: leadImg / leadCaption
+// אפשר לשים בכל שאלה (במיוחד mc_single/mc_multi)
+// =========================
 const QUESTIONS = [
-  /*{
-    type: "mc_single",
-    title: "איפה אסור לאחסן את הדגים בזמן הארוחה כדי לשמור על חומם?",
-    leadImg: "images/fishPic.webp",
-    options: [
-      "בתרמופורט נפרד",
-      "על פלטה או משטח חימום",
-      "ניתן להשאיר בתנור המקורי"
-      "בארון חימום הרגיל",
-    ],
-    correctIndex: 3,
-    wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
-  }*/
-  {
+    {
     type: "match_lines",
     title: "התאימו בין הסקוטש לכלי",
     left: [
@@ -572,7 +335,7 @@ const QUESTIONS = [
     A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
     B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
     correct: "B",
-    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני."
+    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
   },
   {
     type: "hotspot5",
@@ -729,7 +492,6 @@ const el = {
   fullName: document.getElementById("fullName"),
   personalId: document.getElementById("personalId"),
   kitchen: document.getElementById("kitchen"),
-  language: document.getElementById("language"),
   btnStart: document.getElementById("btnStart"),
   startError: document.getElementById("startError"),
 
@@ -1074,8 +836,22 @@ function failAndRetry(q, fallbackMsg){
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
   el.feedback.innerHTML = `
-    <div>${formatSpecial(msg)}</div>`;
+    <div>${formatSpecial(msg)}</div>
+    <div style="margin-top:10px;">
+      <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
+    </div>
+  `;
+
   el.btnNext.disabled = true;
+
+  const btn = document.getElementById("btnRetryNow");
+  if (btn){
+    btn.onclick = () => {
+      el.feedback.hidden = true;
+      el.feedback.classList.remove("errorbox");
+      renderQuestion();
+    };
+  }
 }
 function buildMatchItem(side, it){
   const key = String(it?.key ?? "").trim();
@@ -1948,32 +1724,6 @@ el.twoWrap.addEventListener("click", (e) => {
 el.btnNext.addEventListener("click", onNext);
 
 window.addEventListener("DOMContentLoaded", async () => {
-  // I18N init
-  I18N.load();
-  I18N.applyDocAttrs();
-  startTranslationObserver();
-  updateDocumentTitle();
-
-  if (el.language){
-    el.language.value = I18N.lang;
-    el.language.addEventListener("change", async () => {
-      const code = (el.language.value || "he").trim();
-      I18N.save(code);
-      I18N.applyDocAttrs();
-      updateDocumentTitle();
-
-      // Restore Hebrew first (single source of truth), then translate again if needed
-      restoreHebrew(document.body);
-      if (!I18N.isHebrew(code)) scheduleTranslate(document.body);
-
-      // Also update kitchens placeholder (names stay no-translate)
-      scheduleTranslate(el.kitchen);
-    });
-  }
-
-  // Translate initial static UI if needed
-  if (!I18N.isHebrew(I18N.lang)) scheduleTranslate(document.body);
-
   // קודם כל: אם יש rid – להביא מטבחים מהשיטס ולהחליף את ה-HTML
   try { 
     updateRotateOverlay();
