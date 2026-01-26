@@ -1,4 +1,259 @@
 // =========================
+// QUESTIONS (DATA ONLY)
+// ✅ תוספת חדשה: leadImg / leadCaption
+// אפשר לשים בכל שאלה (במיוחד mc_single/mc_multi)
+// =========================
+const QUESTIONS = [
+  {
+    type: "mc_single",
+    title: "איפה אסור לאחסן את הדגים בזמן הארוחה כדי לשמור על חומם?",
+    leadImg: "images/fishPic.webp",
+    options: [
+      "בתרמופורט נפרד",
+      "על פלטה או משטח חימום",
+      "ניתן להשאיר בתנור המקורי",
+      "בארון חימום הרגיל"
+    ],
+    correctIndex: 3,
+    wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
+  },  
+  {
+    type: "match_lines",
+    title: "התאימו בין הסקוטש לכלי",
+    left: [
+      { key:"red",   img:"images/tape_red.webp",   alt:"סקוטש אדום" },
+      { key:"yellow", img:"images/tape_yellow.webp", alt:"סקוטש צהוב" },
+      { key:"blue",  img:"images/tape_blue.webp",  alt:"סקוטש כחול" },
+    ],
+    right: [
+      { key:"blue",  img:"images/knife_blue.webp",  alt:"מגש" },
+      { key:"red",   img:"images/knife_red.webp",   alt:"צלחת" },
+      { key:"yellow", img:"images/knife_yellow.webp", alt:"סכין" },
+    ],
+    wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
+  },
+  {
+    type: "two",
+    title: "איך צריך להגיש בשר ודגים",
+    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
+    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
+    correct: "B",
+    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
+  },
+  {
+    type: "hotspot5",
+    title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
+    img: "images/q3_hotspot.webp",
+    boxes: [
+      {
+        x1: 37.01, y1: 21.68, x2: 77.71, y2: 27.35,
+        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח"
+      },
+      {
+        x1: 16.45, y1: 58.05, x2: 52.63, y2: 68.11,
+        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]"
+      },
+      {
+        x1: 12.54, y1: 67.92, x2: 48.93, y2: 77.40,
+        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]"
+      },
+      {
+        x1: 46.88, y1: 53.70, x2: 83.47, y2: 64.68,
+        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]"
+      },
+      {
+        x1: 49.14, y1: 72.66, x2: 83.68, y2: 83.06,
+        label: "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]"
+      }
+    ],
+    wrongMsg: "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?"
+  },
+
+  {
+    type: "mc_single",
+    title: "מצאת תבנית כזו, מה תעשה איתה?",
+    leadImg: "images/tavnit.webp",
+    options: [
+      "תבנית בלי חורים יכולה לשמש ל[B]בשרי[/B]",
+      "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור",
+      "היא לא מסומנת, יש לפנות למשגיח",
+      "היא לא מסומנת אבל ניתן להשתמש בכל זאת"
+    ],
+    correctIndex: 2,
+    wrongMsg: "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח."
+  },
+  {
+    type: "mc_multi",
+    title: "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?",
+    //leadImg: "images/fridge.webp",
+    options: [
+      "שכל התחתית תהיה צבועה באדום",
+      "3 חורים בפינה",
+      "גם צבע וגם מדבקה",
+      "4 חורים בפינה",
+      "מדבקה עם כיתוב '[B]בשרי[/B]'"
+    ],
+    correctIndexes: [1, 4],
+    wrongMsg: "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'."
+  },
+  {
+    type: "two",
+    title: "בחר את הכף [H]החלבית[/H]",
+    A: { img: "images/q1_a1.webp", caption: "כף עם חור" },
+    B: { img: "images/q1_a2.webp", caption: "כף בלי חור" },
+    correct: "A",
+    wrongMsg: "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור."
+  },
+  {
+    type: "drag_shelves",
+    title: "גררו כל מוצר למדף הנכון לפי התרשים שראיתם",
+    introTitle: "התבוננו בתרשים ואז לחצו המשך.",
+    introImg: "images/intro_chart.webp",
+    bgImg: "images/roomshelves.webp",
+    zones: DRAG_ZONES_4x2,
+    items: [
+      { img:"images/prod1.webp", caption:"חלב", side:"R", wrongMsg:"❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין." },
+      { img:"images/prod2.webp", caption:"שתיה", side:"L", wrongMsg:"❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל." },
+      { img:"images/prod3.webp", caption:"חומוס", side:"L", wrongMsg:"❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל." },
+      { img:"images/prod4.webp", caption:"קוטג'", side:"R", wrongMsg:"❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין." },
+      { img:"images/prod5.webp", caption:"חלב סויה", side:"L", wrongMsg:"❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל." },
+      { img:"images/prod6.webp", caption:"מילקי", side:"R", wrongMsg:"❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין." },
+      { img:"images/prod7.webp", caption:"גבינה צהובה", side:"R", wrongMsg:"❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין." },
+      { img:"images/prod8.webp", caption:"מעדן סויה", side:"L", wrongMsg:"❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל." },
+    ]
+  },
+  {
+    type: "two",
+    title: "איזה גסטרונום שייך ל[P]פרווה[/P]?",
+    A: { img: "images/q2_a.webp", caption: "3 חורים" },
+    B: { img: "images/q2_b.webp", caption: "2 חורים" },
+    correct: "B",
+    wrongMsg: "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1)."
+  },
+    // ✅ דוגמה: תמונה לפני רב-ברירה
+  {
+    type: "mc_single",
+    title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
+    //leadImg: "images/mc_intro.webp",
+    //leadCaption: "תסתכל/י על הסיטואציה ואז ענה/י",
+    options: [
+      "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]",
+      "על עגלה [B]בשרית[/B] בלבד",
+      "רק כאשר מניחים על הרצפה",
+      "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש"
+    ],
+    correctIndex: 1,
+    wrongMsg: "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית."
+  },
+  {
+    type: "img_multi10",
+    title: "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]",
+    items: [
+      { img: "images/pp1.webp", alt: "מילקי", caption: "מילקי"},
+      { img: "images/pp2.webp", alt: "מלפפונים", caption: "מלפפונים" },
+      { img: "images/pp3.webp", alt: "חלב סויה", caption: "חלב סויה", fit: "contain"},
+      { img: "images/pp4.webp", alt: "לורד סנדויץ'", caption: "לורד סנדויץ'" },
+      { img: "images/pp5.webp", alt: "גבינה צהובה", caption: "גבינה צהובה" },
+      { img: "images/pp6.webp", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
+      { img: "images/pp7.webp", alt: "מעדן קרלו", caption: "מעדן קרלו" },
+      { img: "images/pp8.webp", alt: "מעדן ג'לי", caption: "מעדן ג'לי" },
+      { img: "images/pp9.webp", alt: "רוטב טריאקי", caption: "רוטב טריאקי" },
+      { img: "images/pp10.webp", alt: "ביצים", caption: "ביצים" }
+    ],
+    correctIndexes: [1, 2, 5, 7, 8, 9],
+    wrongMsgByIndex: {
+      0: "❌ אסור להכניס מעדנים חלביים!",
+      3: "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!",
+      4: "❌ אסור להכניס מוצרי חלב מכל סוג!",
+      6: "❌ מעדן קרלו הוא חלבי!"
+    },
+    wrongMsg: "❌ יש בחירה לא נכונה. נסו שוב."
+  },
+  {
+    type: "mc_multi",
+    title: "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?",
+    //leadImg: "images/fridge.webp",
+    options: [
+      "לא, אסור בשום אופן",
+      "לא אלא אם כן המשגיח אישר",
+      "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.",
+      "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב."
+    ],
+    correctIndexes: [2, 3],
+    wrongMsg: "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע."
+  }
+];
+
+// =========================
+// DOM
+// =========================
+const el = {
+  screenStart: document.getElementById("screen-start"),
+  screenQuiz: document.getElementById("screen-quiz"),
+  screenResult: document.getElementById("screen-result"),
+
+  fullName: document.getElementById("fullName"),
+  personalId: document.getElementById("personalId"),
+  kitchen: document.getElementById("kitchen"),
+  language: document.getElementById("language"),
+  btnStart: document.getElementById("btnStart"),
+  startError: document.getElementById("startError"),
+
+  progress: document.getElementById("progress"),
+  questionTitle: document.getElementById("questionTitle"),
+
+  leadWrap: document.getElementById("leadWrap"),
+  leadImg: document.getElementById("leadImg"),
+  leadCap: document.getElementById("leadCap"),
+
+  twoWrap: document.getElementById("twoWrap"),
+  imgA: document.getElementById("imgA"),
+  imgB: document.getElementById("imgB"),
+  capA: document.getElementById("capA"),
+  capB: document.getElementById("capB"),
+
+  hotspotWrap: document.getElementById("hotspotWrap"),
+  hotspotImg: document.getElementById("hotspotImg"),
+  hotspotOverlay: document.getElementById("hotspotOverlay"),
+  hotspotStatus: document.getElementById("hotspotStatus"),
+  hotspotMarks: document.getElementById("hotspotMarks"),
+
+  mcWrap: document.getElementById("mcWrap"),
+  mcHint: document.getElementById("mcHint"),
+  mcOptions: document.getElementById("mcOptions"),
+
+  imgMultiWrap: document.getElementById("imgMultiWrap"),
+  imgMultiGrid: document.getElementById("imgMultiGrid"),
+  imgMultiFeedback: document.getElementById("imgMultiFeedback"),
+
+  dragWrap: document.getElementById("dragWrap"),
+  dragIntro: document.getElementById("dragIntro"),
+  dragPlay: document.getElementById("dragPlay"),
+  dragIntroImg: document.getElementById("dragIntroImg"),
+  dragStage: document.getElementById("dragStage"),
+  dragBg: document.getElementById("dragBg"),
+  dragZones: document.getElementById("dragZones"),
+  dragItem: document.getElementById("dragItem"),
+  dragItemImg: document.getElementById("dragItemImg"),
+  dragItemCap: document.getElementById("dragItemCap"),
+  dragFeedback: document.getElementById("dragFeedback"),
+  btnShowChart: document.getElementById("btnShowChart"),
+
+  btnNext: document.getElementById("btnNext"),
+  feedback: document.getElementById("feedback"),
+
+  sendStatus: document.getElementById("sendStatus"),
+  btnResend: document.getElementById("btnResend"),
+
+  matchWrap: document.getElementById("matchWrap"),
+  matchStage: document.getElementById("matchStage"),
+  matchSvg: document.getElementById("matchSvg"),
+  matchLeft: document.getElementById("matchLeft"),
+  matchRight: document.getElementById("matchRight"),
+  matchError: document.getElementById("matchError"),
+
+};
+// =========================
 // HOTSPOT CALIBRATION MODE
 // Toggle: Ctrl+K
 // In calibration: 4 clicks => box {x1,y1,x2,y2} (percent)
@@ -535,275 +790,6 @@ function startTranslationObserver(){
     attributeFilter: ["placeholder","title","aria-label","alt"]
   });
 }
-
-// =========================
-// QUESTIONS (DATA ONLY)
-// ✅ תוספת חדשה: leadImg / leadCaption
-// אפשר לשים בכל שאלה (במיוחד mc_single/mc_multi)
-// =========================
-const QUESTIONS = [
-  {
-    type: "mc_single",
-    title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
-    leadImg: "images/fishPic.webp",
-    options: [
-      "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]",
-      "על עגלה [B]בשרית[/B] בלבד",
-      "רק כאשר מניחים על הרצפה",
-      "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש"
-    ],
-    correctIndex: 1,
-    wrongMsg: "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית."
-  },  
-  {
-    type: "match_lines",
-    title: "התאימו בין הסקוטש לכלי",
-    left: [
-      { key:"red",   img:"images/tape_red.webp",   alt:"סקוטש אדום" },
-      { key:"yellow", img:"images/tape_yellow.webp", alt:"סקוטש צהוב" },
-      { key:"blue",  img:"images/tape_blue.webp",  alt:"סקוטש כחול" },
-    ],
-    right: [
-      { key:"blue",  img:"images/knife_blue.webp",  alt:"מגש" },
-      { key:"red",   img:"images/knife_red.webp",   alt:"צלחת" },
-      { key:"yellow", img:"images/knife_yellow.webp", alt:"סכין" },
-    ],
-    wrongMsg: "❌ התאמה לא נכונה. נסו שוב."
-  },
-  /*{
-    type: "mc_single",
-    title: "איפה אסור לאחסן את הדגים בזמן הארוחה כדי לשמור על חומם?",
-    leadImg: "images/fishPic.webp",
-    options: [
-      "בתרמופורט נפרד",
-      "על פלטה או משטח חימום",
-      "ניתן להשאיר בתנור המקורי"
-      "בארון חימום הרגיל",
-    ],
-    correctIndex: 3,
-    wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
-  },*/
-  {
-    type: "two",
-    title: "איך צריך להגיש בשר ודגים",
-    A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
-    B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
-    correct: "B",
-    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
-  },
-  {
-    type: "hotspot5",
-    title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
-    img: "images/q3_hotspot.webp",
-    boxes: [
-      {
-        x1: 37.01, y1: 21.68, x2: 77.71, y2: 27.35,
-        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח"
-      },
-      {
-        x1: 16.45, y1: 58.05, x2: 52.63, y2: 68.11,
-        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]"
-      },
-      {
-        x1: 12.54, y1: 67.92, x2: 48.93, y2: 77.40,
-        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]"
-      },
-      {
-        x1: 46.88, y1: 53.70, x2: 83.47, y2: 64.68,
-        label: "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]"
-      },
-      {
-        x1: 49.14, y1: 72.66, x2: 83.68, y2: 83.06,
-        label: "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]"
-      }
-    ],
-    wrongMsg: "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?"
-  },
-
-  {
-    type: "mc_single",
-    title: "מצאת תבנית כזו, מה תעשה איתה?",
-    leadImg: "images/tavnit.webp",
-    options: [
-      "תבנית בלי חורים יכולה לשמש ל[B]בשרי[/B]",
-      "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור",
-      "היא לא מסומנת, יש לפנות למשגיח",
-      "היא לא מסומנת אבל ניתן להשתמש בכל זאת"
-    ],
-    correctIndex: 2,
-    wrongMsg: "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח."
-  },
-  {
-    type: "mc_multi",
-    title: "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?",
-    //leadImg: "images/fridge.webp",
-    options: [
-      "שכל התחתית תהיה צבועה באדום",
-      "3 חורים בפינה",
-      "גם צבע וגם מדבקה",
-      "4 חורים בפינה",
-      "מדבקה עם כיתוב '[B]בשרי[/B]'"
-    ],
-    correctIndexes: [1, 4],
-    wrongMsg: "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'."
-  },
-  {
-    type: "two",
-    title: "בחר את הכף [H]החלבית[/H]",
-    A: { img: "images/q1_a1.webp", caption: "כף עם חור" },
-    B: { img: "images/q1_a2.webp", caption: "כף בלי חור" },
-    correct: "A",
-    wrongMsg: "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור."
-  },
-  {
-    type: "drag_shelves",
-    title: "גררו כל מוצר למדף הנכון לפי התרשים שראיתם",
-    introTitle: "התבוננו בתרשים ואז לחצו המשך.",
-    introImg: "images/intro_chart.webp",
-    bgImg: "images/roomshelves.webp",
-    zones: DRAG_ZONES_4x2,
-    items: [
-      { img:"images/prod1.webp", caption:"חלב", side:"R", wrongMsg:"❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין." },
-      { img:"images/prod2.webp", caption:"שתיה", side:"L", wrongMsg:"❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל." },
-      { img:"images/prod3.webp", caption:"חומוס", side:"L", wrongMsg:"❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל." },
-      { img:"images/prod4.webp", caption:"קוטג'", side:"R", wrongMsg:"❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין." },
-      { img:"images/prod5.webp", caption:"חלב סויה", side:"L", wrongMsg:"❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל." },
-      { img:"images/prod6.webp", caption:"מילקי", side:"R", wrongMsg:"❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין." },
-      { img:"images/prod7.webp", caption:"גבינה צהובה", side:"R", wrongMsg:"❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין." },
-      { img:"images/prod8.webp", caption:"מעדן סויה", side:"L", wrongMsg:"❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל." },
-    ]
-  },
-  {
-    type: "two",
-    title: "איזה גסטרונום שייך ל[P]פרווה[/P]?",
-    A: { img: "images/q2_a.webp", caption: "3 חורים" },
-    B: { img: "images/q2_b.webp", caption: "2 חורים" },
-    correct: "B",
-    wrongMsg: "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1)."
-  },
-    // ✅ דוגמה: תמונה לפני רב-ברירה
-  {
-    type: "mc_single",
-    title: "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?",
-    //leadImg: "images/mc_intro.webp",
-    //leadCaption: "תסתכל/י על הסיטואציה ואז ענה/י",
-    options: [
-      "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]",
-      "על עגלה [B]בשרית[/B] בלבד",
-      "רק כאשר מניחים על הרצפה",
-      "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש"
-    ],
-    correctIndex: 1,
-    wrongMsg: "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית."
-  },
-  {
-    type: "img_multi10",
-    title: "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]",
-    items: [
-      { img: "images/pp1.webp", alt: "מילקי", caption: "מילקי"},
-      { img: "images/pp2.webp", alt: "מלפפונים", caption: "מלפפונים" },
-      { img: "images/pp3.webp", alt: "חלב סויה", caption: "חלב סויה", fit: "contain"},
-      { img: "images/pp4.webp", alt: "לורד סנדויץ'", caption: "לורד סנדויץ'" },
-      { img: "images/pp5.webp", alt: "גבינה צהובה", caption: "גבינה צהובה" },
-      { img: "images/pp6.webp", alt: "שתיה מתוקה", caption: "שתיה מתוקה" },
-      { img: "images/pp7.webp", alt: "מעדן קרלו", caption: "מעדן קרלו" },
-      { img: "images/pp8.webp", alt: "מעדן ג'לי", caption: "מעדן ג'לי" },
-      { img: "images/pp9.webp", alt: "רוטב טריאקי", caption: "רוטב טריאקי" },
-      { img: "images/pp10.webp", alt: "ביצים", caption: "ביצים" }
-    ],
-    correctIndexes: [1, 2, 5, 7, 8, 9],
-    wrongMsgByIndex: {
-      0: "❌ אסור להכניס מעדנים חלביים!",
-      3: "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!",
-      4: "❌ אסור להכניס מוצרי חלב מכל סוג!",
-      6: "❌ מעדן קרלו הוא חלבי!"
-    },
-    wrongMsg: "❌ יש בחירה לא נכונה. נסו שוב."
-  },
-  {
-    type: "mc_multi",
-    title: "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?",
-    //leadImg: "images/fridge.webp",
-    options: [
-      "לא, אסור בשום אופן",
-      "לא אלא אם כן המשגיח אישר",
-      "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.",
-      "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב."
-    ],
-    correctIndexes: [2, 3],
-    wrongMsg: "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע."
-  }
-];
-
-// =========================
-// DOM
-// =========================
-const el = {
-  screenStart: document.getElementById("screen-start"),
-  screenQuiz: document.getElementById("screen-quiz"),
-  screenResult: document.getElementById("screen-result"),
-
-  fullName: document.getElementById("fullName"),
-  personalId: document.getElementById("personalId"),
-  kitchen: document.getElementById("kitchen"),
-  language: document.getElementById("language"),
-  btnStart: document.getElementById("btnStart"),
-  startError: document.getElementById("startError"),
-
-  progress: document.getElementById("progress"),
-  questionTitle: document.getElementById("questionTitle"),
-
-  leadWrap: document.getElementById("leadWrap"),
-  leadImg: document.getElementById("leadImg"),
-  leadCap: document.getElementById("leadCap"),
-
-  twoWrap: document.getElementById("twoWrap"),
-  imgA: document.getElementById("imgA"),
-  imgB: document.getElementById("imgB"),
-  capA: document.getElementById("capA"),
-  capB: document.getElementById("capB"),
-
-  hotspotWrap: document.getElementById("hotspotWrap"),
-  hotspotImg: document.getElementById("hotspotImg"),
-  hotspotOverlay: document.getElementById("hotspotOverlay"),
-  hotspotStatus: document.getElementById("hotspotStatus"),
-  hotspotMarks: document.getElementById("hotspotMarks"),
-
-  mcWrap: document.getElementById("mcWrap"),
-  mcHint: document.getElementById("mcHint"),
-  mcOptions: document.getElementById("mcOptions"),
-
-  imgMultiWrap: document.getElementById("imgMultiWrap"),
-  imgMultiGrid: document.getElementById("imgMultiGrid"),
-  imgMultiFeedback: document.getElementById("imgMultiFeedback"),
-
-  dragWrap: document.getElementById("dragWrap"),
-  dragIntro: document.getElementById("dragIntro"),
-  dragPlay: document.getElementById("dragPlay"),
-  dragIntroImg: document.getElementById("dragIntroImg"),
-  dragStage: document.getElementById("dragStage"),
-  dragBg: document.getElementById("dragBg"),
-  dragZones: document.getElementById("dragZones"),
-  dragItem: document.getElementById("dragItem"),
-  dragItemImg: document.getElementById("dragItemImg"),
-  dragItemCap: document.getElementById("dragItemCap"),
-  dragFeedback: document.getElementById("dragFeedback"),
-  btnShowChart: document.getElementById("btnShowChart"),
-
-  btnNext: document.getElementById("btnNext"),
-  feedback: document.getElementById("feedback"),
-
-  sendStatus: document.getElementById("sendStatus"),
-  btnResend: document.getElementById("btnResend"),
-
-  matchWrap: document.getElementById("matchWrap"),
-  matchStage: document.getElementById("matchStage"),
-  matchSvg: document.getElementById("matchSvg"),
-  matchLeft: document.getElementById("matchLeft"),
-  matchRight: document.getElementById("matchRight"),
-  matchError: document.getElementById("matchError"),
-
-};
 
 // =========================
 // STATE
