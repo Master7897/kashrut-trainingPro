@@ -542,8 +542,7 @@ function startTranslationObserver(){
 // אפשר לשים בכל שאלה (במיוחד mc_single/mc_multi)
 // =========================
 const QUESTIONS = [
-  
-  {
+    {
     type: "match_lines",
     title: "התאימו בין הסקוטש לכלי",
     left: [
