@@ -538,7 +538,7 @@ function startTranslationObserver(){
 // =========================
 // QUESTIONS (DATA ONLY)
 const QUESTIONS = [
-  {
+  /*{
     type: "mc_single",
     title: "איפה אסור לאחסן את הדגים בזמן הארוחה כדי לשמור על חומם?",
     leadImg: "images/fishPic.webp",
@@ -550,7 +550,7 @@ const QUESTIONS = [
     ],
     correctIndex: 3,
     wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
-  },
+  }*/
   {
     type: "match_lines",
     title: "התאימו בין הסקוטש לכלי",
