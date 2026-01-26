@@ -563,7 +563,7 @@ const QUESTIONS = [
     A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
     B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
     correct: "B",
-    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום."
+    wrongMsg: "❌ אסור לשים בשר ודגים אחד ליד השני."
   },
   {
     type: "hotspot5",
@@ -1065,22 +1065,8 @@ function failAndRetry(q, fallbackMsg){
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
   el.feedback.innerHTML = `
-    <div>${formatSpecial(msg)}</div>
-    <div style="margin-top:10px;">
-      <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
-    </div>
-  `;
-
+    <div>${formatSpecial(msg)}</div>`;
   el.btnNext.disabled = true;
-
-  const btn = document.getElementById("btnRetryNow");
-  if (btn){
-    btn.onclick = () => {
-      el.feedback.hidden = true;
-      el.feedback.classList.remove("errorbox");
-      renderQuestion();
-    };
-  }
 }
 function buildMatchItem(side, it){
   const key = String(it?.key ?? "").trim();
