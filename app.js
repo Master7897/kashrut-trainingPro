@@ -545,7 +545,7 @@ const QUESTIONS = [
     options: [
       "בתרמופורט נפרד",
       "על פלטה או משטח חימום",
-      "ניתן להשאיר בתנור המקורי",
+      "להשאיר בתנור המקורי",
       "בארון חימום הרגיל"
     ],
     correctIndex: 3,
@@ -608,7 +608,7 @@ const QUESTIONS = [
     title: "מצאת תבנית כזו, מה תעשה איתה?",
     leadImg: "images/tavnit.webp",
     options: [
-      "תבנית בלי חורים יכולה לשמש ל[B]בשרי[/B]",
+      "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B]",
       "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור",
       "היא לא מסומנת, יש לפנות למשגיח",
       "היא לא מסומנת אבל ניתן להשתמש בכל זאת"
@@ -1280,7 +1280,7 @@ const TYPE = {
       state.runtime.mc.selected = [];
       el.btnNext.disabled = true;
 
-      el.mcHint.textContent = "שימו ❤️: יש יותר מתשובה אחת נכונה.";
+      el.mcHint.textContent = "שימו ❤️: יש כמה תשובות נכונות.";
       el.mcOptions.innerHTML = "";
 
       q.options.forEach((opt, i) => {
