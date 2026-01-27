@@ -670,7 +670,7 @@ const QUESTIONS = [
       { img: "images/p19.webp", alt: "עגבניה", caption: "עגבניה" },
       { img: "images/p110.webp", alt: "קישוא", caption: "קישוא" }
     ],
-    correctIndexes: [1, 2, 5, 7, 8, 9],
+    correctIndexes: [0, 2, 5, 6, 7, 8],
     wrongMsgByIndex: {
       1: "❌ ניתן להשתמש ללא טיפול כשרותי",
       3: "❌ ניתן להשתמש ללא טיפול כשרותי",
