@@ -1365,25 +1365,10 @@ function failAndRetry(q, fallbackMsg){
   el.feedback.classList.add("errorbox");
   el.feedback.hidden = false;
   el.feedback.innerHTML = `
-    <div id="failMsg"></div>
-    <div style="margin-top:10px;">
-      <button type="button" id="btnRetryNow" class="secondary">נסו שוב</button>
-    </div>
-  `;
+    <div id="failMsg"></div>`;
 
   // Translate message as a single rich sentence (prevents split-node word order issues)
   setHtmlI18n(document.getElementById("failMsg"), msg);
-
-  el.btnNext.disabled = true;
-
-  const btn = document.getElementById("btnRetryNow");
-  if (btn){
-    btn.onclick = () => {
-      el.feedback.hidden = true;
-      el.feedback.classList.remove("errorbox");
-      renderQuestion();
-    };
-  }
 }
 function buildMatchItem(side, it){
   const key = String(it?.key ?? "").trim();
