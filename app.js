@@ -540,7 +540,7 @@ function startTranslationObserver(){
 const QUESTIONS = [
   {
     type: "mc_single",
-    title: "איפה אסור לאחסן את הדגים בזמן הארוחה כדי לשמור על חומם?",
+    title: "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?",
     leadImg: "images/fishPic.webp",
     options: [
       "בתרמופורט נפרד",
