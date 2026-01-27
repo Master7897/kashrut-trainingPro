@@ -689,7 +689,7 @@ const QUESTIONS = [
   },
   {
     type: "mc_single",
-    leadImg: "images/newUt.webp",
+    leadImg: "images/privet.webp",
     title: "לאיפה מותר להכניס אוכל וכלים פרטיים?",
     options: [
       "למטבח בהתאם לאפיון (בשר לבשרי וכו').",
