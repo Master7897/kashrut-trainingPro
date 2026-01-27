@@ -656,6 +656,30 @@ const QUESTIONS = [
     wrongMsg: "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'."
   },
   {
+    type: "img_multi10",
+    title: "אילו מוצרים צריכים טיפול כשרותי?",
+    items: [
+      { img: "images/p11.webp", alt: "קטניות", caption: "קטניות"},
+      { img: "images/p12.webp", alt: "פסטה", caption: "פסטה" },
+      { img: "images/p13.webp", alt: "תבלינים", caption: "תבלינים", fit: "contain"},
+      { img: "images/p14.webp", alt: "תפוחי אדמה", caption: "תפוחי אדמה" },
+      { img: "images/p15.webp", alt: "גזר", caption: "גזר" },
+      { img: "images/p16.webp", alt: "חציל", caption: "חציל" },
+      { img: "images/p17.webp", alt: "פלפל צהוב", caption: "פלפל צהוב" },
+      { img: "images/p18.webp", alt: "פלפל חריף", caption: "פלפל חריף" },
+      { img: "images/p19.webp", alt: "עגבניה", caption: "עגבניה" },
+      { img: "images/p110.webp", alt: "קישוא", caption: "קישוא" }
+    ],
+    correctIndexes: [1, 2, 5, 7, 8, 9],
+    wrongMsgByIndex: {
+      1: "❌ ניתן להשתמש ללא טיפול כשרותי",
+      3: "❌ ניתן להשתמש ללא טיפול כשרותי",
+      4: "❌ ניתן להשתמש ללא טיפול כשרותי",
+      9: "❌ ניתן להשתמש ללא טיפול כשרותי"
+    },
+    wrongMsg: "❌ יש בחירה לא נכונה. נסו שוב."
+  },
+  {
     type: "two",
     title: "בחר את הכף [H]החלבית[/H]",
     A: { img: "images/q1_a1.webp", caption: "כף עם חור" },
