@@ -182,7 +182,7 @@ window.I18N_OVERRIDES = {
   "חומוס": "Hummus",
   "קוטג'": "Cottage cheese",
   "חלב סויה": "Soy milk",
-  "מילקי": "Milky (dairy dessert)",
+  "מילקי": "Milky",
   "גבינה צהובה": "Yellow cheese",
   "מעדן סויה": "Soy dessert",
   "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.":
