@@ -689,6 +689,19 @@ const QUESTIONS = [
   },
   {
     type: "mc_single",
+    title: "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?",
+    leadImg: "images/halavi.webp",
+    options: [
+      "אסור חלב ניגר אבל מותר חמאה ושמנת.",
+      "רק בורקסים בצורת משולש.",
+      "רק באישור מנהל המטבח.",
+      "אף תשובה אינה נכונה."
+    ],
+    correctIndex: 3,
+    wrongMsg: "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח."
+  },
+  {
+    type: "mc_single",
     leadImg: "images/privet.webp",
     title: "לאיפה מותר להכניס אוכל וכלים פרטיים?",
     options: [
