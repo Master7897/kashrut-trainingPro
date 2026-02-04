@@ -742,14 +742,14 @@ const QUESTIONS = [
       "בתרמופורט נפרד.",
       "על פלטה או משטח חימום.",
       "בתנור המקורי.",
-      "בארון חימום הרגיל."
+      "בארון חימום הרגיל כשיש שם בשר / עוף."
     ],
     correctIndex: 3,
     wrongMsg: "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B]."
   }, 
   {
     type: "two",
-    title: "איך צריך להגיש בשר ודגים",
+    title: "לחץ על התמונה הנכונה, איך צריך להגיש בשר ודגים?",
     A: { img: "images/fishandmeatplateW.webp", caption: "בתבניות נפרדות" },
     B: { img: "images/fishandmeatplate.webp", caption: "עם הפרדה של פחמימה" },
     correct: "B",
@@ -757,7 +757,7 @@ const QUESTIONS = [
   },
   {
     type: "match_lines",
-    title: "התאימו בין הסקוטש לכלי!",
+    title: "מתחו קו בין הסקוטש לכלי המתאים",
     left: [
       { key:"red",   img:"images/tape_red.webp",   alt:"סקוטש אדום" },
       { key:"yellow", img:"images/tape_yellow.webp", alt:"סקוטש צהוב" },
@@ -849,7 +849,7 @@ const QUESTIONS = [
       "מדבקה עם כיתוב '[B]בשרי[/B]'"
     ],
     correctIndexes: [1, 4],
-    wrongMsg: "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'."
+    wrongMsg: "❌ לא נכון. חייבים רק 3 חורים וכיתוב '[B]בשרי[/B]'."
   },
   {
     type: "img_multi10",
