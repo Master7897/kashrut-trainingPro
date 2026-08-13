@@ -143,10 +143,16 @@ function removeLastCalMarker(){
 const GOOGLE_SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzQxCavHELnbrTkeRRV-cmVEENZXW8eKhySjmmttu-QyM9ZsPT5M6JOyhaHnYo4TVhGCg/exec";
 
 // (חדש) Backend של המערכת (אותו URL שהדבקת ב-admin/register)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec"; // ← הדבק כאן את ה-…/exec של Apps Script החדש
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlp-QnTsRIs2WJryZvAdBrwe1yVkzfEt8jAwWtPB4LqaIG__2vDH2XXHTyRr4TDsOomg/exec";
 
 const URL_PARAMS = new URLSearchParams(window.location.search);
 const RID = (URL_PARAMS.get("rid") || "").trim();
+const ALLOWED_KITCHEN_IDS = new Set(
+  (URL_PARAMS.get("kitchenIds") || "")
+    .split(",")
+    .map(v => String(v || "").trim())
+    .filter(Boolean)
+);
 
 // ---------- JSONP API (works on GitHub Pages) ----------
 function apiCall(path, payload){
@@ -261,11 +267,35 @@ async function initKitchenList(){
     el.btnStart.disabled = true;
     return;
   }
-  const list = Array.isArray(r.kitchens)
+  let list = Array.isArray(r.kitchens)
     ? r.kitchens
     : (Array.isArray(r.kitchenNames) ? r.kitchenNames : []);
+
+  /*
+   * קישור שמגיע ממרכז העבודה יכול להגביל את המשתמש למטבחים מסוימים.
+   * קישור ישן שמכיל rid בלבד נשאר תואם לאחור ומציג את כל מטבחי הרב.
+   */
+  if (ALLOWED_KITCHEN_IDS.size) {
+    list = list.filter(k => {
+      if (!k || typeof k === "string") return false;
+      return ALLOWED_KITCHEN_IDS.has(String(k.id || "").trim());
+    });
+  }
+
+  if (!list.length) {
+    el.startError.hidden = false;
+    el.startError.textContent = "לא נמצאו מטבחים מורשים לקישור זה. פנה לרב היחידה.";
+    el.btnStart.disabled = true;
+    return;
+  }
+
   setKitchenOptions(list);
   el.kitchen.disabled = false;
+
+  if (list.length === 1 && typeof list[0] !== "string") {
+    el.kitchen.value = String(list[0].id || "").trim();
+  }
+
   preloadAllQuestionImages();// פותח בחזרה אחרי הצלחה
 }
 const HOTSPOT_MAX_CLICKS = 5;
