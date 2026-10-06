@@ -2612,6 +2612,7 @@ const TYPE = {
     return !!state.runtime.match?.done;
   }
 }
+};
 // =========================
 // HOTSPOT UI
 // =========================
