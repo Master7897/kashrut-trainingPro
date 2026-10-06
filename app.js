@@ -299,7 +299,8 @@ async function initKitchenList(){
   preloadAllQuestionImages();// פותח בחזרה אחרי הצלחה
 }
 const HOTSPOT_MAX_CLICKS = 5;
-
+// מרווח סלחנות סביב כל אזור תקלה, באחוזים מהתמונה
+const HOTSPOT_HIT_PADDING = 2.5;
 // דוגמה: איזורי hotspot (אם לכל שאלה יש boxes משלה – אפשר להכניס בתוך השאלה ולהפסיק להשתמש בקבוע)
 /*const HOTSPOT_BOXES = [
   { x1: 37.01, y1: 21.68, x2: 77.71, y2: 27.35 },
@@ -1463,86 +1464,151 @@ const TYPE = {
     render(q){
       el.hotspotWrap.hidden = false;
       el.hotspotImg.src = q.img;
-
+  
       const boxes = q.boxes || [];
+  
       state.runtime.hotspot.attempts = [];
       state.runtime.hotspot.hit = Array(boxes.length).fill(false);
-
+  
       updateHotspotUI(q);
-
+  
       el.hotspotOverlay.onclick = (ev) => {
-      const rect = el.hotspotOverlay.getBoundingClientRect();
-      const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
-      const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
-    
-      // =========================
-      // CALIBRATION MODE (MULTI BOXES)
-      // =========================
-      if (CAL.enabled){
-        ensureCalPanel();
-    
-        CAL.points.push({ x: xPct, y: yPct });
-        addCalMarker(xPct, yPct);
-    
-        // כל 4 נקודות -> מרובע חדש
-        if (CAL.points.length === 4){
-          const box = buildBoxFromPoints(CAL.points);
-          CAL.boxes.push(box);
-          CAL.points = [];
-          clearCalMarkers(); // מתחילים רביעייה חדשה
+        const rect = el.hotspotOverlay.getBoundingClientRect();
+  
+        const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
+        const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
+  
+        // =========================
+        // CALIBRATION MODE
+        // =========================
+        if (CAL.enabled){
+          ensureCalPanel();
+  
+          CAL.points.push({
+            x: xPct,
+            y: yPct
+          });
+  
+          addCalMarker(xPct, yPct);
+  
+          // כל 4 נקודות -> מרובע חדש
+          if (CAL.points.length === 4){
+            const box = buildBoxFromPoints(CAL.points);
+  
+            CAL.boxes.push(box);
+            CAL.points = [];
+  
+            clearCalMarkers();
+          }
+  
+          updateCalPanel();
+          return;
         }
-    
-        updateCalPanel();
-        return;
-      }
-    
-      // =========================
-      // NORMAL QUIZ MODE
-      // =========================
-      const rt = state.runtime.hotspot;
-    
-      if (rt.attempts.length >= HOTSPOT_MAX_CLICKS){
+  
+        // =========================
+        // NORMAL QUIZ MODE
+        // =========================
+        const rt = state.runtime.hotspot;
+  
+        /*
+         * נותנים 2 טעויות נוספות מעבר למספר התקלות.
+         * לדוגמה: 5 תקלות = עד 7 לחיצות פעילות.
+         */
+        const maxClicks = boxes.length + 2;
+  
+        /*
+         * שומר גם על מנגנון ה-padding שכבר הוספנו.
+         * fallback ל-0 כדי שהקוד עדיין יעבוד
+         * גם אם הקבוע לא קיים מסיבה כלשהי.
+         */
+        const padding =
+          (typeof HOTSPOT_HIT_PADDING !== "undefined")
+            ? Number(HOTSPOT_HIT_PADDING) || 0
+            : 0;
+  
+        const isInsideBox = (b) => {
+          if (!b) return false;
+  
+          const x1 = Math.max(0,   b.x1 - padding);
+          const y1 = Math.max(0,   b.y1 - padding);
+          const x2 = Math.min(100, b.x2 + padding);
+          const y2 = Math.min(100, b.y2 + padding);
+  
+          return (
+            xPct >= x1 &&
+            xPct <= x2 &&
+            yPct >= y1 &&
+            yPct <= y2
+          );
+        };
+  
+        /*
+         * אם המשתמש לחץ שוב באזור שכבר נמצא:
+         * לא מחשיבים את זה כטעות ולא מבזבזים ניסיון.
+         */
+        const alreadyHitIndex = boxes.findIndex(
+          (b, i) => rt.hit[i] && isInsideBox(b)
+        );
+  
+        if (alreadyHitIndex !== -1){
+          el.feedback.hidden = false;
+          el.feedback.textContent = "את התקלה הזו כבר מצאת ✅";
+          return;
+        }
+  
+        if (rt.attempts.length >= maxClicks){
+          el.feedback.hidden = false;
+          el.feedback.textContent =
+            "הגעת למספר הלחיצות המקסימלי. מחקו סימון שגוי כדי לנסות שוב.";
+          return;
+        }
+  
+        const marker = document.createElement("div");
+        marker.className = "hotspot-marker";
+        marker.style.left = `${xPct}%`;
+        marker.style.top = `${yPct}%`;
+  
+        el.hotspotOverlay.appendChild(marker);
+  
+        let hitIndex = null;
+  
+        for (let i = 0; i < boxes.length; i++){
+          if (rt.hit[i]) continue;
+  
+          if (isInsideBox(boxes[i])){
+            hitIndex = i;
+            rt.hit[i] = true;
+            break;
+          }
+        }
+  
+        rt.attempts.push({
+          hitIndex,
+          markerEl: marker
+        });
+  
         el.feedback.hidden = false;
-        el.feedback.textContent = "הגעת למספר הלחיצות המקסימלי.";
-        return;
-      }
-    
-      const marker = document.createElement("div");
-      marker.className = "hotspot-marker";
-      marker.style.left = `${xPct}%`;
-      marker.style.top = `${yPct}%`;
-      el.hotspotOverlay.appendChild(marker);
-    
-      const boxes = q.boxes || [];
-      let hitIndex = null;
-    
-      for (let i = 0; i < boxes.length; i++){
-        if (rt.hit[i]) continue;
-        const b = boxes[i];
-        if (xPct >= b.x1 && xPct <= b.x2 && yPct >= b.y1 && yPct <= b.y2){
-          hitIndex = i;
-          rt.hit[i] = true;
-          break;
-        }
-      }
-    
-      rt.attempts.push({ hitIndex, markerEl: marker });
-    
-      el.feedback.hidden = false;
-      el.feedback.textContent = (hitIndex !== null) ? "נכון ✅" : "לא נכון ❌";
-    
-      el.btnNext.disabled = rt.attempts.length === 0;
-      updateHotspotUI(q);
-    };
-
+  
+        el.feedback.textContent =
+          (hitIndex !== null)
+            ? "נכון ✅"
+            : "לא נכון ❌";
+  
+        el.btnNext.disabled = rt.attempts.length === 0;
+  
+        updateHotspotUI(q);
+      };
     },
+  
     validate(q){
       const boxes = q.boxes || [];
-      const hits = state.runtime.hotspot.hit.filter(Boolean).length;
+  
+      const hits =
+        state.runtime.hotspot.hit.filter(Boolean).length;
+  
       return hits === boxes.length;
     }
   },
-
   mc_single: {
     render(q){
       el.mcWrap.hidden = false;
@@ -1586,122 +1652,375 @@ const TYPE = {
   mc_multi: {
     render(q){
       el.mcWrap.hidden = false;
+  
       state.runtime.mc.selected = [];
       el.btnNext.disabled = true;
-
-      setTextI18n(el.mcHint, "שימו ❤️: יש כמה תשובות נכונות.");
+  
+      const requiredCount =
+        Array.isArray(q.correctIndexes)
+          ? q.correctIndexes.length
+          : 0;
+  
+      const updateHint = (customText = "") => {
+        if (customText){
+          setTextI18n(el.mcHint, customText);
+          return;
+        }
+  
+        const selectedCount =
+          state.runtime.mc.selected.length;
+  
+        setTextI18n(
+          el.mcHint,
+          `שימו ❤️: יש לבחור ${requiredCount} תשובות נכונות. נבחרו ${selectedCount}/${requiredCount}.`
+        );
+      };
+  
+      updateHint();
+  
       el.mcOptions.innerHTML = "";
-
+  
       q.options.forEach((opt, i) => {
         const row = document.createElement("label");
         row.className = "mc-option";
-
+        row.dataset.idx = String(i);
+  
         const inp = document.createElement("input");
         inp.type = "checkbox";
         inp.value = String(i);
-
+  
         const txt = document.createElement("div");
         txt.className = "txt";
+  
         setHtmlI18n(txt, opt);
-
+  
         row.appendChild(inp);
         row.appendChild(txt);
-
+  
         row.addEventListener("click", (e) => {
-          if (e.target !== inp) inp.checked = !inp.checked;
-
-          if (inp.checked){
-            if (!state.runtime.mc.selected.includes(i)) state.runtime.mc.selected.push(i);
-          } else {
-            state.runtime.mc.selected = state.runtime.mc.selected.filter(x => x !== i);
+          /*
+           * מנהלים את ה-checkbox בעצמנו כדי למנוע
+           * toggle כפול של label + input.
+           */
+          e.preventDefault();
+  
+          const selected =
+            state.runtime.mc.selected;
+  
+          const exists =
+            selected.includes(i);
+  
+          /*
+           * לא מאפשרים לבחור יותר תשובות
+           * מהכמות שהשאלה דורשת.
+           */
+          if (
+            !exists &&
+            selected.length >= requiredCount
+          ){
+            inp.checked = false;
+  
+            updateHint(
+              `כבר נבחרו ${requiredCount} תשובות. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת.`
+            );
+  
+            return;
           }
-
-          el.btnNext.disabled = state.runtime.mc.selected.length === 0;
+  
+          if (exists){
+            inp.checked = false;
+  
+            state.runtime.mc.selected =
+              selected.filter(x => x !== i);
+          } else {
+            inp.checked = true;
+  
+            state.runtime.mc.selected.push(i);
+          }
+  
+          /*
+           * אם הייתה הודעת שגיאה מניסיון קודם,
+           * מסתירים אותה ברגע שהמשתמש התחיל לתקן.
+           */
+          el.feedback.hidden = true;
+          el.feedback.classList.remove("errorbox");
+  
+          const selectedCount =
+            state.runtime.mc.selected.length;
+  
+          el.btnNext.disabled =
+            selectedCount !== requiredCount;
+  
+          updateHint();
         });
-
+  
         el.mcOptions.appendChild(row);
       });
     },
+  
     validate(q){
-      const chosen = state.runtime.mc.selected.slice().sort((a,b)=>a-b);
-      const correct = q.correctIndexes.slice().sort((a,b)=>a-b);
-      return chosen.length === correct.length && chosen.every((v,i)=>v===correct[i]);
+      const chosen =
+        state.runtime.mc.selected
+          .slice()
+          .sort((a,b) => a-b);
+  
+      const correct =
+        q.correctIndexes
+          .slice()
+          .sort((a,b) => a-b);
+  
+      /*
+       * בדיקות הגנה.
+       * בדרך כלל אי אפשר להגיע לכאן בכמות שגויה,
+       * כי כפתור "המשך" נעול עד שהכמות נכונה.
+       */
+      if (chosen.length < correct.length){
+        const msg =
+          `בחרת ${chosen.length} תשובות. יש לבחור ${correct.length} תשובות.`;
+  
+        failAndRetry(
+          { wrongMsg: msg },
+          msg
+        );
+  
+        return null;
+      }
+  
+      if (chosen.length > correct.length){
+        const msg =
+          `בחרת ${chosen.length} תשובות. יש לבחור ${correct.length} תשובות בלבד.`;
+  
+        failAndRetry(
+          { wrongMsg: msg },
+          msg
+        );
+  
+        return null;
+      }
+  
+      const isCorrect =
+        chosen.every(
+          (value, index) =>
+            value === correct[index]
+        );
+  
+      if (!isCorrect){
+        /*
+         * שומרים את ההסבר הלימודי שכבר הגדרת בשאלה,
+         * ורק מבהירים שהבעיה היא בבחירה עצמה
+         * ולא במספר התשובות.
+         */
+        const baseMsg =
+          q.wrongMsg ||
+          "❌ לפחות אחת מהבחירות אינה נכונה.";
+  
+        const msg =
+          `${baseMsg} מספר התשובות שבחרת נכון, אבל לפחות אחת מהבחירות שסומנו אינה נכונה. בדקו שוב.`;
+  
+        failAndRetry(
+          { wrongMsg: msg },
+          msg
+        );
+  
+        return null;
+      }
+  
+      return true;
     }
   },
-
+  
   img_multi10: {
     render(q){
       el.imgMultiWrap.hidden = false;
+  
       state.runtime.imgMulti.selected = [];
+  
       el.btnNext.disabled = true;
-
+  
       el.imgMultiGrid.innerHTML = "";
+  
       el.imgMultiFeedback.hidden = true;
       el.imgMultiFeedback.textContent = "";
-
+  
       q.items.forEach((it, idx) => {
-        const card = document.createElement("button");
+        const card =
+          document.createElement("button");
+  
         card.type = "button";
         card.className = "img-multi-card";
         card.dataset.idx = String(idx);
-
-        const im = document.createElement("img");
+  
+        const im =
+          document.createElement("img");
+  
         im.src = it.img;
-        im.alt = it.alt || `תמונה ${idx+1}`;
-        if (it.fit === "contain") {
+        im.alt =
+          it.alt ||
+          `תמונה ${idx + 1}`;
+  
+        if (it.fit === "contain"){
           im.style.objectFit = "contain";
           im.style.background = "#fff";
         }
-
-
-        const cap = document.createElement("div");
-        cap.className = "img-multi-caption";
-        setHtmlI18n(cap, it.caption || it.alt || "");
-
+  
+        const cap =
+          document.createElement("div");
+  
+        cap.className =
+          "img-multi-caption";
+  
+        setHtmlI18n(
+          cap,
+          it.caption ||
+          it.alt ||
+          ""
+        );
+  
         card.appendChild(im);
         card.appendChild(cap);
-
+  
         card.addEventListener("click", (e) => {
           e.preventDefault();
-
-          const selected = state.runtime.imgMulti.selected;
-          const exists = selected.includes(idx);
-          if (exists) state.runtime.imgMulti.selected = selected.filter(x => x !== idx);
-          else selected.push(idx);
-
-          card.classList.toggle("selected", !exists);
+  
+          const selected =
+            state.runtime.imgMulti.selected;
+  
+          const exists =
+            selected.includes(idx);
+  
+          if (exists){
+            state.runtime.imgMulti.selected =
+              selected.filter(x => x !== idx);
+          } else {
+            selected.push(idx);
+          }
+  
+          card.classList.toggle(
+            "selected",
+            !exists
+          );
+  
+          /*
+           * ברגע שהמשתמש משנה תשובה,
+           * מסירים את סימון הטעות מהכרטיס הזה.
+           */
           card.classList.remove("wrong");
-
+  
           el.imgMultiFeedback.hidden = true;
           el.imgMultiFeedback.textContent = "";
-
-          el.btnNext.disabled = state.runtime.imgMulti.selected.length === 0;
+  
+          /*
+           * מסתירים גם משוב ישן
+           * כדי שלא יישאר על המסך אחרי תיקון.
+           */
+          el.feedback.hidden = true;
+          el.feedback.classList.remove("errorbox");
+  
+          el.btnNext.disabled =
+            state.runtime.imgMulti.selected.length === 0;
         });
-
+  
         el.imgMultiGrid.appendChild(card);
       });
     },
+  
     validate(q){
-      const chosen = state.runtime.imgMulti.selected.slice().sort((a,b)=>a-b);
-      const correct = q.correctIndexes.slice().sort((a,b)=>a-b);
-
-      const wrongPicked = chosen.filter(i => !correct.includes(i));
+      const chosen =
+        state.runtime.imgMulti.selected
+          .slice()
+          .sort((a,b) => a-b);
+  
+      const correct =
+        q.correctIndexes
+          .slice()
+          .sort((a,b) => a-b);
+  
+      /*
+       * קודם מנקים סימוני שגיאה ישנים,
+       * כדי שכל בדיקה תשקף רק את המצב הנוכחי.
+       */
+      el.imgMultiGrid
+        .querySelectorAll(".img-multi-card.wrong")
+        .forEach(card => {
+          card.classList.remove("wrong");
+        });
+  
+      const wrongPicked =
+        chosen.filter(
+          i => !correct.includes(i)
+        );
+  
       if (wrongPicked.length > 0){
-        const firstWrong = wrongPicked[0];
-        const card = el.imgMultiGrid.querySelector(`.img-multi-card[data-idx="${firstWrong}"]`);
-        if (card) card.classList.add("wrong");
-
-        const msg = (q.wrongMsgByIndex && q.wrongMsgByIndex[firstWrong])
-          ? q.wrongMsgByIndex[firstWrong]
-          : "❌ יש מוצר שנבחר לא נכון. נסו שוב.";
-
-        failAndRetry({ wrongMsg: msg }, msg);
-        return null; // אומר: אל תתקדם, כבר הראינו failAndRetry
+  
+        /*
+         * מסמנים את כל הבחירות השגויות,
+         * ולא רק את הראשונה.
+         */
+        wrongPicked.forEach(index => {
+          const card =
+            el.imgMultiGrid.querySelector(
+              `.img-multi-card[data-idx="${index}"]`
+            );
+  
+          if (card){
+            card.classList.add("wrong");
+          }
+        });
+  
+        let msg = "";
+  
+        if (wrongPicked.length === 1){
+          const firstWrong =
+            wrongPicked[0];
+  
+          msg =
+            (q.wrongMsgByIndex &&
+             q.wrongMsgByIndex[firstWrong])
+              ? q.wrongMsgByIndex[firstWrong]
+              : "❌ המוצר שסומן אינו נכון. נסו שוב.";
+        } else {
+          /*
+           * אם קיימים הסברים ייעודיים לכל מוצר שגוי,
+           * מציגים את כולם ולא רק את הראשון.
+           */
+          const explanations =
+            wrongPicked
+              .map(index =>
+                q.wrongMsgByIndex?.[index]
+              )
+              .filter(Boolean);
+  
+          msg =
+            explanations.length
+              ? explanations.join(" ")
+              : "❌ יש כמה מוצרים שנבחרו לא נכון. הבחירות השגויות סומנו. תקנו ונסו שוב.";
+        }
+  
+        failAndRetry(
+          { wrongMsg: msg },
+          msg
+        );
+  
+        return null;
       }
-
-      const missing = correct.filter(i => !chosen.includes(i));
-      if (missing.length > 0) return false;
-
+  
+      const missing =
+        correct.filter(
+          i => !chosen.includes(i)
+        );
+  
+      if (missing.length > 0){
+        const msg =
+          `❌ חסרות ${missing.length} בחירות נכונות. עברו שוב על המוצרים ונסו להשלים את הבחירה.`;
+  
+        failAndRetry(
+          { wrongMsg: msg },
+          msg
+        );
+  
+        return null;
+      }
+  
       return true;
     }
   },
@@ -1773,196 +2092,526 @@ const TYPE = {
   },
 
   match_lines: {
-    render(q){
-      el.matchWrap.hidden = false;
-      el.btnNext.disabled = true;
+  render(q){
+    el.matchWrap.hidden = false;
+    el.btnNext.disabled = true;
 
-      // reset runtime
-      state.runtime.match = { count: 0, lockedL: new Set(), lockedR: new Set(), done: false };
-      el.matchError.hidden = true;
-      el.matchError.textContent = "";
+    // reset runtime
+    state.runtime.match = {
+      count: 0,
+      lockedL: new Set(),
+      lockedR: new Set(),
+      done: false
+    };
 
-      // build columns (3 items each)
-      el.matchLeft.innerHTML = "";
-      el.matchRight.innerHTML = "";
-      el.matchSvg.innerHTML = "";
+    el.matchError.hidden = true;
+    el.matchError.textContent = "";
 
-      const left = Array.isArray(q.left) ? q.left : [];
-      const right = Array.isArray(q.right) ? q.right : [];
+    // build columns
+    el.matchLeft.innerHTML = "";
+    el.matchRight.innerHTML = "";
+    el.matchSvg.innerHTML = "";
 
-      left.forEach(it => el.matchLeft.appendChild(buildMatchItem("L", it)));
-      right.forEach(it => el.matchRight.appendChild(buildMatchItem("R", it)));
+    const left =
+      Array.isArray(q.left)
+        ? q.left
+        : [];
 
-      // pointer line state
-      let drag = null; // { side, key, el, line, pid, x1,y1 }
+    const right =
+      Array.isArray(q.right)
+        ? q.right
+        : [];
 
-      const stage = el.matchStage;
-      const svg = el.matchSvg;
+    left.forEach(
+      it =>
+        el.matchLeft.appendChild(
+          buildMatchItem("L", it)
+        )
+    );
 
-      const clearTemp = () => {
-        if (!drag) return;
-        try { drag.el.classList.remove("active"); } catch {}
-        try { drag.line?.remove(); } catch {}
-        drag = null;
-      };
+    right.forEach(
+      it =>
+        el.matchRight.appendChild(
+          buildMatchItem("R", it)
+        )
+    );
 
-      const setError = (on) => {
-        if (!on){
-          el.matchError.hidden = true;
-          el.matchError.textContent = "";
-        } else {
-          el.matchError.hidden = false;
-          el.matchError.textContent = "התאמה לא נכונה. נסה שוב";
+    // pointer line state
+    let drag = null;
+
+    const stage = el.matchStage;
+    const svg = el.matchSvg;
+
+    /*
+     * כמה פיקסלים מחוץ לתמונה עדיין
+     * נחשבים כנחיתה על היעד.
+     */
+    const DROP_PADDING_PX = 36;
+
+    const clearTemp = () => {
+      if (!drag) return;
+
+      try {
+        drag.el.classList.remove("active");
+      } catch {}
+
+      try {
+        drag.line?.remove();
+      } catch {}
+
+      drag = null;
+    };
+
+    /*
+     * ללא טקסט = הסתרת השגיאה.
+     * עם טקסט = הצגת הודעה מתאימה.
+     */
+    const setError = (message = "") => {
+      if (!message){
+        el.matchError.hidden = true;
+        el.matchError.textContent = "";
+        return;
+      }
+
+      el.matchError.hidden = false;
+
+      setTextI18n(
+        el.matchError,
+        message
+      );
+    };
+
+    const flashMismatch = (a, b) => {
+      [a, b].forEach(node => {
+        if (!node) return;
+
+        node.classList.remove("errflash");
+
+        // force reflow כדי שהאנימציה תפעל גם ברצף
+        void node.offsetWidth;
+
+        node.classList.add("errflash");
+
+        setTimeout(
+          () =>
+            node.classList.remove("errflash"),
+          1000
+        );
+      });
+    };
+
+    const stageRect = () =>
+      stage.getBoundingClientRect();
+
+    const anchor = (itemEl, side) => {
+      const s = stageRect();
+      const r = itemEl.getBoundingClientRect();
+
+      const y =
+        (r.top + r.height / 2) -
+        s.top;
+
+      // הצד הקרוב למרכז
+      const x =
+        (side === "L")
+          ? (r.right - s.left)
+          : (r.left - s.left);
+
+      return { x, y };
+    };
+
+    const makeLine = (
+      x1,
+      y1,
+      x2,
+      y2,
+      temp
+    ) => {
+      const line =
+        document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+
+      line.classList.add("match-line");
+
+      if (temp){
+        line.classList.add("temp");
+      }
+
+      svg.appendChild(line);
+
+      return line;
+    };
+
+    const isLocked = (side, key) => {
+      const rt =
+        state.runtime.match;
+
+      return (side === "L")
+        ? rt.lockedL.has(key)
+        : rt.lockedR.has(key);
+    };
+
+    /*
+     * מחפש יעד בשתי רמות:
+     *
+     * 1. אם המשתמש נחת ממש על תמונה — משתמשים בה.
+     * 2. אחרת מחפשים תמונה בצד השני
+     *    שנמצאת עד 36px מנקודת השחרור.
+     */
+    const findDropTarget = (
+      clientX,
+      clientY,
+      fromSide
+    ) => {
+      const under =
+        document.elementFromPoint(
+          clientX,
+          clientY
+        );
+
+      const exact =
+        under
+          ? under.closest(".match-item")
+          : null;
+
+      if (exact){
+        const side =
+          exact.dataset.side;
+
+        const key =
+          exact.dataset.key;
+
+        if (
+          side &&
+          key &&
+          side !== fromSide &&
+          !isLocked(side, key)
+        ){
+          return exact;
         }
-      };
-      const flashMismatch = (a, b) => {
-        [a, b].forEach(node => {
-          if (!node) return;
-          node.classList.remove("errflash"); // אם נשאר משגיאה קודמת
-          // force reflow קטן כדי שהאנימציה תורגש גם ברצף מהיר
-          void node.offsetWidth;
-          node.classList.add("errflash");
-          setTimeout(() => node.classList.remove("errflash"), 1000);
-        });
-      };
+      }
 
-      const stageRect = () => stage.getBoundingClientRect();
+      const candidates =
+        Array.from(
+          stage.querySelectorAll(
+            ".match-item"
+          )
+        );
 
-      const anchor = (itemEl, side) => {
-        const s = stageRect();
-        const r = itemEl.getBoundingClientRect();
-        const y = (r.top + r.height/2) - s.top;
+      let best = null;
+      let bestDistance = Infinity;
 
-        // תמיד מהשול הקרוב למרכז המסך:
-        // צד שמאל -> x בקצה ימין, צד ימין -> x בקצה שמאל
-        const x = (side === "L") ? (r.right - s.left) : (r.left - s.left);
-        return { x, y };
-      };
+      candidates.forEach(item => {
+        const side =
+          item.dataset.side;
 
-      const makeLine = (x1,y1,x2,y2, temp) => {
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", x1);
-        line.setAttribute("y1", y1);
-        line.setAttribute("x2", x2);
-        line.setAttribute("y2", y2);
-        line.classList.add("match-line");
-        if (temp) line.classList.add("temp");
-        svg.appendChild(line);
-        return line;
-      };
+        const key =
+          item.dataset.key;
 
-      const isLocked = (side, key) => {
-        const rt = state.runtime.match;
-        return (side === "L") ? rt.lockedL.has(key) : rt.lockedR.has(key);
-      };
-
-        stage.onpointerdown = (ev) => {
-        const item = ev.target.closest(".match-item");
-        if (!item) return;
-
-        const side = item.dataset.side; // "L"/"R"
-        const key = item.dataset.key;
-
-        // אם כבר נעול — לא מתחילים
-        if (!side || !key || isLocked(side, key)) return;
-
-        // מתחילים drag
-        setError(false);
-        clearTemp();
-
-        stage.setPointerCapture(ev.pointerId);
-
-        const p1 = anchor(item, side);
-        const line = makeLine(p1.x, p1.y, p1.x, p1.y, true);
-
-        item.classList.add("active");
-        drag = { pid: ev.pointerId, side, key, el: item, line, x1: p1.x, y1: p1.y };
-      };
-
-      stage.onpointermove = (ev) => {
-        if (!drag || ev.pointerId !== drag.pid) return;
-        const s = stageRect();
-        const x2 = ev.clientX - s.left;
-        const y2 = ev.clientY - s.top;
-        drag.line.setAttribute("x2", x2);
-        drag.line.setAttribute("y2", y2);
-      };
-
-      stage.onpointerup = (ev) => {
-        if (!drag || ev.pointerId !== drag.pid) return;
-
-        const under = document.elementFromPoint(ev.clientX, ev.clientY);
-        const target = under ? under.closest(".match-item") : null;
-
-        // אם לא נחת על תמונה -> מוחקים שקט
-        if (!target){ clearTemp(); return; }
-
-        const tSide = target.dataset.side;
-        const tKey = target.dataset.key;
-
-        // חייב צד אחר
-        if (!tSide || !tKey || tSide === drag.side){ clearTemp(); return; }
-
-        // יעד נעול -> מוחקים שקט (לפי הדרישה)
-        if (isLocked(tSide, tKey)){ clearTemp(); return; }
-
-        // בדיקת התאמה: key חייב להיות זהה
-        if (tKey !== drag.key){
-          const a = drag.el;
-          const b = target;
-          clearTemp();
-          flashMismatch(a, b);
-          setError(true);
+        // רק יעד בצד הנגדי ולא נעול
+        if (
+          !side ||
+          !key ||
+          side === fromSide ||
+          isLocked(side, key)
+        ){
           return;
         }
 
+        const r =
+          item.getBoundingClientRect();
 
-        // נכון -> מקבעים
-        const rt = state.runtime.match;
+        const insideExpandedArea =
+          clientX >=
+            r.left - DROP_PADDING_PX &&
+          clientX <=
+            r.right + DROP_PADDING_PX &&
+          clientY >=
+            r.top - DROP_PADDING_PX &&
+          clientY <=
+            r.bottom + DROP_PADDING_PX;
 
-        // קיבוע קו לפי עוגנים (לא לפי נקודת שחרור)
-        const p2 = anchor(target, tSide);
-        drag.line.classList.remove("temp");
-        drag.line.setAttribute("x2", p2.x);
-        drag.line.setAttribute("y2", p2.y);
-
-        // נועלים UI
-        drag.el.classList.remove("active");
-        drag.el.classList.add("locked");
-        target.classList.add("locked");
-        try { drag.line.remove(); } catch {}
-
-        // שומרים pair לציור מחדש אם צריך (ריסייז)
-        const lSide = (drag.side === "L") ? "L" : "R";
-        const rSide = (drag.side === "L") ? "R" : "L";
-        const lKey  = (drag.side === "L") ? drag.key : tKey;
-        const rKey  = (drag.side === "L") ? tKey : drag.key;
-
-        // בפועל: drag.key === tKey, אבל שומרים ברור
-        rt.lockedL.add(lKey);
-        rt.lockedR.add(rKey);
-
-        rt.count += 1;
-        // ניקוי drag זמני בלי למחוק את הקו
-        drag = null;
-
-        // אחרי 3 התאמות -> מאפשרים המשך
-        if (rt.count >= 3){
-          rt.done = true;
-          el.btnNext.disabled = false;
-          setError(false);
+        if (!insideExpandedArea){
+          return;
         }
+
+        /*
+         * מחשבים מרחק אמיתי מהמלבן,
+         * כדי שאם שני יעדים קרובים —
+         * נבחר את הקרוב יותר.
+         */
+        const dx =
+          clientX < r.left
+            ? r.left - clientX
+            : clientX > r.right
+              ? clientX - r.right
+              : 0;
+
+        const dy =
+          clientY < r.top
+            ? r.top - clientY
+            : clientY > r.bottom
+              ? clientY - r.bottom
+              : 0;
+
+        const distance =
+          Math.hypot(dx, dy);
+
+        if (distance < bestDistance){
+          bestDistance = distance;
+          best = item;
+        }
+      });
+
+      return best;
+    };
+
+    stage.onpointerdown = (ev) => {
+      const item =
+        ev.target.closest(
+          ".match-item"
+        );
+
+      if (!item) return;
+
+      const side =
+        item.dataset.side;
+
+      const key =
+        item.dataset.key;
+
+      if (
+        !side ||
+        !key ||
+        isLocked(side, key)
+      ){
+        return;
+      }
+
+      setError();
+      clearTemp();
+
+      try {
+        stage.setPointerCapture(
+          ev.pointerId
+        );
+      } catch {}
+
+      const p1 =
+        anchor(item, side);
+
+      const line =
+        makeLine(
+          p1.x,
+          p1.y,
+          p1.x,
+          p1.y,
+          true
+        );
+
+      item.classList.add("active");
+
+      drag = {
+        pid: ev.pointerId,
+        side,
+        key,
+        el: item,
+        line,
+        x1: p1.x,
+        y1: p1.y
       };
+    };
 
-      stage.onpointercancel = () => { clearTemp(); };
-    },
+    stage.onpointermove = (ev) => {
+      if (
+        !drag ||
+        ev.pointerId !== drag.pid
+      ){
+        return;
+      }
 
-    validate(){
-      return !!state.runtime.match?.done;
-    }
+      const s = stageRect();
+
+      const x2 =
+        ev.clientX - s.left;
+
+      const y2 =
+        ev.clientY - s.top;
+
+      drag.line.setAttribute(
+        "x2",
+        x2
+      );
+
+      drag.line.setAttribute(
+        "y2",
+        y2
+      );
+    };
+
+    stage.onpointerup = (ev) => {
+      if (
+        !drag ||
+        ev.pointerId !== drag.pid
+      ){
+        return;
+      }
+
+      /*
+       * שומרים נתונים לפני clearTemp,
+       * כי clearTemp מאפס את drag.
+       */
+      const sourceEl = drag.el;
+      const sourceSide = drag.side;
+      const sourceKey = drag.key;
+
+      const target =
+        findDropTarget(
+          ev.clientX,
+          ev.clientY,
+          sourceSide
+        );
+
+      /*
+       * לא הגיע מספיק קרוב ליעד:
+       * בעבר הקו פשוט היה נעלם בשקט.
+       */
+      if (!target){
+        clearTemp();
+
+        setError(
+          "לא הגענו לתמונה בצד השני. נסו לשחרר את הקו מעט קרוב יותר לתמונה."
+        );
+
+        return;
+      }
+
+      const tSide =
+        target.dataset.side;
+
+      const tKey =
+        target.dataset.key;
+
+      if (
+        !tSide ||
+        !tKey ||
+        tSide === sourceSide
+      ){
+        clearTemp();
+
+        setError(
+          "יש למתוח את הקו לתמונה שבצד השני."
+        );
+
+        return;
+      }
+
+      if (isLocked(tSide, tKey)){
+        clearTemp();
+
+        setError(
+          "התמונה הזו כבר הותאמה. נסו יעד אחר."
+        );
+
+        return;
+      }
+
+      /*
+       * התאמה לא נכונה.
+       */
+      if (tKey !== sourceKey){
+        clearTemp();
+
+        flashMismatch(
+          sourceEl,
+          target
+        );
+
+        setError(
+          "התאמה לא נכונה. נסו שוב."
+        );
+
+        return;
+      }
+
+      // =========================
+      // התאמה נכונה
+      // =========================
+      const rt =
+        state.runtime.match;
+
+      const p2 =
+        anchor(
+          target,
+          tSide
+        );
+
+      /*
+       * אנחנו כבר יודעים שההתאמה נכונה,
+       * ולכן אפשר למחוק את הקו הזמני
+       * ולשמור את מצב הנעילה בדיוק כמו קודם.
+       */
+      try {
+        drag.line.remove();
+      } catch {}
+
+      sourceEl.classList.remove(
+        "active"
+      );
+
+      sourceEl.classList.add(
+        "locked"
+      );
+
+      target.classList.add(
+        "locked"
+      );
+
+      const lKey =
+        (sourceSide === "L")
+          ? sourceKey
+          : tKey;
+
+      const rKey =
+        (sourceSide === "L")
+          ? tKey
+          : sourceKey;
+
+      rt.lockedL.add(lKey);
+      rt.lockedR.add(rKey);
+
+      rt.count += 1;
+
+      drag = null;
+
+      setError();
+
+      /*
+       * נשמר בדיוק התנאי הקיים:
+       * אחרי 3 התאמות מאפשרים המשך.
+       */
+      if (rt.count >= 3){
+        rt.done = true;
+        el.btnNext.disabled = false;
+      }
+    };
+
+    stage.onpointercancel = () => {
+      clearTemp();
+    };
+  },
+
+  validate(){
+    return !!state.runtime.match?.done;
   }
-};
-
+}
 // =========================
 // HOTSPOT UI
 // =========================
@@ -1972,58 +2621,100 @@ function updateHotspotUI(q){
   const boxes = q.boxes || [];
   const attempts = rt.attempts.length;
 
-  el.hotspotStatus.textContent = `פגיעות: ${hits}/${boxes.length} | לחיצות: ${attempts}/${HOTSPOT_MAX_CLICKS}`;
+  const maxClicks = boxes.length + 2;
+
+  el.hotspotStatus.textContent =
+    `פגיעות: ${hits}/${boxes.length} | לחיצות: ${attempts}/${maxClicks}`;
 
   el.hotspotMarks.innerHTML = "";
+
   rt.attempts.forEach((a, idx) => {
     const row = document.createElement("div");
     row.className = "mark-row";
 
     const txt = document.createElement("div");
     txt.className = "txt";
-    const s = (a.hitIndex !== null) ? "✅" : "❌";
+
+    const isCorrect = a.hitIndex !== null;
+    const s = isCorrect ? "✅" : "❌";
 
     let label = "לא תקלה";
-    if (a.hitIndex !== null) {
-      const box = (q.boxes || [])[a.hitIndex];
-      label = box?.label || `תקלה ${a.hitIndex + 1}`;
+
+    if (isCorrect){
+      const box = boxes[a.hitIndex];
+
+      label =
+        box?.label ||
+        `תקלה ${a.hitIndex + 1}`;
     }
-    
-    txt.innerHTML = `<span data-no-translate="1">${idx + 1}) ${s} </span><span class="lbl"></span>`;
-    setHtmlI18n(txt.querySelector(".lbl"), label);
 
+    txt.innerHTML =
+      `<span data-no-translate="1">${idx + 1}) ${s} </span>` +
+      `<span class="lbl"></span>`;
 
-    const del = document.createElement("button");
-    del.className = "btn-del";
-    del.type = "button";
-    del.textContent = "מחק";
-    del.onclick = () => deleteAttempt(q, idx);
+    setHtmlI18n(
+      txt.querySelector(".lbl"),
+      label
+    );
 
     row.appendChild(txt);
-    row.appendChild(del);
+
+    /*
+     * כפתור מחיקה מופיע רק על לחיצה שגויה.
+     * לחיצה נכונה מוגנת ממחיקה מקרית.
+     */
+    if (!isCorrect){
+      const del = document.createElement("button");
+
+      del.className = "btn-del";
+      del.type = "button";
+      del.textContent = "מחק";
+
+      del.onclick = () => {
+        deleteAttempt(q, idx);
+      };
+
+      row.appendChild(del);
+    }
+
     el.hotspotMarks.appendChild(row);
   });
 }
 
+
 function deleteAttempt(q, idx){
   const rt = state.runtime.hotspot;
   const a = rt.attempts[idx];
+
   if (!a) return;
 
-  try { a.markerEl.remove(); } catch {}
-  if (a.hitIndex !== null) rt.hit[a.hitIndex] = false;
+  /*
+   * הגנה נוספת:
+   * גם אם הפונקציה תיקרא ממקום אחר,
+   * לא מוחקים פגיעה נכונה.
+   */
+  if (a.hitIndex !== null){
+    el.feedback.hidden = false;
+    el.feedback.textContent = "תקלה שנמצאה נשמרת ✅";
+    return;
+  }
+
+  try {
+    a.markerEl.remove();
+  } catch {}
 
   rt.attempts.splice(idx, 1);
 
-  el.btnNext.disabled = rt.attempts.length === 0;
+  el.btnNext.disabled =
+    rt.attempts.length === 0;
+
   el.feedback.hidden = false;
-  el.feedback.textContent = "נמחק. אפשר ללחוץ שוב.";
+  el.feedback.textContent =
+    "הסימון השגוי נמחק. אפשר לנסות שוב.";
+
   updateHotspotUI(q);
 }
 
-// =========================
-// DRAG LOGIC
-// =========================
 function buildDragZonesOnce(q){
   if (el.dragZones.childElementCount > 0) return;
 
@@ -2038,27 +2729,35 @@ function buildDragZonesOnce(q){
     dz.style.width = z.w + "%";
     dz.style.height = z.h + "%";
 
-    dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("over"); });
-    dz.addEventListener("dragleave", () => dz.classList.remove("over"));
-    dz.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dz.classList.remove("over");
-      onDropToZone(dz.dataset.side, dz);
-    });
-
     el.dragZones.appendChild(dz);
   });
 
-  // desktop dragstart
+  // Desktop native drag
   el.dragItem.ondragstart = (e) => {
     e.dataTransfer.setData("text/plain", "dragItem");
   };
+
+  /*
+   * במקום לדרוש שהמשתמש ישחרר ממש בתוך מלבן המדף,
+   * כל חצי של אזור השאלה משמש כאזור שחרור.
+   */
+  el.dragStage.ondragover = (e) => {
+    e.preventDefault();
+  };
+
+  el.dragStage.ondrop = (e) => {
+    e.preventDefault();
+    dropDragItemByPosition(e.clientX, e.clientY);
+  };
 }
+
 
 function showCurrentDragItem(q){
   const rt = state.runtime.drag;
 
-  while (rt.itemIndex < q.items.length && rt.placed[rt.itemIndex]) rt.itemIndex++;
+  while (rt.itemIndex < q.items.length && rt.placed[rt.itemIndex]) {
+    rt.itemIndex++;
+  }
 
   if (rt.itemIndex >= q.items.length){
     el.dragItem.style.display = "none";
@@ -2067,6 +2766,7 @@ function showCurrentDragItem(q){
   }
 
   const it = q.items[rt.itemIndex];
+
   el.dragItem.style.display = "block";
   el.dragItemImg.src = it.img;
   setHtmlI18n(el.dragItemCap, it.caption || "");
@@ -2074,6 +2774,8 @@ function showCurrentDragItem(q){
   el.dragFeedback.hidden = true;
   el.dragFeedback.innerHTML = "";
 }
+
+
 function setDragChartMode(show){
   const q = QUESTIONS[state.idx];
   if (!q || q.type !== "drag_shelves") return;
@@ -2083,7 +2785,7 @@ function setDragChartMode(show){
 
   rt.showingChart = !!show;
 
-  // חשוב: הכפתור חייב להיות בתוך dragWrap (ולא בתוך dragPlay שמוסתר)
+  // חשוב: הכפתור חייב להיות בתוך dragWrap
   if (el.btnShowChart && el.btnShowChart.parentElement !== el.dragWrap){
     el.dragWrap.appendChild(el.btnShowChart);
   }
@@ -2092,7 +2794,7 @@ function setDragChartMode(show){
     el.dragIntro.hidden = false;
     el.dragPlay.hidden = true;
     el.btnShowChart.textContent = "חזרה לשאלה";
-    el.btnNext.disabled = true; // שלא “יתקע” על ולידציה בזמן צפייה בתרשים
+    el.btnNext.disabled = true;
   } else {
     el.dragIntro.hidden = true;
     el.dragPlay.hidden = false;
@@ -2103,41 +2805,146 @@ function setDragChartMode(show){
   }
 }
 
+
+/*
+ * מקבל נקודת שחרור ומתרגם אותה לצד בלבד:
+ *
+ * חצי שמאלי  -> L
+ * חצי ימני   -> R
+ *
+ * בתוך אותו צד נבחר אוטומטית המדף הפנוי
+ * הקרוב ביותר לגובה שבו המשתמש שחרר.
+ */
+function dropDragItemByPosition(clientX, clientY){
+  const stageRect = el.dragStage.getBoundingClientRect();
+
+  // שחרור מחוץ לאזור השאלה — לא עושים כלום
+  if (
+    clientX < stageRect.left ||
+    clientX > stageRect.right ||
+    clientY < stageRect.top ||
+    clientY > stageRect.bottom
+  ){
+    return false;
+  }
+
+  const side =
+    clientX < (stageRect.left + stageRect.width / 2)
+      ? "L"
+      : "R";
+
+  const sideZones = Array.from(
+    el.dragZones.querySelectorAll(`.drag-zone[data-side="${side}"]`)
+  );
+
+  if (!sideZones.length) return false;
+
+  /*
+   * מעדיפים מדף פנוי.
+   * כך גם אם המשתמש שחרר באזור של מדף שכבר תפוס,
+   * אין צורך לדייק — המערכת תבחר מדף פנוי באותו צד.
+   */
+  const freeZones = sideZones.filter(
+    zone => !zone.classList.contains("filled")
+  );
+
+  const candidates = freeZones.length
+    ? freeZones
+    : sideZones;
+
+  /*
+   * מתוך המדפים האפשריים בוחרים את הקרוב ביותר
+   * מבחינה אנכית לנקודת השחרור.
+   */
+  let nearestZone = candidates[0];
+  let nearestDistance = Infinity;
+
+  candidates.forEach(zone => {
+    const rect = zone.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+    const distance = Math.abs(clientY - centerY);
+
+    if (distance < nearestDistance){
+      nearestDistance = distance;
+      nearestZone = zone;
+    }
+  });
+
+  onDropToZone(side, nearestZone);
+  return true;
+}
+
+
 function onDropToZone(side, zoneEl){
   const q = QUESTIONS[state.idx];
   const rt = state.runtime.drag;
   const it = q.items[rt.itemIndex];
-  if (!it) return;
+
+  if (!it || !zoneEl) return;
 
   const correctSide = it.side;
 
+  /*
+   * הצד הוא הדבר שקובע את נכונות התשובה.
+   * אין יותר צורך לפגוע במלבן מדף מסוים.
+   */
   if (side !== correctSide){
     el.dragFeedback.hidden = false;
-    setHtmlI18n(el.dragFeedback, it.wrongMsg || "❌ לא נכון. נסו שוב.");
+
+    setHtmlI18n(
+      el.dragFeedback,
+      it.wrongMsg || "❌ לא נכון. נסו שוב."
+    );
+
     zoneEl.classList.add("wrong");
-    setTimeout(()=> zoneEl.classList.remove("wrong"), 600);
+
+    setTimeout(() => {
+      zoneEl.classList.remove("wrong");
+    }, 600);
+
     return;
   }
-  if (zoneEl.classList.contains("filled")) {
-    // התא תפוס – לא מאפשרים דריסה
+
+  /*
+   * בדרך כלל dropDragItemByPosition כבר בוחר מדף פנוי,
+   * אבל הבדיקה נשארת כהגנה נוספת.
+   */
+  if (zoneEl.classList.contains("filled")){
     return;
   }
+
   zoneEl.classList.add("filled");
   zoneEl.classList.remove("over");
-  zoneEl.innerHTML = `<img src="${it.img}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:10px;background:#fff;" />`;
+
+  zoneEl.innerHTML = `
+    <img
+      src="${it.img}"
+      alt=""
+      style="
+        width:100%;
+        height:100%;
+        object-fit:contain;
+        border-radius:10px;
+        background:#fff;
+      "
+    />
+  `;
 
   rt.placed[rt.itemIndex] = true;
   rt.filled[side]++;
 
   rt.itemIndex++;
+
   showCurrentDragItem(q);
 }
+
 
 function enablePointerDrag(){
   if (!el.dragItem || !el.dragStage) return;
 
   let dragging = false;
-  let offsetX = 0, offsetY = 0;
+  let offsetX = 0;
+  let offsetY = 0;
 
   function resetToCenter(){
     el.dragItem.style.left = "50%";
@@ -2149,9 +2956,13 @@ function enablePointerDrag(){
 
   el.dragItem.onpointerdown = (e) => {
     dragging = true;
-    el.dragItem.setPointerCapture(e.pointerId);
+
+    try {
+      el.dragItem.setPointerCapture(e.pointerId);
+    } catch {}
 
     const r = el.dragItem.getBoundingClientRect();
+
     offsetX = e.clientX - r.left;
     offsetY = e.clientY - r.top;
 
@@ -2162,27 +2973,39 @@ function enablePointerDrag(){
     if (!dragging) return;
 
     const stage = el.dragStage.getBoundingClientRect();
-    const left = e.clientX - stage.left - offsetX;
-    const top  = e.clientY - stage.top  - offsetY;
+
+    const left =
+      e.clientX - stage.left - offsetX;
+
+    const top =
+      e.clientY - stage.top - offsetY;
 
     el.dragItem.style.left = left + "px";
-    el.dragItem.style.top  = top + "px";
+    el.dragItem.style.top = top + "px";
   };
 
   el.dragItem.onpointerup = (e) => {
     if (!dragging) return;
+
     dragging = false;
 
-    const cx = e.clientX;
-    const cy = e.clientY;
+    /*
+     * כאן השינוי המרכזי:
+     * כבר לא מחפשים האם נקודת השחרור נמצאת
+     * בדיוק בתוך אחד ממלבני המדפים.
+     */
+    dropDragItemByPosition(
+      e.clientX,
+      e.clientY
+    );
 
-    const zones = Array.from(el.dragZones.querySelectorAll(".drag-zone"));
-    const hit = zones.find(z => {
-      const zr = z.getBoundingClientRect();
-      return cx >= zr.left && cx <= zr.right && cy >= zr.top && cy <= zr.bottom;
-    });
+    resetToCenter();
+  };
 
-    if (hit) onDropToZone(hit.dataset.side, hit);
+  el.dragItem.onpointercancel = () => {
+    if (!dragging) return;
+
+    dragging = false;
     resetToCenter();
   };
 }
