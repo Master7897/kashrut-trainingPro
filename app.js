@@ -384,6 +384,25 @@ function _getOverrides(){
     ? window.I18N_OVERRIDES
     : { en:{}, ru:{}, ar:{}, am:{} };
 }
+
+function _getDynamicOverride(lang, src){
+  const rules = (window.I18N_DYNAMIC && Array.isArray(window.I18N_DYNAMIC[lang]))
+    ? window.I18N_DYNAMIC[lang]
+    : [];
+
+  const s = String(src ?? "");
+  for (const rule of rules){
+    try {
+      if (!rule || !(rule.re instanceof RegExp) || typeof rule.replace !== "function") continue;
+      rule.re.lastIndex = 0;
+      const m = s.match(rule.re);
+      if (!m) continue;
+      const out = rule.replace(m);
+      if (typeof out === "string" && out.trim()) return out;
+    } catch {}
+  }
+  return "";
+}
 function _getGlossary(){
   return (window.I18N_GLOSSARY && typeof window.I18N_GLOSSARY === "object")
     ? window.I18N_GLOSSARY
@@ -500,6 +519,10 @@ async function trText(src){
   // Exact local override (best quality)
   const ov = _getOverrides()?.[lang]?.[s];
   if (typeof ov === "string" && ov.trim()) return ov;
+
+  // Dynamic local override for sentences that contain changing numbers
+  const dyn = _getDynamicOverride(lang, s);
+  if (dyn) return dyn;
 
   // Preserve original ending punctuation exactly
   const { core, punct } = _splitEndPunct(s);
