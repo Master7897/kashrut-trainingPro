@@ -1806,7 +1806,12 @@ const TYPE = {
         el.feedback.hidden = false;
         el.feedback.classList.remove("errorbox");
         el.feedback.textContent = "נכון ✅";
+        
         updateHotspotUI(q);
+        
+        // פותחים את כפתור "המשך" רק אחרי שכל התקלות נמצאו
+        const hits = rt.hit.filter(Boolean).length;
+        el.btnNext.disabled = hits !== boxes.length;
       };
     },
 
