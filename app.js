@@ -828,7 +828,7 @@ const QUESTIONS = [
   },
   {
     type: "hotspot5",
-    title: "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)",
+    title: "מצא/י את 5 התקלות בתמונה",
     img: "images/q3_hotspot.webp",
     boxes: [
       {
@@ -1129,6 +1129,237 @@ const state = {
     drag: { phase: "intro", qIdx: -1, itemIndex: 0, placed: [], filled: {L:0,R:0}, showingChart:false }
   }
 };
+
+
+// =========================
+// QUIZ PROGRESS / RESUME
+// =========================
+const QUIZ_PROGRESS_VERSION = 2;
+const QUIZ_PROGRESS_TTL_MS = 24 * 60 * 60 * 1000; // יום
+const QUIZ_PROGRESS_KEY = [
+  "kashrut_quiz_progress",
+  QUIZ_PROGRESS_VERSION,
+  RID || "no-rid",
+  Array.from(ALLOWED_KITCHEN_IDS).sort().join(",") || "all"
+].join(":");
+
+function saveQuizProgress(){
+  try {
+    if (!el.screenQuiz || el.screenQuiz.hidden) return;
+    if (!state.user?.fullName || !state.user?.personalId) return;
+    if (!Number.isInteger(state.idx) || state.idx < 0 || state.idx >= QUESTIONS.length) return;
+
+    localStorage.setItem(QUIZ_PROGRESS_KEY, JSON.stringify({
+      version: QUIZ_PROGRESS_VERSION,
+      savedAt: Date.now(),
+      idx: state.idx,
+      user: {
+        fullName: state.user.fullName || "",
+        personalId: state.user.personalId || "",
+        kitchenId: state.user.kitchenId || "",
+        kitchenName: state.user.kitchenName || ""
+      }
+    }));
+  } catch (e) {
+    console.warn("saveQuizProgress failed", e);
+  }
+}
+
+function loadQuizProgress(){
+  try {
+    const raw = localStorage.getItem(QUIZ_PROGRESS_KEY);
+    if (!raw) return null;
+
+    const saved = JSON.parse(raw);
+    const age = Date.now() - Number(saved?.savedAt || 0);
+
+    if (
+      saved?.version !== QUIZ_PROGRESS_VERSION ||
+      !Number.isInteger(saved?.idx) ||
+      saved.idx < 0 ||
+      saved.idx >= QUESTIONS.length ||
+      !saved?.user?.fullName ||
+      !saved?.user?.personalId ||
+      age < 0 ||
+      age > QUIZ_PROGRESS_TTL_MS
+    ){
+      localStorage.removeItem(QUIZ_PROGRESS_KEY);
+      return null;
+    }
+
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+function clearQuizProgress(){
+  try { localStorage.removeItem(QUIZ_PROGRESS_KEY); } catch {}
+}
+
+function resetQuestionRuntimeForResume(){
+  state.runtime.two.selected = null;
+  state.runtime.hotspot = { attempts: [], hit: [] };
+  state.runtime.mc.selected = [];
+  state.runtime.imgMulti.selected = [];
+  state.runtime.drag = {
+    phase:"intro",
+    qIdx:-1,
+    itemIndex:0,
+    placed:[],
+    filled:{L:0,R:0},
+    showingChart:false
+  };
+  state.runtime.match = { count:0, lockedL:new Set(), lockedR:new Set(), done:false };
+}
+
+function resumeQuizProgress(saved){
+  if (!saved) return;
+
+  state.user = {
+    fullName: String(saved.user.fullName || ""),
+    personalId: String(saved.user.personalId || ""),
+    kitchenId: String(saved.user.kitchenId || ""),
+    kitchenName: String(saved.user.kitchenName || "")
+  };
+  state.idx = Math.max(0, Math.min(QUESTIONS.length - 1, Number(saved.idx) || 0));
+  state.sentThisRun = false;
+
+  resetQuestionRuntimeForResume();
+
+  // ממלאים גם את מסך הפתיחה למקרה שהמשתמש יחזור אליו בהמשך
+  if (el.fullName) el.fullName.value = state.user.fullName;
+  if (el.personalId) el.personalId.value = state.user.personalId;
+  if (el.kitchen && state.user.kitchenId) el.kitchen.value = state.user.kitchenId;
+
+  el.screenStart.hidden = true;
+  el.screenResult.hidden = true;
+  el.screenQuiz.hidden = false;
+
+  requestPortraitLock();
+  updateRotateOverlay();
+  renderQuestion();
+  showToast(`ממשיכים משאלה ${state.idx + 1} מתוך ${QUESTIONS.length}`, "info", 3000);
+}
+
+function showResumePromptIfNeeded(){
+  const saved = loadQuizProgress();
+  if (!saved) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "resume-overlay";
+  overlay.innerHTML = `
+    <div class="resume-card" role="dialog" aria-modal="true" aria-labelledby="resumeTitle">
+      <h3 id="resumeTitle">נמצאה התקדמות קודמת</h3>
+      <p>עצרת בשאלה ${saved.idx + 1} מתוך ${QUESTIONS.length}. מה תרצה/י לעשות?</p>
+      <button type="button" class="primary" data-resume="continue">להמשיך מהמקום שעצרתי</button>
+      <button type="button" class="secondary" data-resume="restart">להתחיל מחדש</button>
+    </div>`;
+
+  const close = () => { try { overlay.remove(); } catch {} };
+
+  overlay.querySelector('[data-resume="continue"]').onclick = () => {
+    close();
+    resumeQuizProgress(saved);
+  };
+
+  overlay.querySelector('[data-resume="restart"]').onclick = () => {
+    clearQuizProgress();
+
+    // משאירים את הפרטים שמולאו כדי שלא יהיה צורך להקליד שוב
+    if (el.fullName) el.fullName.value = String(saved.user.fullName || "");
+    if (el.personalId) el.personalId.value = String(saved.user.personalId || "");
+    if (el.kitchen && saved.user.kitchenId) el.kitchen.value = String(saved.user.kitchenId);
+
+    close();
+  };
+
+  document.body.appendChild(overlay);
+}
+
+// =========================
+// TOP TOAST MESSAGES
+// =========================
+let _toastTimer = null;
+let _lastToastKey = "";
+let _lastToastAt = 0;
+
+function showToast(message, type="error", duration=3500){
+  const msg = String(message || "").trim();
+  if (!msg) return;
+
+  let toast = document.getElementById("appToast");
+  if (!toast){
+    toast = document.createElement("div");
+    toast.id = "appToast";
+    toast.className = "app-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "assertive");
+    document.body.appendChild(toast);
+  }
+
+  toast.className = `app-toast ${type === "info" ? "info" : "error"}`;
+  toast.hidden = false;
+  setHtmlI18n(toast, msg);
+
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    toast.hidden = true;
+  }, Math.max(1500, Number(duration) || 3500));
+}
+
+function initErrorToastObserver(){
+  const watched = [
+    el.startError,
+    el.feedback,
+    el.dragFeedback,
+    el.matchError,
+    el.imgMultiFeedback,
+    el.sendStatus
+  ].filter(Boolean);
+
+  const inspect = (node) => {
+    requestAnimationFrame(() => {
+      if (!node || node.hidden) return;
+      const text = String(node.textContent || "").trim();
+      if (!text) return;
+
+      const isError =
+        node.classList.contains("error") ||
+        node.classList.contains("errorbox") ||
+        /❌|לא נכון|שגיאה|נכשלה|לא הגענו|לא נמצאו|מקסימלי/.test(text);
+
+      if (!isError) return;
+
+      const now = Date.now();
+      const key = text.replace(/\s+/g, " ");
+      if (key === _lastToastKey && now - _lastToastAt < 1200) return;
+
+      _lastToastKey = key;
+      _lastToastAt = now;
+      showToast(text, "error", 3800);
+    });
+  };
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(m => inspect(m.target.nodeType === 1 ? m.target : m.target.parentElement));
+  });
+
+  watched.forEach(node => {
+    observer.observe(node, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["hidden", "class"]
+    });
+  });
+}
+
+window.addEventListener("pagehide", saveQuizProgress);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") saveQuizProgress();
+});
 // =========================
 // SUBMISSION ID (Idempotency)
 // =========================
@@ -1464,151 +1695,105 @@ const TYPE = {
     render(q){
       el.hotspotWrap.hidden = false;
       el.hotspotImg.src = q.img;
-  
+
       const boxes = q.boxes || [];
-  
       state.runtime.hotspot.attempts = [];
       state.runtime.hotspot.hit = Array(boxes.length).fill(false);
-  
       updateHotspotUI(q);
-  
+
       el.hotspotOverlay.onclick = (ev) => {
         const rect = el.hotspotOverlay.getBoundingClientRect();
-  
         const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
         const yPct = ((ev.clientY - rect.top) / rect.height) * 100;
-  
+
         // =========================
         // CALIBRATION MODE
         // =========================
         if (CAL.enabled){
           ensureCalPanel();
-  
-          CAL.points.push({
-            x: xPct,
-            y: yPct
-          });
-  
+          CAL.points.push({ x: xPct, y: yPct });
           addCalMarker(xPct, yPct);
-  
-          // כל 4 נקודות -> מרובע חדש
+
           if (CAL.points.length === 4){
             const box = buildBoxFromPoints(CAL.points);
-  
             CAL.boxes.push(box);
             CAL.points = [];
-  
             clearCalMarkers();
           }
-  
+
           updateCalPanel();
           return;
         }
-  
-        // =========================
-        // NORMAL QUIZ MODE
-        // =========================
+
         const rt = state.runtime.hotspot;
-  
-        /*
-         * נותנים 2 טעויות נוספות מעבר למספר התקלות.
-         * לדוגמה: 5 תקלות = עד 7 לחיצות פעילות.
-         */
-        const maxClicks = boxes.length + 2;
-  
-        /*
-         * שומר גם על מנגנון ה-padding שכבר הוספנו.
-         * fallback ל-0 כדי שהקוד עדיין יעבוד
-         * גם אם הקבוע לא קיים מסיבה כלשהי.
-         */
-        const padding =
-          (typeof HOTSPOT_HIT_PADDING !== "undefined")
-            ? Number(HOTSPOT_HIT_PADDING) || 0
-            : 0;
-  
+        const padding = Number(HOTSPOT_HIT_PADDING) || 0;
+
         const isInsideBox = (b) => {
           if (!b) return false;
-  
-          const x1 = Math.max(0,   b.x1 - padding);
-          const y1 = Math.max(0,   b.y1 - padding);
+          const x1 = Math.max(0, b.x1 - padding);
+          const y1 = Math.max(0, b.y1 - padding);
           const x2 = Math.min(100, b.x2 + padding);
           const y2 = Math.min(100, b.y2 + padding);
-  
-          return (
-            xPct >= x1 &&
-            xPct <= x2 &&
-            yPct >= y1 &&
-            yPct <= y2
-          );
+          return xPct >= x1 && xPct <= x2 && yPct >= y1 && yPct <= y2;
         };
-  
-        /*
-         * אם המשתמש לחץ שוב באזור שכבר נמצא:
-         * לא מחשיבים את זה כטעות ולא מבזבזים ניסיון.
-         */
-        const alreadyHitIndex = boxes.findIndex(
-          (b, i) => rt.hit[i] && isInsideBox(b)
-        );
-  
+
+        // לחיצה חוזרת על תקלה שכבר נמצאה אינה טעות ואינה נספרת
+        const alreadyHitIndex = boxes.findIndex((b, i) => rt.hit[i] && isInsideBox(b));
         if (alreadyHitIndex !== -1){
           el.feedback.hidden = false;
+          el.feedback.classList.remove("errorbox");
           el.feedback.textContent = "את התקלה הזו כבר מצאת ✅";
           return;
         }
-  
-        if (rt.attempts.length >= maxClicks){
-          el.feedback.hidden = false;
-          el.feedback.textContent =
-            "הגעת למספר הלחיצות המקסימלי. מחקו סימון שגוי כדי לנסות שוב.";
-          return;
-        }
-  
-        const marker = document.createElement("div");
-        marker.className = "hotspot-marker";
-        marker.style.left = `${xPct}%`;
-        marker.style.top = `${yPct}%`;
-  
-        el.hotspotOverlay.appendChild(marker);
-  
+
         let hitIndex = null;
-  
         for (let i = 0; i < boxes.length; i++){
           if (rt.hit[i]) continue;
-  
           if (isInsideBox(boxes[i])){
             hitIndex = i;
-            rt.hit[i] = true;
             break;
           }
         }
-  
-        rt.attempts.push({
-          hitIndex,
-          markerEl: marker
-        });
-  
+
+        // טעות: מציגים סימון רגעי בלבד ומוחקים אותו אוטומטית
+        if (hitIndex === null){
+          const marker = document.createElement("div");
+          marker.className = "hotspot-marker wrong-temp";
+          marker.style.left = `${xPct}%`;
+          marker.style.top = `${yPct}%`;
+          el.hotspotOverlay.appendChild(marker);
+          setTimeout(() => marker.remove(), 550);
+
+          el.feedback.classList.add("errorbox");
+          el.feedback.hidden = false;
+          setHtmlI18n(el.feedback, q.wrongMsg || "❌ לא נכון. נסו שוב.");
+          return;
+        }
+
+        // פגיעה נכונה נשמרת ומוצגת
+        rt.hit[hitIndex] = true;
+        const marker = document.createElement("div");
+        marker.className = "hotspot-marker correct";
+        marker.style.left = `${xPct}%`;
+        marker.style.top = `${yPct}%`;
+        el.hotspotOverlay.appendChild(marker);
+
+        rt.attempts.push({ hitIndex, markerEl: marker });
+
         el.feedback.hidden = false;
-  
-        el.feedback.textContent =
-          (hitIndex !== null)
-            ? "נכון ✅"
-            : "לא נכון ❌";
-  
-        el.btnNext.disabled = rt.attempts.length === 0;
-  
+        el.feedback.classList.remove("errorbox");
+        el.feedback.textContent = "נכון ✅";
         updateHotspotUI(q);
       };
     },
-  
+
     validate(q){
       const boxes = q.boxes || [];
-  
-      const hits =
-        state.runtime.hotspot.hit.filter(Boolean).length;
-  
+      const hits = state.runtime.hotspot.hit.filter(Boolean).length;
       return hits === boxes.length;
     }
   },
+
   mc_single: {
     render(q){
       el.mcWrap.hidden = false;
@@ -1652,183 +1837,107 @@ const TYPE = {
   mc_multi: {
     render(q){
       el.mcWrap.hidden = false;
-  
       state.runtime.mc.selected = [];
       el.btnNext.disabled = true;
-  
-      const requiredCount =
-        Array.isArray(q.correctIndexes)
-          ? q.correctIndexes.length
-          : 0;
-  
+
+      const requiredCount = Array.isArray(q.correctIndexes) ? q.correctIndexes.length : 0;
+
       const updateHint = (customText = "") => {
         if (customText){
           setTextI18n(el.mcHint, customText);
           return;
         }
-  
-        const selectedCount =
-          state.runtime.mc.selected.length;
-  
+        const selectedCount = state.runtime.mc.selected.length;
         setTextI18n(
           el.mcHint,
           `שימו ❤️: יש לבחור ${requiredCount} תשובות נכונות. נבחרו ${selectedCount}/${requiredCount}.`
         );
       };
-  
+
+      const syncNextButton = () => {
+        el.btnNext.disabled = state.runtime.mc.selected.length !== requiredCount;
+      };
+
       updateHint();
-  
       el.mcOptions.innerHTML = "";
-  
+
       q.options.forEach((opt, i) => {
-        const row = document.createElement("label");
+        // div ולא label: מונע מצב שבו הדפדפן הופך checkbox פעם נוספת אחרי הקוד שלנו
+        const row = document.createElement("div");
         row.className = "mc-option";
         row.dataset.idx = String(i);
-  
+
         const inp = document.createElement("input");
         inp.type = "checkbox";
         inp.value = String(i);
-  
+        inp.setAttribute("aria-label", String(opt).replace(/\[(?:B|H|P)\]|\[\/(?:B|H|P)\]/g, ""));
+
         const txt = document.createElement("div");
         txt.className = "txt";
-  
         setHtmlI18n(txt, opt);
-  
+
         row.appendChild(inp);
         row.appendChild(txt);
-  
-        row.addEventListener("click", (e) => {
-          /*
-           * מנהלים את ה-checkbox בעצמנו כדי למנוע
-           * toggle כפול של label + input.
-           */
-          e.preventDefault();
-  
-          const selected =
-            state.runtime.mc.selected;
-  
-          const exists =
-            selected.includes(i);
-  
-          /*
-           * לא מאפשרים לבחור יותר תשובות
-           * מהכמות שהשאלה דורשת.
-           */
-          if (
-            !exists &&
-            selected.length >= requiredCount
-          ){
+
+        const applyCheckboxState = () => {
+          const selected = state.runtime.mc.selected;
+          const exists = selected.includes(i);
+
+          // לא מאפשרים לעבור את מספר התשובות הנדרש
+          if (inp.checked && !exists && selected.length >= requiredCount){
             inp.checked = false;
-  
-            updateHint(
-              `כבר נבחרו ${requiredCount} תשובות. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת.`
-            );
-  
+            row.classList.remove("selected");
+            updateHint(`כבר נבחרו ${requiredCount} תשובות. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת.`);
             return;
           }
-  
-          if (exists){
-            inp.checked = false;
-  
-            state.runtime.mc.selected =
-              selected.filter(x => x !== i);
+
+          if (inp.checked){
+            if (!exists) state.runtime.mc.selected = [...selected, i];
           } else {
-            inp.checked = true;
-  
-            state.runtime.mc.selected.push(i);
+            state.runtime.mc.selected = selected.filter(x => x !== i);
           }
-  
-          /*
-           * אם הייתה הודעת שגיאה מניסיון קודם,
-           * מסתירים אותה ברגע שהמשתמש התחיל לתקן.
-           */
+
+          row.classList.toggle("selected", inp.checked);
           el.feedback.hidden = true;
           el.feedback.classList.remove("errorbox");
-  
-          const selectedCount =
-            state.runtime.mc.selected.length;
-  
-          el.btnNext.disabled =
-            selectedCount !== requiredCount;
-  
+          syncNextButton();
           updateHint();
+        };
+
+        // לחיצה ישירה על התיבה: הדפדפן משנה checked ואז change מסנכרן את הזיכרון
+        inp.addEventListener("change", applyCheckboxState);
+
+        // לחיצה בכל מקום אחר בשורה מפעילה בדיוק את אותה תיבה
+        row.addEventListener("click", (e) => {
+          if (e.target === inp) return;
+          inp.click();
         });
-  
+
         el.mcOptions.appendChild(row);
       });
     },
-  
+
     validate(q){
-      const chosen =
-        state.runtime.mc.selected
-          .slice()
-          .sort((a,b) => a-b);
-  
-      const correct =
-        q.correctIndexes
-          .slice()
-          .sort((a,b) => a-b);
-  
-      /*
-       * בדיקות הגנה.
-       * בדרך כלל אי אפשר להגיע לכאן בכמות שגויה,
-       * כי כפתור "המשך" נעול עד שהכמות נכונה.
-       */
-      if (chosen.length < correct.length){
-        const msg =
-          `בחרת ${chosen.length} תשובות. יש לבחור ${correct.length} תשובות.`;
-  
-        failAndRetry(
-          { wrongMsg: msg },
-          msg
-        );
-  
+      const chosen = state.runtime.mc.selected.slice().sort((a,b) => a-b);
+      const correct = q.correctIndexes.slice().sort((a,b) => a-b);
+
+      if (chosen.length !== correct.length){
+        const msg = `יש לבחור בדיוק ${correct.length} תשובות.`;
+        failAndRetry({ wrongMsg: msg }, msg);
         return null;
       }
-  
-      if (chosen.length > correct.length){
-        const msg =
-          `בחרת ${chosen.length} תשובות. יש לבחור ${correct.length} תשובות בלבד.`;
-  
-        failAndRetry(
-          { wrongMsg: msg },
-          msg
-        );
-  
-        return null;
-      }
-  
-      const isCorrect =
-        chosen.every(
-          (value, index) =>
-            value === correct[index]
-        );
-  
+
+      const isCorrect = chosen.every((value, index) => value === correct[index]);
       if (!isCorrect){
-        /*
-         * שומרים את ההסבר הלימודי שכבר הגדרת בשאלה,
-         * ורק מבהירים שהבעיה היא בבחירה עצמה
-         * ולא במספר התשובות.
-         */
-        const baseMsg =
-          q.wrongMsg ||
-          "❌ לפחות אחת מהבחירות אינה נכונה.";
-  
-        const msg =
-          `${baseMsg} מספר התשובות שבחרת נכון, אבל לפחות אחת מהבחירות שסומנו אינה נכונה. בדקו שוב.`;
-  
-        failAndRetry(
-          { wrongMsg: msg },
-          msg
-        );
-  
+        const baseMsg = q.wrongMsg || "❌ לפחות אחת מהבחירות אינה נכונה.";
+        failAndRetry({ wrongMsg: baseMsg }, baseMsg);
         return null;
       }
-  
+
       return true;
     }
   },
-  
+
   img_multi10: {
     render(q){
       el.imgMultiWrap.hidden = false;
@@ -2618,102 +2727,33 @@ const TYPE = {
 // =========================
 function updateHotspotUI(q){
   const rt = state.runtime.hotspot;
-  const hits = rt.hit.filter(Boolean).length;
   const boxes = q.boxes || [];
-  const attempts = rt.attempts.length;
+  const hits = rt.hit.filter(Boolean).length;
 
-  const maxClicks = boxes.length + 2;
-
-  el.hotspotStatus.textContent =
-    `פגיעות: ${hits}/${boxes.length} | לחיצות: ${attempts}/${maxClicks}`;
-
+  // מציגים רק כמה תקלות נמצאו, בלי מונה לחיצות מבלבל
+  el.hotspotStatus.textContent = `נמצאו: ${hits}/${boxes.length}`;
   el.hotspotMarks.innerHTML = "";
 
   rt.attempts.forEach((a, idx) => {
+    if (a.hitIndex === null) return;
+
     const row = document.createElement("div");
     row.className = "mark-row";
 
     const txt = document.createElement("div");
     txt.className = "txt";
 
-    const isCorrect = a.hitIndex !== null;
-    const s = isCorrect ? "✅" : "❌";
-
-    let label = "לא תקלה";
-
-    if (isCorrect){
-      const box = boxes[a.hitIndex];
-
-      label =
-        box?.label ||
-        `תקלה ${a.hitIndex + 1}`;
-    }
+    const box = boxes[a.hitIndex];
+    const label = box?.label || `תקלה ${a.hitIndex + 1}`;
 
     txt.innerHTML =
-      `<span data-no-translate="1">${idx + 1}) ${s} </span>` +
+      `<span data-no-translate="1">${idx + 1}) ✅ </span>` +
       `<span class="lbl"></span>`;
 
-    setHtmlI18n(
-      txt.querySelector(".lbl"),
-      label
-    );
-
+    setHtmlI18n(txt.querySelector(".lbl"), label);
     row.appendChild(txt);
-
-    /*
-     * כפתור מחיקה מופיע רק על לחיצה שגויה.
-     * לחיצה נכונה מוגנת ממחיקה מקרית.
-     */
-    if (!isCorrect){
-      const del = document.createElement("button");
-
-      del.className = "btn-del";
-      del.type = "button";
-      del.textContent = "מחק";
-
-      del.onclick = () => {
-        deleteAttempt(q, idx);
-      };
-
-      row.appendChild(del);
-    }
-
     el.hotspotMarks.appendChild(row);
   });
-}
-
-
-function deleteAttempt(q, idx){
-  const rt = state.runtime.hotspot;
-  const a = rt.attempts[idx];
-
-  if (!a) return;
-
-  /*
-   * הגנה נוספת:
-   * גם אם הפונקציה תיקרא ממקום אחר,
-   * לא מוחקים פגיעה נכונה.
-   */
-  if (a.hitIndex !== null){
-    el.feedback.hidden = false;
-    el.feedback.textContent = "תקלה שנמצאה נשמרת ✅";
-    return;
-  }
-
-  try {
-    a.markerEl.remove();
-  } catch {}
-
-  rt.attempts.splice(idx, 1);
-
-  el.btnNext.disabled =
-    rt.attempts.length === 0;
-
-  el.feedback.hidden = false;
-  el.feedback.textContent =
-    "הסימון השגוי נמחק. אפשר לנסות שוב.";
-
-  updateHotspotUI(q);
 }
 
 function buildDragZonesOnce(q){
@@ -3074,6 +3114,7 @@ function renderQuestion(){
   }
 
   handler.render(q);
+  saveQuizProgress();
 }
 
 function goNext(){
@@ -3132,6 +3173,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     window.addEventListener("orientationchange", updateRotateOverlay, { passive:true });
     await initKitchenList();
   } catch(e){ console.warn(e); }
+
+  initErrorToastObserver();
+  showResumePromptIfNeeded();
 
   // preload בזמן טעינת דף (לא חוסם)
   if ("requestIdleCallback" in window) {
@@ -3213,6 +3257,7 @@ async function onStart(){
   try {
     preloadAllQuestionImages();
 
+    clearQuizProgress();
     state.user = { fullName, personalId, kitchenId, kitchenName };
     startFromBeginning();
   } finally {
@@ -3298,6 +3343,7 @@ async function sendResult(force){
       if (r && r.ok && r.already){
       // כבר התקבל בעבר (ניסיון חוזר/timeout) -> זה עדיין הצלחה מבחינת המשתמש
       state.sentThisRun = true;
+      clearQuizProgress();
       el.sendStatus.textContent = "השליחה כבר התקבלה במערכת ✅";
       if (el.btnResend) el.btnResend.hidden = true;
       return;
@@ -3313,6 +3359,7 @@ async function sendResult(force){
       if (!res.ok) throw new Error("HTTP " + res.status);
     }
     state.sentThisRun = true;
+    clearQuizProgress();
     el.sendStatus.textContent = "התוצאה נשלחה בהצלחה ✅";
     if (el.btnResend) el.btnResend.hidden = true;
   } catch (e) {
