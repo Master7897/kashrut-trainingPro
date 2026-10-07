@@ -17,6 +17,11 @@
   font-style: normal;
 }
 
+html, body{
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+}
+
 body{
   margin:0;
   font-family: 'Assistant', sans-serif;
@@ -114,6 +119,99 @@ button:disabled{
 }
 
 .actions{ margin-top: 12px; }
+
+/* בחירה מרובה: גם השורה עצמה מראה מצב נבחר */
+.mc-option.selected{
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(11,116,222,0.12);
+}
+
+/* סימון שגוי רגעי ב-hotspot */
+.hotspot-marker.wrong-temp{
+  background: rgba(217,45,32,0.95);
+  box-shadow: 0 0 0 8px rgba(217,45,32,0.18);
+}
+.hotspot-marker.correct{
+  background: rgba(0,160,80,0.95);
+  box-shadow: 0 0 0 6px rgba(0,160,80,0.16);
+}
+
+/* הודעה קופצת בראש המסך */
+.app-toast{
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 24px), 500px);
+  box-sizing: border-box;
+  z-index: 12000;
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+  text-align: center;
+  font-size: 17px;
+  line-height: 1.35;
+}
+.app-toast.error{
+  background: #fff1f0;
+  color: #8a1c13;
+  border: 1px solid #f7b7b1;
+}
+.app-toast.info{
+  background: #eef6ff;
+  color: #164c7e;
+  border: 1px solid #b7d8f7;
+}
+
+/* חלון שחזור אחרי ריענון */
+.resume-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,0.58);
+}
+.resume-card{
+  width: min(100%, 440px);
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+  text-align: center;
+}
+.resume-card h3{ margin: 0 0 8px; font-size: 24px; }
+.resume-card p{ margin: 0 0 14px; font-size: 17px; line-height: 1.45; }
+
+/* במובייל כפתור המשך נשאר תמיד נגיש */
+@media (max-width: 700px){
+  #screen-quiz{
+    padding-bottom: 92px;
+  }
+
+  #screen-quiz .actions{
+    position: fixed;
+    left: 50%;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: min(calc(100% - 24px), 488px);
+    box-sizing: border-box;
+    z-index: 80;
+    margin: 0;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.96);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.16);
+    backdrop-filter: blur(8px);
+  }
+
+  #screen-quiz .actions .primary{
+    margin-top: 0;
+  }
+}
+
 
 .feedback{
   margin-top: 10px;
@@ -232,9 +330,13 @@ button:disabled{
   cursor: pointer;
 }
 .mc-option input{
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  padding: 0;
+  box-sizing: border-box;
+  flex: 0 0 22px;
+  accent-color: var(--primary);
 }
 .mc-option .txt{
   font-size: 18px;
