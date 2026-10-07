@@ -1,1291 +1,892 @@
+// Auto-reviewed translation overrides for the kashrut quiz.
+// Hebrew is the source language. Keep keys exactly identical to app.js / index.html.
+
 window.I18N_OVERRIDES = {
   en: {
-    // Q1
-  "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?":
-    "Where is it forbidden to keep fish warm during the meal?",
-  "בתרמופורט נפרד.": "In a separate thermoport.",
-  "על פלטה או משטח חימום.": "On a hot plate or warming surface.",
-  "בתנור המקורי.": "In the same oven.",
-  "בארון חימום הרגיל כשיש שם [B]בשר[/B] / [B]עוף[/B].": "In the regular warming cabinet when there is [B]meat[/B] or [B]chicken[/B] in it.",
-  "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].":
-    "❌ Not correct. You may store fish anywhere that has no [B]meat[/B] food.",
-
-  // Q2
-  "לחץ על התמונה הנכונה, איך צריך להגיש [B]בשר[/B] ודגים?":
-    "Click the correct picture: How should [B]meat[/B] and fish be served?",
-  "בתבניות נפרדות": "On separate trays.",
-  "עם הפרדה של פחמימה": "With a divider (starch in between).",
-  "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.":
-    "❌ Meat and fish must not be placed next to each other or in the same warming cabinet.",
-
-  // Q3
-  "מתחו קו בין הסקוטש לכלי המתאים":
-    "Draw a line between the scouring pad and the matching kitchen utensil.",
-  "סקוטש אדום": "Red Velcro",
-  "סקוטש צהוב": "Yellow Velcro",
-  "סקוטש כחול": "Blue Velcro",
-  "מגש": "Tray",
-  "צלחת": "Plate",
-  "סכין": "Knife",
-  "❌ התאמה לא נכונה. נסו שוב.":
-    "❌ Incorrect match. Try again.",
-
-  // Q4
-  "האם ניתן להוציא כלים מהמטבח?":
-    "Can utensils be taken out of the kitchen?",
-  "כן, רק כשהאוכל כשר.":
-    "Yes, only when the food is kosher.",
-  "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.":
-    "No—never, unless it is used to transport food from a main kitchen to a secondary kitchen.",
-  "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.":
-    "Yes, with the unit rabbi’s approval, even though the utensils are not supervised.",
-  "תשובות א ו-ג נכונות.":
-    "Answers A and C are correct.",
-  "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.":
-    "❌ Not correct. Utensils may be taken out only to transport food from one kitchen to another.",
-
-  // Q5
-  "מה צריך לעשות עם הכלים האלה?":
-    "What should be done with these utensils?",
-  "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.":
-    "They are marked in red, so they are for [B]meat[/B] food.",
-  "צריך לזרוק לפח וליידע את מנהל המטבח.":
-    "Throw them in the trash and inform the kitchen manager.",
-  "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.":
-    "The sticker shows these are new utensils—inform the kashrut supervisor.",
-  "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.":
-    "These are new utensils, so they may be used for [H]dairy[/H] until marked otherwise.",
-  "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.":
-    "❌ Not correct. New utensils may not be used until the kashrut supervisor immerses them in a mikveh.",
-
-  // Q6
-  "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)":
-    "Click the problem areas in the picture (up to 5 clicks).",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח":
-    "[H]Dairy[/H] product on a [P]parve[/P] cart, and above uncovered [P]parve[/P] food",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]":
-    "[H]Dairy[/H] product on a [P]parve[/P] cart",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]":
-    "[H]Dairy[/H] product on a [P]parve[/P] cart, above a [B]meat[/B] tray",
-  "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]":
-    "[B]Meat[/B] tray on a [P]parve[/P] cart, under [H]dairy[/H] products",
-  "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?":
-    "❌ Look at the cart color—what was placed on it by mistake?",
-
-  // Q7
-  "מצאת תבנית כזו, מה תעשה איתה?":
-    "You found a tray like this—what will you do?",
-  "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].":
-    "A tray without holes can be used for [B]meat[/B].",
-  "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.":
-    "It can be used as a base for other trays in the oven.",
-  "היא לא מסומנת, יש לפנות למשגיח.":
-    "It is not marked—contact the supervisor.",
-  "היא לא מסומנת אבל ניתן להשתמש בכל זאת.":
-    "It is not marked, but you can still use it.",
-  "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.":
-    "❌ Not correct. If a tray is not marked—do not use it and contact the supervisor.",
-
-  // Q8
-  "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?":
-    "Which markings must a [B]meat[/B] tray have?",
-  "שכל התחתית תהיה צבועה באדום":
-    "The entire bottom is painted red",
-  "3 חורים בפינה":
-    "3 holes in the corner",
-  "גם צבע וגם מדבקה":
-    "Both paint and a sticker",
-  "4 חורים בפינה":
-    "4 holes in the corner",
-  "מדבקה עם כיתוב '[B]בשרי[/B]'":
-    "A sticker that says “[B]meat[/B]”",
-  "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'.":
-    "❌ Not correct. You must have both holes and a label that says “[B]meat[/B]”.",
-
-  // Q9
-  "אילו מוצרים צריכים טיפול כשרותי?":
-    "Which products require kosher checking?",
-  "קטניות": "Legumes",
-  "פסטה": "Pasta",
-  "תבלינים": "Spices",
-  "תפוחי אדמה": "Potatoes",
-  "גזר": "Carrot",
-  "חציל": "Eggplant",
-  "פלפל צהוב": "Yellow pepper",
-  "פלפל חריף": "Hot pepper",
-  "עגבניה": "Tomato",
-  "קישוא": "Zucchini",
-  "❌ ניתן להשתמש ללא טיפול כשרותי":
-    "❌ Can be used without kosher checking",
-  "❌ יש בחירה לא נכונה. נסו שוב.":
-    "❌ One of your choices is incorrect. Try again.",
-
-  // Q10
-  "בחר את הכף [H]החלבית[/H]":
-    "Choose the [H]dairy[/H] spoon.",
-  "כף עם חור": "Spoon with a hole",
-  "כף בלי חור": "Spoon without a hole",
-  "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.":
-    "❌ This is not the [H]dairy[/H] spoon. Pay attention: with a hole / without a hole.",
-
-  // Q11
-  "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?":
-    "Which [H]dairy[/H] cooking/heating/steaming/frying is allowed in the kitchen?",
-  "אסור חלב ניגר אבל מותר חמאה ושמנת.":
-    "Liquid milk is not allowed, but butter and cream are allowed.",
-  "רק בורקסים בצורת משולש.":
-    "Only triangle-shaped bourekas.",
-  "רק באישור מנהל המטבח.":
-    "Only with the kitchen manager’s approval.",
-  "אף תשובה אינה נכונה.":
-    "None of the answers is correct.",
-  "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.":
-    "❌ Not correct. It is forbidden to cook or heat any [H]dairy[/H] food in the kitchen.",
-
-  // Q12
-  "לאיפה מותר להכניס אוכל וכלים פרטיים?":
-    "Where are private food and utensils allowed?",
-  "למטבח בהתאם לאפיון (בשר לבשרי וכו').":
-    "Into the kitchen according to the classification (meat with meat, etc.).",
-  "רק לחדר האוכל, ובהתאם לאפיון.":
-    "Only into the dining room, and according to the classification.",
-  "רק אוכל כשר ועם מפית הפרדה מהשולחן.":
-    "Only kosher food, and only with a napkin separating it from the table.",
-  "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.":
-    "You may not bring private utensils or food into the kitchen or a military dining room.",
-  "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא":
-    "❌ Not correct. Private items are not allowed in military kitchens or dining rooms.",
-
-  // Q13
-  "התבוננו בתרשים ואז לחצו המשך.":
-    "Look at the diagram, then click Continue.",
-  "גררו כל מוצר למדף הנכון לפי התרשים שראיתם":
-    "Drag each product to the correct shelf according to the diagram.",
-  "חלב": "Milk",
-  "שתיה": "Drink",
-  "חומוס": "Hummus",
-  "קוטג'": "Cottage cheese",
-  "חלב סויה": "Soy milk",
-  "מילקי": "Milky",
-  "גבינה צהובה": "Yellow cheese",
-  "מעדן סויה": "Soy dessert",
-  "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.":
-    "❌ Milk is [H]dairy[/H]. Put it on the right.",
-  "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.":
-    "❌ Sweet drinks are [P]parve[/P]. Put them on the left.",
-  "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ Hummus, tahini, and salads are [P]parve[/P]. Put them on the left.",
-  "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.":
-    "❌ Cottage cheese is [H]dairy[/H]. Put it on the right.",
-  "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ Even though it is called soy milk, soy is [P]parve[/P]. Put it on the left.",
-  "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.":
-    "❌ Milky contains milk, so it is [H]dairy[/H]. Put it on the right.",
-  "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.":
-    "❌ Yellow cheese contains milk, so it is [H]dairy[/H]. Put it on the right.",
-  "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.":
-    "❌ Soy is [P]parve[/P]. Don’t confuse it with a dairy dessert—put it on the left.",
-
-  // Q14
-  "איזה גסטרונום שייך ל[P]פרווה[/P]?":
-    "Which gastronorm pan belongs to [P]parve[/P]?",
-  "3 חורים": "3 holes",
-  "2 חורים": "2 holes",
-  "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).":
-    "❌ This is not the [P]parve[/P] pan. Hint: there is always separation between [B]meat[/B] (3 holes) and [H]dairy[/H] (1 hole).",
-
-  // Q15
-  "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?":
-    "How may [B]meat[/B] utensils be brought into a [P]parve[/P] room?",
-  "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].":
-    "It is forbidden to bring [B]meat[/B] utensils into a [P]parve[/P] room.",
-  "על עגלה [B]בשרית[/B] בלבד.":
-    "Only on a [B]meat[/B] cart.",
-  "רק כאשר מניחים על הרצפה.":
-    "Only if placed on the floor.",
-  "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.":
-    "Only on clean surfaces, after making sure the utensil is also clean and dry.",
-  "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.":
-    "❌ Not correct. A [B]meat[/B] utensil may be brought into a [P]parve[/P] room only on a [B]meat[/B] cart.",
-
-  // Q16
-  "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי":
-    "Which tasks may a non-Jewish kitchen worker perform?",
-  "חיתוך ירקות": "Cutting vegetables",
-  "הדלקת תנורים, ארונות חימום, מטגנות":
-    "Turning on ovens, warming cabinets, and fryers",
-  "עירבוב סיר על האש": "Stirring a pot on the fire",
-  "הכנת טחינה": "Preparing tahini",
-  "הגשת מזון לפס": "Serving food at the serving line",
-  "הדלקת איש וכיריים": "Lighting a fire and turning on a stove",
-  "סגירת דלת תנור עם מזון": "Closing an oven door with food inside",
-  "הדלקת סיר קיטור": "Turning on the steamer",
-  "שטיפת כלים והחזרה למדפי ייבוש":
-    "Washing utensils and returning them to drying racks",
-  "צליית / טיגון מזון על אש או פלאנצ'ה":
-    "Grilling/frying food on a flame or flat-top griddle",
-  "הנחת סירים עם מזון על אש או מקור חום":
-    "Placing pots with food on a flame or heat source",
-  "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.":
-    "❌ Not correct. Only tasks that are not cooking/heating/frying are allowed.",
-
-  // Q17
-  "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]":
-    "Choose all products that may be put in a [P]parve[/P] refrigerator",
-  "מלפפונים": "Cucumbers",
-  "לורד סנדויץ'": "Lord sandwich",
-  "שתיה מתוקה": "Sweet drink",
-  "מעדן קרלו": "Carlo dessert",
-  "מעדן ג'לי": "Jelly dessert",
-  "רוטב טריאקי": "Teriyaki sauce",
-  "ביצים": "Eggs",
-  "❌ אסור להכניס מעדנים חלביים!":
-    "❌ Dairy desserts are not allowed!",
-  "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!":
-    "❌ Check what’s in the sandwich—it’s [H]dairy[/H]!",
-  "❌ אסור להכניס מוצרי חלב מכל סוג!":
-    "❌ No dairy products of any kind are allowed!",
-  "❌ מעדן קרלו הוא חלבי!":
-    "❌ The Carlo dessert is [H]dairy[/H]!",
-
-  // Q18
-  "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?":
-    "Is it allowed to have both [H]dairy[/H] and [P]parve[/P] in the same refrigerator?",
-  "לא, אסור בשום אופן.": "No, absolutely not.",
-  "לא אלא אם כן המשגיח אישר.":
-    "No—unless the supervisor approved.",
-  "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.":
-    "On shelves on different sides, as long as there is a diagram on the refrigerator and you arrange according to it.",
-  "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.":
-    "On shelves on the same side, with [P]parve[/P] always on top and tightly closed.",
-  "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.":
-    "❌ Not correct. It is allowed only with clear separation and a fixed arrangement that prevents dripping/contact."
-    // UI (index.html) - English
-  "לומדת כשרות – צוות מטבח":
-    "Kashrut Training – Kitchen Staff",
-
-  "אנא סובב חזרה לאורך":
-    "Please rotate back to portrait",
-
-  "השאלון עובד רק לאורך":
-    "This quiz works only in portrait mode",
-
-  "הדרכת כשרות צוות מטבח":
-    "Kashrut Training for Kitchen Staff",
-
-  "מלא/י פרטים כדי להתחיל.":
-    "Fill in your details to start.",
-
-  "שם מלא":
-    "Full name",
-
-  // placeholder
-  "השם שלך...":
-    "Your name...",
-
-  "תעודת זהות / מספר אישי":
-    "ID number / Personal number",
-
-  // placeholder
-  "ספרות בלבד...":
-    "Numbers only...",
-
-  "מטבח":
-    "Kitchen",
-
-  "בחר/י מטבח":
-    "Choose a kitchen",
-
-  "התחל":
-    "Start",
-
-  },///////////////////////////////////////////////////////////////////////////////////////////////////////
+    "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?": "Where is it forbidden to keep fish warm during the meal?",
+    "בתרמופורט נפרד.": "In a separate thermoport.",
+    "על פלטה או משטח חימום.": "On a hot plate or warming surface.",
+    "בתנור המקורי.": "In the same oven.",
+    "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].": "❌ Not correct. You may store fish anywhere that has no [B]meat[/B] food.",
+    "בתבניות נפרדות": "On separate trays.",
+    "עם הפרדה של פחמימה": "With a divider (starch in between).",
+    "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.": "❌ Meat and fish must not be placed next to each other or in the same warming cabinet.",
+    "מתחו קו בין הסקוטש לכלי המתאים": "Draw a line from each scouring pad to the matching utensil.",
+    "סקוטש אדום": "Red scouring pad",
+    "סקוטש צהוב": "Yellow scouring pad",
+    "סקוטש כחול": "Blue scouring pad",
+    "מגש": "Tray",
+    "צלחת": "Plate",
+    "סכין": "Knife",
+    "❌ התאמה לא נכונה. נסו שוב.": "❌ Incorrect match. Try again.",
+    "האם ניתן להוציא כלים מהמטבח?": "Can utensils be taken out of the kitchen?",
+    "כן, רק כשהאוכל כשר.": "Yes, only when the food is kosher.",
+    "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.": "No—never, unless it is used to transport food from a main kitchen to a secondary kitchen.",
+    "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.": "Yes, with the unit rabbi’s approval, even though the utensils are not supervised.",
+    "תשובות א ו-ג נכונות.": "Answers A and C are correct.",
+    "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.": "❌ Not correct. Utensils may be taken out only to transport food from one kitchen to another.",
+    "מה צריך לעשות עם הכלים האלה?": "What should be done with these utensils?",
+    "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.": "They are marked in red, so they are for [B]meat[/B] food.",
+    "צריך לזרוק לפח וליידע את מנהל המטבח.": "Throw them in the trash and inform the kitchen manager.",
+    "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.": "The sticker shows these are new utensils—inform the kashrut supervisor.",
+    "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.": "These are new utensils, so they may be used for [H]dairy[/H] until marked otherwise.",
+    "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.": "❌ Not correct. New utensils may not be used until the kashrut supervisor immerses them in a mikveh.",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח": "[H]Dairy[/H] product on a [P]parve[/P] cart, and above uncovered [P]parve[/P] food",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]": "[H]Dairy[/H] product on a [P]parve[/P] cart",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]": "[H]Dairy[/H] product on a [P]parve[/P] cart, above a [B]meat[/B] tray",
+    "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]": "[B]Meat[/B] tray on a [P]parve[/P] cart, under [H]dairy[/H] products",
+    "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?": "❌ Look at the cart color—what was placed on it by mistake?",
+    "מצאת תבנית כזו, מה תעשה איתה?": "You found a tray like this—what will you do?",
+    "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].": "A tray without holes can be used for [B]meat[/B].",
+    "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.": "It can be used as a base for other trays in the oven.",
+    "היא לא מסומנת, יש לפנות למשגיח.": "It is not marked—contact the supervisor.",
+    "היא לא מסומנת אבל ניתן להשתמש בכל זאת.": "It is not marked, but you can still use it.",
+    "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.": "❌ Not correct. If a tray is not marked—do not use it and contact the supervisor.",
+    "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?": "Which markings must a [B]meat[/B] tray have?",
+    "שכל התחתית תהיה צבועה באדום": "The entire bottom is painted red",
+    "3 חורים בפינה": "3 holes in the corner",
+    "גם צבע וגם מדבקה": "Both paint and a sticker",
+    "4 חורים בפינה": "4 holes in the corner",
+    "מדבקה עם כיתוב '[B]בשרי[/B]'": "A sticker that says “[B]meat[/B]”",
+    "אילו מוצרים צריכים טיפול כשרותי?": "Which products need a kashrut check or preparation?",
+    "קטניות": "Legumes",
+    "פסטה": "Pasta",
+    "תבלינים": "Spices",
+    "תפוחי אדמה": "Potatoes",
+    "גזר": "Carrot",
+    "חציל": "Eggplant",
+    "פלפל צהוב": "Yellow pepper",
+    "פלפל חריף": "Hot pepper",
+    "עגבניה": "Tomato",
+    "קישוא": "Zucchini",
+    "❌ ניתן להשתמש ללא טיפול כשרותי": "❌ This can be used without a kashrut check or preparation.",
+    "❌ יש בחירה לא נכונה. נסו שוב.": "❌ One of your choices is incorrect. Try again.",
+    "בחר את הכף [H]החלבית[/H]": "Choose the [H]dairy[/H] spoon.",
+    "כף עם חור": "Spoon with a hole",
+    "כף בלי חור": "Spoon without a hole",
+    "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.": "❌ This is not the [H]dairy[/H] spoon. Remember: the dairy spoon is identified by the hole.",
+    "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?": "Which [H]dairy[/H] cooking/heating/steaming/frying is allowed in the kitchen?",
+    "אסור חלב ניגר אבל מותר חמאה ושמנת.": "Liquid milk is not allowed, but butter and cream are allowed.",
+    "רק בורקסים בצורת משולש.": "Only triangle-shaped bourekas.",
+    "רק באישור מנהל המטבח.": "Only with the kitchen manager’s approval.",
+    "אף תשובה אינה נכונה.": "None of the answers is correct.",
+    "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.": "❌ Not correct. It is forbidden to cook or heat any [H]dairy[/H] food in the kitchen.",
+    "לאיפה מותר להכניס אוכל וכלים פרטיים?": "Where are private food and utensils allowed?",
+    "למטבח בהתאם לאפיון (בשר לבשרי וכו').": "Into the kitchen according to the classification (meat with meat, etc.).",
+    "רק לחדר האוכל, ובהתאם לאפיון.": "Only into the dining room, and according to the classification.",
+    "רק אוכל כשר ועם מפית הפרדה מהשולחן.": "Only kosher food, and only with a napkin separating it from the table.",
+    "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.": "You may not bring private utensils or food into the kitchen or a military dining room.",
+    "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא": "❌ Not correct. Private items are not allowed in military kitchens or dining rooms.",
+    "התבוננו בתרשים ואז לחצו המשך.": "Look at the diagram, then click Continue.",
+    "גררו כל מוצר למדף הנכון לפי התרשים שראיתם": "Drag each product to the correct shelf according to the diagram.",
+    "חלב": "Milk",
+    "שתיה": "Drink",
+    "חומוס": "Hummus",
+    "קוטג'": "Cottage cheese",
+    "חלב סויה": "Soy milk",
+    "מילקי": "Milky",
+    "גבינה צהובה": "Yellow cheese",
+    "מעדן סויה": "Soy dessert",
+    "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.": "❌ Milk is [H]dairy[/H]. Put it on the right.",
+    "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.": "❌ Sweet drinks are [P]parve[/P]. Put them on the left.",
+    "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ Hummus, tahini, and salads are [P]parve[/P]. Put them on the left.",
+    "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.": "❌ Cottage cheese is [H]dairy[/H]. Put it on the right.",
+    "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ Even though it is called soy milk, soy is [P]parve[/P]. Put it on the left.",
+    "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.": "❌ Milky contains milk, so it is [H]dairy[/H]. Put it on the right.",
+    "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.": "❌ Yellow cheese contains milk, so it is [H]dairy[/H]. Put it on the right.",
+    "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.": "❌ Soy is [P]parve[/P]. Don’t confuse it with a dairy dessert—put it on the left.",
+    "איזה גסטרונום שייך ל[P]פרווה[/P]?": "Which gastronorm pan belongs to [P]parve[/P]?",
+    "3 חורים": "3 holes",
+    "2 חורים": "2 holes",
+    "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).": "❌ This is not the [P]parve[/P] pan. Hint: there is always separation between [B]meat[/B] (3 holes) and [H]dairy[/H] (1 hole).",
+    "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?": "How may [B]meat[/B] utensils be brought into a [P]parve[/P] room?",
+    "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].": "It is forbidden to bring [B]meat[/B] utensils into a [P]parve[/P] room.",
+    "על עגלה [B]בשרית[/B] בלבד.": "Only on a [B]meat[/B] cart.",
+    "רק כאשר מניחים על הרצפה.": "Only if placed on the floor.",
+    "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.": "Only on clean surfaces, after making sure the utensil is also clean and dry.",
+    "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.": "❌ Not correct. A [B]meat[/B] utensil may be brought into a [P]parve[/P] room only on a [B]meat[/B] cart.",
+    "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי": "Which tasks may a non-Jewish kitchen worker perform?",
+    "חיתוך ירקות": "Cutting vegetables",
+    "הדלקת תנורים, ארונות חימום, מטגנות": "Turning on ovens, warming cabinets, and fryers",
+    "עירבוב סיר על האש": "Stirring a pot on the fire",
+    "הכנת טחינה": "Preparing tahini",
+    "הגשת מזון לפס": "Serving food at the serving line",
+    "הדלקת איש וכיריים": "Lighting a fire and turning on a stove",
+    "סגירת דלת תנור עם מזון": "Closing an oven door with food inside",
+    "הדלקת סיר קיטור": "Turning on the steamer",
+    "שטיפת כלים והחזרה למדפי ייבוש": "Washing utensils and returning them to drying racks",
+    "צליית / טיגון מזון על אש או פלאנצ'ה": "Grilling/frying food on a flame or flat-top griddle",
+    "הנחת סירים עם מזון על אש או מקור חום": "Placing pots with food on a flame or heat source",
+    "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.": "❌ Not correct. Only tasks that are not cooking/heating/frying are allowed.",
+    "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]": "Choose all products that may be put in a [P]parve[/P] refrigerator",
+    "מלפפונים": "Cucumbers",
+    "לורד סנדויץ'": "Lord sandwich",
+    "שתיה מתוקה": "Sweet drink",
+    "מעדן קרלו": "Carlo dessert",
+    "מעדן ג'לי": "Jelly dessert",
+    "רוטב טריאקי": "Teriyaki sauce",
+    "ביצים": "Eggs",
+    "❌ אסור להכניס מעדנים חלביים!": "❌ Dairy desserts are not allowed!",
+    "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!": "❌ Check what’s in the sandwich—it’s [H]dairy[/H]!",
+    "❌ אסור להכניס מוצרי חלב מכל סוג!": "❌ No dairy products of any kind are allowed!",
+    "❌ מעדן קרלו הוא חלבי!": "❌ The Carlo dessert is [H]dairy[/H]!",
+    "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?": "Is it allowed to have both [H]dairy[/H] and [P]parve[/P] in the same refrigerator?",
+    "לא, אסור בשום אופן.": "No, absolutely not.",
+    "לא אלא אם כן המשגיח אישר.": "No—unless the supervisor approved.",
+    "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.": "On shelves on different sides, as long as there is a diagram on the refrigerator and you arrange according to it.",
+    "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.": "On shelves on the same side, with [P]parve[/P] always on top and tightly closed.",
+    "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.": "❌ Not correct. It is allowed only with clear separation and a fixed arrangement that prevents dripping/contact.",
+    "לומדת כשרות – צוות מטבח": "Kashrut Training – Kitchen Staff",
+    "אנא סובב חזרה לאורך": "Turn the phone back to portrait.",
+    "השאלון עובד רק לאורך": "This quiz works only in portrait mode.",
+    "הדרכת כשרות צוות מטבח": "Kashrut Training for Kitchen Staff",
+    "מלא/י פרטים כדי להתחיל.": "Enter your details to start.",
+    "שם מלא": "Full name",
+    "השם שלך...": "Your name...",
+    "תעודת זהות / מספר אישי": "ID / personal number",
+    "ספרות בלבד...": "Numbers only...",
+    "מטבח": "Kitchen",
+    "בחר/י מטבח": "Choose a kitchen",
+    "התחל": "Start",
+    "בארון חימום הרגיל כשיש שם בשר / עוף.": "In the regular warming cabinet when it contains meat or chicken.",
+    "לחץ על התמונה הנכונה, איך צריך להגיש בשר ודגים?": "Tap the correct picture: How should meat and fish be served?",
+    "מצא/י את 5 התקלות בתמונה": "Find the 5 problems in the picture.",
+    "❌ לא נכון. חייבים רק 3 חורים וכיתוב '[B]בשרי[/B]'.": "❌ Not correct. A [B]meat[/B] tray needs exactly 3 holes and a label that says '[B]meat[/B]'.",
+    "תסתכל/י על הסיטואציה ואז ענה/י": "Look at the situation, then answer.",
+    "שפה": "Language",
+    "המשך": "Continue",
+    "סיום": "Finished",
+    "שלח שוב": "Send again",
+    "הצג תרשים": "Show diagram",
+    "חזרה לשאלה": "Back to question",
+    "יש ללחוץ רק על תקלות וודאיות, יש כמה תקלות דומות.": "Tap only clear problems. Some problems look similar.",
+    "תמונה לשאלה": "Question image",
+    "אפשרות א": "Option A",
+    "אפשרות ב": "Option B",
+    "תמונת תקלה": "Problem image",
+    "תרשים הסבר": "Explanation diagram",
+    "מדפים": "Shelves",
+    "מוצר": "Product",
+    "טוען מטבחים…": "Loading kitchens…",
+    "בדוק את חיבור האינטרנט שלך, ונסה שוב": "Check your internet connection and try again.",
+    "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.": "We could not load your kitchen list. Please contact the person in charge.",
+    "לא נמצאו מטבחים מורשים לקישור זה. פנה לרב היחידה.": "No approved kitchens were found for this link. Contact the unit rabbi.",
+    "לא נכון ❌ נסו שוב.": "Not correct ❌ Try again.",
+    "את התקלה הזו כבר מצאת ✅": "You already found this problem ✅",
+    "❌ לא נכון. נסו שוב.": "❌ Not correct. Try again.",
+    "נכון ✅": "Correct ✅",
+    "❌ לפחות אחת מהבחירות אינה נכונה.": "❌ At least one choice is not correct.",
+    "❌ המוצר שסומן אינו נכון. נסו שוב.": "❌ The selected product is not correct. Try again.",
+    "❌ יש כמה מוצרים שנבחרו לא נכון. הבחירות השגויות סומנו. תקנו ונסו שוב.": "❌ More than one selected product is wrong. The wrong choices are marked. Fix them and try again.",
+    "לא הגענו לתמונה בצד השני. נסו לשחרר את הקו מעט קרוב יותר לתמונה.": "The line did not reach the picture on the other side. Release it closer to the picture.",
+    "יש למתוח את הקו לתמונה שבצד השני.": "Draw the line to a picture on the other side.",
+    "התמונה הזו כבר הותאמה. נסו יעד אחר.": "This picture is already matched. Try another one.",
+    "התאמה לא נכונה. נסו שוב.": "Wrong match. Try again.",
+    "נא למלא שם.": "Enter your name.",
+    "נא למלא ת.ז/מספר אישי.": "Enter your ID or personal number.",
+    "נא לבחור מטבח.": "Choose a kitchen.",
+    "נא להזין שם מלא (לפחות שתי מילים).": "Enter your full name (at least two words).",
+    "ת.ז/מ.א חייב להיות 9 או 7 ספרות (ספרות בלבד).": "The ID or personal number must have 9 or 7 digits.",
+    "תעודת הזהות לא תקינה!": "The ID number is not valid.",
+    "טוען תמונות…": "Loading images…",
+    "התוצאה כבר נשלחה בניסיון הזה ✅": "The result was already sent for this attempt ✅",
+    "שולח תוצאה…": "Sending result…",
+    "השליחה כבר התקבלה במערכת ✅": "The result was already received ✅",
+    "התוצאה נשלחה בהצלחה ✅": "Result sent successfully ✅",
+    "שליחה נכשלה ❌ ": "Sending failed ❌ ",
+    "(בדוק הרשאות Deploy / Anyone)": "(Check the deployment permissions)",
+    "נמצאה התקדמות קודמת": "Previous progress found",
+    "להמשיך מהמקום שעצרתי": "Continue where I stopped",
+    "להתחיל מחדש": "Start again",
+    "הועתק ✅": "Copied ✅",
+    "כיול: כבוי": "Calibration: off",
+    "בטל נקודה": "Undo point",
+    "נקה נקודות (רביעייה)": "Clear current points",
+    "נקה הכל": "Clear all",
+    "העתק מרובע אחרון": "Copy last box",
+    "העתק ALL BOXES": "Copy all boxes",
+    "כיול פעיל רק לשאלות hotspot. כל 4 לחיצות = מרובע. Toggle: Ctrl+K": "Calibration is only for hotspot questions. Every 4 clicks creates a box. Toggle: Ctrl+K",
+  },
   ru: {
-    // Q1
-  "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?":
-    "Где запрещено держать рыбу во время еды, чтобы сохранить её тепло?",
-  "בתרמופורט נפרד.":
-    "В отдельном термопорте.",
-  "על פלטה או משטח חימום.":
-    "На плите/нагревательной поверхности.",
-  "בתנור המקורי.":
-    "В той же духовке.",
-  "בארון חימום הרגיל כשיש שם [B]בשר[/B] / [B]עוף[/B].":
-     "В обычном шкафу подогрева, если там есть [B]мясо[/B] или [B]курица[/B].",
-  "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].":
-    "❌ Неверно. Можно держать в любом месте, где нет [B]мясной[/B] пищи.",
-
-  // Q2
-  "לחץ על התמונה הנכונה, איך צריך להגיש [B]בשר[/B] ודגים?":
-   "Нажмите на правильную картинку: как нужно подавать [B]мясо[/B] и рыбу?",
-  "בתבניות נפרדות":
-    "На отдельных противнях/лотках.",
-  "עם הפרדה של פחמימה":
-    "С разделением: углеводы между ними.",
-  "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.":
-    "❌ Нельзя ставить мясо и рыбу рядом или в один и тот же шкаф подогрева.",
-
-  // Q3
-  "מתחו קו בין הסקוטש לכלי המתאים":
-    "Проведите линию от губки для посуды к подходящей кухонной утвари.",
-  "סקוטש אדום": "Красная липучка",
-  "סקוטש צהוב": "Жёлтая липучка",
-  "סקוטש כחול": "Синяя липучка",
-  "מגש": "Поднос",
-  "צלחת": "Тарелка",
-  "סכין": "Нож",
-  "❌ התאמה לא נכונה. נסו שוב.":
-    "❌ Неверное соответствие. Попробуйте снова.",
-
-  // Q4
-  "האם ניתן להוציא כלים מהמטבח?":
-    "Можно ли выносить посуду из кухни?",
-  "כן, רק כשהאוכל כשר.":
-    "Да, только если еда кошерная.",
-  "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.":
-    "Нет — запрещено, кроме случаев, когда этой посудой перевозят еду из основной кухни во вспомогательную.",
-  "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.":
-    "Да, с разрешения раввина подразделения, хотя за посудой нет надзора.",
-  "תשובות א ו-ג נכונות.":
-    "Верны ответы А и В.",
-  "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.":
-    "❌ Неверно. Посуду можно выносить только для перевозки еды из одной кухни в другую.",
-
-  // Q5
-  "מה צריך לעשות עם הכלים האלה?":
-    "Что нужно сделать с этой посудой?",
-  "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.":
-    "Они отмечены красным — используйте их для [B]мясной[/B] пищи.",
-  "צריך לזרוק לפח וליידע את מנהל המטבח.":
-    "Выбросьте в мусор и сообщите заведующему кухней.",
-  "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.":
-    "По наклейке видно, что это новая посуда — сообщите машгиаху (ответственному за кашрут).",
-  "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.":
-    "Это новая посуда, поэтому можно использовать и для [H]молочного[/H], пока не промаркируют иначе.",
-  "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.":
-    "❌ Неверно. Новую посуду нельзя использовать, пока машгиах не окунёт её в микву.",
-
-  // Q6
-  "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)":
-    "Нажмите на места ошибок на картинке (до 5 кликов).",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח":
-    "[H]Молочный[/H] продукт на тележке [P]парве[/P] и над открытой едой [P]парве[/P]",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]":
-    "[H]Молочный[/H] продукт на тележке [P]парве[/P]",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]":
-    "[H]Молочный[/H] продукт на тележке [P]парве[/P], над [B]мясным[/B] противнем",
-  "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]":
-    "[B]Мясной[/B] противень на тележке [P]парве[/P], под [H]молочными[/H] продуктами",
-  "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?":
-    "❌ Посмотрите на цвет тележки — что на неё поставили по ошибке?",
-
-  // Q7
-  "מצאת תבנית כזו, מה תעשה איתה?":
-    "Вы нашли такой противень — что вы сделаете?",
-  "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].":
-    "Противень без отверстий можно использовать для [B]мясного[/B].",
-  "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.":
-    "Его можно использовать как подставку для других противней в духовке.",
-  "היא לא מסומנת, יש לפנות למשגיח.":
-    "Он не промаркирован — обратитесь к машгиаху.",
-  "היא לא מסומנת אבל ניתן להשתמש בכל זאת.":
-    "Он не промаркирован, но можно использовать.",
-  "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.":
-    "❌ Неверно. Если противень не промаркирован — не используйте его и обратитесь к машгиаху.",
-
-  // Q8
-  "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?":
-    "Какая маркировка обязательно должна быть на [B]мясном[/B] противне?",
-  "שכל התחתית תהיה צבועה באדום":
-    "Всё дно окрашено в красный",
-  "3 חורים בפינה":
-    "3 отверстия в углу",
-  "גם צבע וגם מדבקה":
-    "И краска, и наклейка",
-  "4 חורים בפינה":
-    "4 отверстия в углу",
-  "מדבקה עם כיתוב '[B]בשרי[/B]'":
-    "Наклейка с надписью «[B]мясное[/B]»",
-  "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'.":
-    "❌ Неверно. Должны быть и отверстия, и надпись «[B]мясное[/B]».",
-
-  // Q9
-  "אילו מוצרים צריכים טיפול כשרותי?":
-    "Какие продукты требуют кошерной проверки?",
-  "קטניות": "Бобовые",
-  "פסטה": "Макароны",
-  "תבלינים": "Специи",
-  "תפוחי אדמה": "Картофель",
-  "גזר": "Морковь",
-  "חציל": "Баклажан",
-  "פלפל צהוב": "Жёлтый перец",
-  "פלפל חריף": "Острый перец",
-  "עגבניה": "Помидор",
-  "קישוא": "Кабачок (цуккини)",
-  "❌ ניתן להשתמש ללא טיפול כשרותי":
-    "❌ Можно использовать без кошерной проверки",
-  "❌ יש בחירה לא נכונה. נסו שוב.":
-    "❌ Есть неверный выбор. Попробуйте снова.",
-
-  // Q10
-  "בחר את הכף [H]החלבית[/H]":
-    "Выберите [H]молочную[/H] ложку.",
-  "כף עם חור": "Ложка с отверстием",
-  "כף בלי חור": "Ложка без отверстия",
-  "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.":
-    "❌ Это не [H]молочная[/H] ложка. Смотрите: с отверстием / без отверстия.",
-
-  // Q11
-  "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?":
-    "Какая [H]молочная[/H] готовка/разогрев/готовка на пару/жарка разрешена на кухне?",
-  "אסור חלב ניגר אבל מותר חמאה ושמנת.":
-    "Жидкое молоко нельзя, но масло и сливки можно.",
-  "רק בורקסים בצורת משולש.":
-    "Только бурекасы треугольной формы.",
-  "רק באישור מנהל המטבח.":
-    "Только с разрешения заведующего кухней.",
-  "אף תשובה אינה נכונה.":
-    "Ни один ответ не является правильным.",
-  "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.":
-    "❌ Неверно. На кухне запрещено готовить или разогревать любую [H]молочную[/H] еду.",
-
-  // Q12
-  "לאיפה מותר להכניס אוכל וכלים פרטיים?":
-    "Где разрешено иметь личную еду и посуду?",
-  "למטבח בהתאם לאפיון (בשר לבשרי וכו').":
-    "На кухню — в соответствии с классификацией (мясное к мясному и т. п.).",
-  "רק לחדר האוכל, ובהתאם לאפיון.":
-    "Только в столовую — и в соответствии с классификацией.",
-  "רק אוכל כשר ועם מפית הפרדה מהשולחן.":
-    "Только кошерная еда и только с салфеткой, чтобы отделить от стола.",
-  "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.":
-    "Запрещено приносить личную посуду/еду на кухню или в военную столовую.",
-  "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא":
-    "❌ Неверно. Личные вещи нельзя приносить в военные кухни или столовые.",
-
-  // Q13
-  "התבוננו בתרשים ואז לחצו המשך.":
-    "Посмотрите на схему, затем нажмите «Продолжить».",
-  "גררו כל מוצר למדף הנכון לפי התרשים שראיתם":
-    "Перетащите каждый продукт на нужную полку по схеме.",
-  "חלב": "Молоко",
-  "שתיה": "Напиток",
-  "חומוס": "Хумус",
-  "קוטג'": "Творог (коттедж-сыр)",
-  "חלב סויה": "Соевое молоко",
-  "מילקי": "Milky (молочный десерт)",
-  "גבינה צהובה": "Жёлтый сыр",
-  "מעדן סויה": "Соевый десерт",
-  "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.":
-    "❌ Молоко — [H]молочное[/H]. Положите справа.",
-  "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.":
-    "❌ Сладкие напитки — [P]парве[/P]. Положите слева.",
-  "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ Хумус, тахина и салаты — [P]парве[/P]. Положите слева.",
-  "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.":
-    "❌ Творог — [H]молочный[/H]. Положите справа.",
-  "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ Хотя это называется соевое молоко, соя — [P]парве[/P]. Положите слева.",
-  "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.":
-    "❌ Milky содержит молоко, поэтому это [H]молочное[/H]. Положите справа.",
-  "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.":
-    "❌ Жёлтый сыр содержит молоко, поэтому это [H]молочное[/H]. Положите справа.",
-  "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.":
-    "❌ Соя — [P]парве[/P]. Не путайте с молочным десертом — положите слева.",
-
-  // Q14
-  "איזה גסטרונום שייך ל[P]פרווה[/P]?":
-    "Какой гастронорм относится к [P]парве[/P]?",
-  "3 חורים": "3 отверстия",
-  "2 חורים": "2 отверстия",
-  "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).":
-    "❌ Это не гастронорм [P]парве[/P]. Подсказка: всегда есть разделение между [B]мясным[/B] (3 отверстия) и [H]молочным[/H] (1 отверстие).",
-
-  // Q15
-  "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?":
-    "Как можно занести [B]мясную[/B] посуду в комнату [P]парве[/P]?",
-  "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].":
-    "Запрещено заносить [B]мясную[/B] посуду в комнату [P]парве[/P].",
-  "על עגלה [B]בשרית[/B] בלבד.":
-    "Только на [B]мясной[/B] тележке.",
-  "רק כאשר מניחים על הרצפה.":
-    "Только если поставить на пол.",
-  "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.":
-    "Только на чистую поверхность, убедившись, что посуда тоже чистая и сухая.",
-  "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.":
-    "❌ Неверно. [B]Мясную[/B] посуду можно заносить в комнату [P]парве[/P] только на [B]мясной[/B] тележке.",
-
-  // Q16
-  "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי":
-    "Какие задачи может выполнять нееврейский работник кухни?",
-  "חיתוך ירקות": "Нарезка овощей",
-  "הדלקת תנורים, ארונות חימום, מטגנות":
-    "Включение духовок, шкафов подогрева и фритюрниц",
-  "עירבוב סיר על האש": "Помешивание кастрюли на огне",
-  "הכנת טחינה": "Приготовление тахини",
-  "הגשת מזון לפס": "Подача еды на линии раздачи",
-  "הדלקת איש וכיריים": "Разжигание огня и включение плиты",
-  "סגירת דלת תנור עם מזון": "Закрытие дверцы духовки с едой внутри",
-  "הדלקת סיר קיטור": "Включение пароварки",
-  "שטיפת כלים והחזרה למדפי ייבוש":
-    "Мытьё посуды и возврат на полки для сушки",
-  "צליית / טיגון מזון על אש או פלאנצ'ה":
-    "Жарка/гриль на огне или на пла́нче",
-  "הנחת סירים עם מזון על אש או מקור חום":
-    "Постановка кастрюль с едой на огонь или источник тепла",
-  "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.":
-    "❌ Неверно. Разрешены только работы, не связанные с готовкой/разогревом/жаркой.",
-
-  // Q17
-  "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]":
-    "Выберите все продукты, которые можно положить в холодильник [P]парве[/P].",
-  "מלפפונים": "Огурцы",
-  "לורד סנדויץ'": "Сэндвич «Лорд»",
-  "שתיה מתוקה": "Сладкий напиток",
-  "מעדן קרלו": "Десерт «Карло»",
-  "מעדן ג'לי": "Желейный десерт",
-  "רוטב טריאקי": "Соус терияки",
-  "ביצים": "Яйца",
-  "❌ אסור להכניס מעדנים חלביים!":
-    "❌ Молочные десерты класть нельзя!",
-  "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!":
-    "❌ Посмотрите, что в сэндвиче — он [H]молочный[/H]!",
-  "❌ אסור להכניס מוצרי חלב מכל סוג!":
-    "❌ Нельзя класть любые молочные продукты!",
-  "❌ מעדן קרלו הוא חלבי!":
-    "❌ Десерт «Карло» — [H]молочный[/H]!",
-
-  // Q18
-  "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?":
-    "Можно ли хранить в одном холодильнике и [H]молочное[/H], и [P]парве[/P]?",
-  "לא, אסור בשום אופן.":
-    "Нет, категорически нельзя.",
-  "לא אלא אם כן המשגיח אישר.":
-    "Нет, если машгиах не одобрил.",
-  "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.":
-    "На полках по разным сторонам — при условии, что на холодильнике есть схема, и всё расставляют по ней.",
-  "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.":
-    "На полках с одной стороны — при этом [P]парве[/P] всегда сверху и плотно закрыто.",
-  "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.":
-    "❌ Неверно. Разрешено только при чётком разделении и постоянном порядке, чтобы не было капель/контакта."
-    // UI (index.html) - Russian
-  "לומדת כשרות – צוות מטבח":
-    "Изучение кашрута — кухонная команда",
-
-  "אנא סובב חזרה לאורך":
-    "Поверните экран в вертикальное положение",
-
-  "השאלון עובד רק לאורך":
-    "Опрос работает только в вертикальном режиме",
-
-  "הדרכת כשרות צוות מטבח":
-    "Инструктаж по кашруту для кухни",
-
-  "מלא/י פרטים כדי להתחיל.":
-    "Заполните данные, чтобы начать.",
-
-  "שם מלא":
-    "Полное имя",
-
-  // placeholder
-  "השם שלך...":
-    "Ваше имя...",
-
-  "תעודת זהות / מספר אישי":
-    "Удостоверение личности / личный номер",
-
-  // placeholder
-  "ספרות בלבד...":
-    "Только цифры...",
-
-  "מטבח":
-    "Кухня",
-
-  "בחר/י מטבח":
-    "Выберите кухню",
-
-  "התחל":
-    "Начать",
-
-  },//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?": "Где запрещено держать рыбу во время еды, чтобы сохранить её тепло?",
+    "בתרמופורט נפרד.": "В отдельном термопорте.",
+    "על פלטה או משטח חימום.": "На плите/нагревательной поверхности.",
+    "בתנור המקורי.": "В той же духовке.",
+    "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].": "❌ Неверно. Можно держать в любом месте, где нет [B]мясной[/B] пищи.",
+    "בתבניות נפרדות": "На отдельных противнях/лотках.",
+    "עם הפרדה של פחמימה": "С разделением: углеводы между ними.",
+    "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.": "❌ Нельзя ставить мясо и рыбу рядом или в один и тот же шкаф подогрева.",
+    "מתחו קו בין הסקוטש לכלי המתאים": "Проведите линию от каждой губки к подходящей посуде.",
+    "סקוטש אדום": "Красная губка",
+    "סקוטש צהוב": "Жёлтая губка",
+    "סקוטש כחול": "Синяя губка",
+    "מגש": "Поднос",
+    "צלחת": "Тарелка",
+    "סכין": "Нож",
+    "❌ התאמה לא נכונה. נסו שוב.": "❌ Неверное соответствие. Попробуйте снова.",
+    "האם ניתן להוציא כלים מהמטבח?": "Можно ли выносить посуду из кухни?",
+    "כן, רק כשהאוכל כשר.": "Да, только если еда кошерная.",
+    "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.": "Нет — запрещено, кроме случаев, когда этой посудой перевозят еду из основной кухни во вспомогательную.",
+    "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.": "Да, с разрешения раввина подразделения, хотя за посудой нет надзора.",
+    "תשובות א ו-ג נכונות.": "Верны ответы А и В.",
+    "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.": "❌ Неверно. Посуду можно выносить только для перевозки еды из одной кухни в другую.",
+    "מה צריך לעשות עם הכלים האלה?": "Что нужно сделать с этой посудой?",
+    "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.": "Они отмечены красным — используйте их для [B]мясной[/B] пищи.",
+    "צריך לזרוק לפח וליידע את מנהל המטבח.": "Выбросьте в мусор и сообщите заведующему кухней.",
+    "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.": "По наклейке видно, что это новая посуда — сообщите машгиаху (ответственному за кашрут).",
+    "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.": "Это новая посуда, поэтому можно использовать и для [H]молочного[/H], пока не промаркируют иначе.",
+    "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.": "❌ Неверно. Новую посуду нельзя использовать, пока машгиах не окунёт её в микву.",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח": "[H]Молочный[/H] продукт на тележке [P]парве[/P] и над открытой едой [P]парве[/P]",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]": "[H]Молочный[/H] продукт на тележке [P]парве[/P]",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]": "[H]Молочный[/H] продукт на тележке [P]парве[/P], над [B]мясным[/B] противнем",
+    "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]": "[B]Мясной[/B] противень на тележке [P]парве[/P], под [H]молочными[/H] продуктами",
+    "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?": "❌ Посмотрите на цвет тележки — что на неё поставили по ошибке?",
+    "מצאת תבנית כזו, מה תעשה איתה?": "Вы нашли такой противень — что вы сделаете?",
+    "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].": "Противень без отверстий можно использовать для [B]мясного[/B].",
+    "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.": "Его можно использовать как подставку для других противней в духовке.",
+    "היא לא מסומנת, יש לפנות למשגיח.": "Он не промаркирован — обратитесь к машгиаху.",
+    "היא לא מסומנת אבל ניתן להשתמש בכל זאת.": "Он не промаркирован, но можно использовать.",
+    "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.": "❌ Неверно. Если противень не промаркирован — не используйте его и обратитесь к машгиаху.",
+    "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?": "Какая маркировка обязательно должна быть на [B]мясном[/B] противне?",
+    "שכל התחתית תהיה צבועה באדום": "Всё дно окрашено в красный",
+    "3 חורים בפינה": "3 отверстия в углу",
+    "גם צבע וגם מדבקה": "И краска, и наклейка",
+    "4 חורים בפינה": "4 отверстия в углу",
+    "מדבקה עם כיתוב '[B]בשרי[/B]'": "Наклейка с надписью «[B]мясное[/B]»",
+    "אילו מוצרים צריכים טיפול כשרותי?": "Какие продукты требуют проверки или обработки по кашруту?",
+    "קטניות": "Бобовые",
+    "פסטה": "Макароны",
+    "תבלינים": "Специи",
+    "תפוחי אדמה": "Картофель",
+    "גזר": "Морковь",
+    "חציל": "Баклажан",
+    "פלפל צהוב": "Жёлтый перец",
+    "פלפל חריף": "Острый перец",
+    "עגבניה": "Помидор",
+    "קישוא": "Кабачок (цуккини)",
+    "❌ ניתן להשתמש ללא טיפול כשרותי": "❌ Это можно использовать без проверки или обработки по кашруту.",
+    "❌ יש בחירה לא נכונה. נסו שוב.": "❌ Есть неверный выбор. Попробуйте снова.",
+    "בחר את הכף [H]החלבית[/H]": "Выберите [H]молочную[/H] ложку.",
+    "כף עם חור": "Ложка с отверстием",
+    "כף בלי חור": "Ложка без отверстия",
+    "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.": "❌ Это не [H]молочная[/H] ложка. Запомните: молочная ложка — с отверстием.",
+    "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?": "Какая [H]молочная[/H] готовка/разогрев/готовка на пару/жарка разрешена на кухне?",
+    "אסור חלב ניגר אבל מותר חמאה ושמנת.": "Жидкое молоко нельзя, но масло и сливки можно.",
+    "רק בורקסים בצורת משולש.": "Только бурекасы треугольной формы.",
+    "רק באישור מנהל המטבח.": "Только с разрешения заведующего кухней.",
+    "אף תשובה אינה נכונה.": "Ни один ответ не является правильным.",
+    "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.": "❌ Неверно. На кухне запрещено готовить или разогревать любую [H]молочную[/H] еду.",
+    "לאיפה מותר להכניס אוכל וכלים פרטיים?": "Где разрешено иметь личную еду и посуду?",
+    "למטבח בהתאם לאפיון (בשר לבשרי וכו').": "На кухню — в соответствии с классификацией (мясное к мясному и т. п.).",
+    "רק לחדר האוכל, ובהתאם לאפיון.": "Только в столовую — и в соответствии с классификацией.",
+    "רק אוכל כשר ועם מפית הפרדה מהשולחן.": "Только кошерная еда и только с салфеткой, чтобы отделить от стола.",
+    "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.": "Запрещено приносить личную посуду/еду на кухню или в военную столовую.",
+    "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא": "❌ Неверно. Личные вещи нельзя приносить в военные кухни или столовые.",
+    "התבוננו בתרשים ואז לחצו המשך.": "Посмотрите на схему, затем нажмите «Продолжить».",
+    "גררו כל מוצר למדף הנכון לפי התרשים שראיתם": "Перетащите каждый продукт на нужную полку по схеме.",
+    "חלב": "Молоко",
+    "שתיה": "Напиток",
+    "חומוס": "Хумус",
+    "קוטג'": "Творог (коттедж-сыр)",
+    "חלב סויה": "Соевое молоко",
+    "מילקי": "Milky (молочный десерт)",
+    "גבינה צהובה": "Жёлтый сыр",
+    "מעדן סויה": "Соевый десерт",
+    "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.": "❌ Молоко — [H]молочное[/H]. Положите справа.",
+    "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.": "❌ Сладкие напитки — [P]парве[/P]. Положите слева.",
+    "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ Хумус, тахина и салаты — [P]парве[/P]. Положите слева.",
+    "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.": "❌ Творог — [H]молочный[/H]. Положите справа.",
+    "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ Хотя это называется соевое молоко, соя — [P]парве[/P]. Положите слева.",
+    "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.": "❌ Milky содержит молоко, поэтому это [H]молочное[/H]. Положите справа.",
+    "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.": "❌ Жёлтый сыр содержит молоко, поэтому это [H]молочное[/H]. Положите справа.",
+    "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.": "❌ Соя — [P]парве[/P]. Не путайте с молочным десертом — положите слева.",
+    "איזה גסטרונום שייך ל[P]פרווה[/P]?": "Какой гастронорм относится к [P]парве[/P]?",
+    "3 חורים": "3 отверстия",
+    "2 חורים": "2 отверстия",
+    "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).": "❌ Это не гастронорм [P]парве[/P]. Подсказка: всегда есть разделение между [B]мясным[/B] (3 отверстия) и [H]молочным[/H] (1 отверстие).",
+    "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?": "Как можно занести [B]мясную[/B] посуду в комнату [P]парве[/P]?",
+    "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].": "Запрещено заносить [B]мясную[/B] посуду в комнату [P]парве[/P].",
+    "על עגלה [B]בשרית[/B] בלבד.": "Только на [B]мясной[/B] тележке.",
+    "רק כאשר מניחים על הרצפה.": "Только если поставить на пол.",
+    "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.": "Только на чистую поверхность, убедившись, что посуда тоже чистая и сухая.",
+    "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.": "❌ Неверно. [B]Мясную[/B] посуду можно заносить в комнату [P]парве[/P] только на [B]мясной[/B] тележке.",
+    "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי": "Какие задачи может выполнять нееврейский работник кухни?",
+    "חיתוך ירקות": "Нарезка овощей",
+    "הדלקת תנורים, ארונות חימום, מטגנות": "Включение духовок, шкафов подогрева и фритюрниц",
+    "עירבוב סיר על האש": "Помешивание кастрюли на огне",
+    "הכנת טחינה": "Приготовление тахини",
+    "הגשת מזון לפס": "Подача еды на линии раздачи",
+    "הדלקת איש וכיריים": "Разжигание огня и включение плиты",
+    "סגירת דלת תנור עם מזון": "Закрытие дверцы духовки с едой внутри",
+    "הדלקת סיר קיטור": "Включение пароварки",
+    "שטיפת כלים והחזרה למדפי ייבוש": "Мытьё посуды и возврат на полки для сушки",
+    "צליית / טיגון מזון על אש או פלאנצ'ה": "Жарка/гриль на огне или на пла́нче",
+    "הנחת סירים עם מזון על אש או מקור חום": "Постановка кастрюль с едой на огонь или источник тепла",
+    "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.": "❌ Неверно. Разрешены только работы, не связанные с готовкой/разогревом/жаркой.",
+    "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]": "Выберите все продукты, которые можно положить в холодильник [P]парве[/P].",
+    "מלפפונים": "Огурцы",
+    "לורד סנדויץ'": "Сэндвич «Лорд»",
+    "שתיה מתוקה": "Сладкий напиток",
+    "מעדן קרלו": "Десерт «Карло»",
+    "מעדן ג'לי": "Желейный десерт",
+    "רוטב טריאקי": "Соус терияки",
+    "ביצים": "Яйца",
+    "❌ אסור להכניס מעדנים חלביים!": "❌ Молочные десерты класть нельзя!",
+    "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!": "❌ Посмотрите, что в сэндвиче — он [H]молочный[/H]!",
+    "❌ אסור להכניס מוצרי חלב מכל סוג!": "❌ Нельзя класть любые молочные продукты!",
+    "❌ מעדן קרלו הוא חלבי!": "❌ Десерт «Карло» — [H]молочный[/H]!",
+    "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?": "Можно ли хранить в одном холодильнике и [H]молочное[/H], и [P]парве[/P]?",
+    "לא, אסור בשום אופן.": "Нет, категорически нельзя.",
+    "לא אלא אם כן המשגיח אישר.": "Нет, если машгиах не одобрил.",
+    "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.": "На полках по разным сторонам — при условии, что на холодильнике есть схема, и всё расставляют по ней.",
+    "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.": "На полках с одной стороны — при этом [P]парве[/P] всегда сверху и плотно закрыто.",
+    "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.": "❌ Неверно. Разрешено только при чётком разделении и постоянном порядке, чтобы не было капель/контакта.",
+    "לומדת כשרות – צוות מטבח": "Обучение кашруту — кухонный персонал",
+    "אנא סובב חזרה לאורך": "Поверните телефон вертикально.",
+    "השאלון עובד רק לאורך": "Тест работает только вертикально.",
+    "הדרכת כשרות צוות מטבח": "Обучение кашруту для кухни",
+    "מלא/י פרטים כדי להתחיל.": "Введите данные, чтобы начать.",
+    "שם מלא": "Полное имя",
+    "השם שלך...": "Ваше имя...",
+    "תעודת זהות / מספר אישי": "Номер удостоверения / личный номер",
+    "ספרות בלבד...": "Только цифры...",
+    "מטבח": "Кухня",
+    "בחר/י מטבח": "Выберите кухню",
+    "התחל": "Начать",
+    "בארון חימום הרגיל כשיש שם בשר / עוף.": "В обычном шкафу подогрева, если там есть мясо или курица.",
+    "לחץ על התמונה הנכונה, איך צריך להגיש בשר ודגים?": "Нажмите на правильную картинку: как подавать мясо и рыбу?",
+    "מצא/י את 5 התקלות בתמונה": "Найдите 5 ошибок на картинке.",
+    "❌ לא נכון. חייבים רק 3 חורים וכיתוב '[B]בשרי[/B]'.": "❌ Неверно. На [B]мясном[/B] противне должны быть ровно 3 отверстия и надпись '[B]мясное[/B]'.",
+    "תסתכל/י על הסיטואציה ואז ענה/י": "Посмотрите на ситуацию и ответьте.",
+    "שפה": "Язык",
+    "המשך": "Продолжить",
+    "סיום": "Готово",
+    "שלח שוב": "Отправить ещё раз",
+    "הצג תרשים": "Показать схему",
+    "חזרה לשאלה": "Вернуться к вопросу",
+    "יש ללחוץ רק על תקלות וודאיות, יש כמה תקלות דומות.": "Нажимайте только на явные ошибки. Некоторые ошибки похожи.",
+    "תמונה לשאלה": "Картинка к вопросу",
+    "אפשרות א": "Вариант А",
+    "אפשרות ב": "Вариант Б",
+    "תמונת תקלה": "Картинка с ошибками",
+    "תרשים הסבר": "Схема",
+    "מדפים": "Полки",
+    "מוצר": "Продукт",
+    "טוען מטבחים…": "Загрузка кухонь…",
+    "בדוק את חיבור האינטרנט שלך, ונסה שוב": "Проверьте интернет и попробуйте снова.",
+    "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.": "Не удалось загрузить список кухонь. Обратитесь к ответственному.",
+    "לא נמצאו מטבחים מורשים לקישור זה. פנה לרב היחידה.": "Для этой ссылки нет разрешённых кухонь. Обратитесь к раввину подразделения.",
+    "לא נכון ❌ נסו שוב.": "Неверно ❌ Попробуйте снова.",
+    "את התקלה הזו כבר מצאת ✅": "Эту ошибку вы уже нашли ✅",
+    "❌ לא נכון. נסו שוב.": "❌ Неверно. Попробуйте снова.",
+    "נכון ✅": "Правильно ✅",
+    "❌ לפחות אחת מהבחירות אינה נכונה.": "❌ Хотя бы один выбор неверный.",
+    "❌ המוצר שסומן אינו נכון. נסו שוב.": "❌ Выбран неверный продукт. Попробуйте снова.",
+    "❌ יש כמה מוצרים שנבחרו לא נכון. הבחירות השגויות סומנו. תקנו ונסו שוב.": "❌ Выбрано несколько неверных продуктов. Они отмечены. Исправьте и попробуйте снова.",
+    "לא הגענו לתמונה בצד השני. נסו לשחרר את הקו מעט קרוב יותר לתמונה.": "Линия не дошла до картинки с другой стороны. Отпустите ближе к картинке.",
+    "יש למתוח את הקו לתמונה שבצד השני.": "Проведите линию к картинке с другой стороны.",
+    "התמונה הזו כבר הותאמה. נסו יעד אחר.": "Эта картинка уже соединена. Выберите другую.",
+    "התאמה לא נכונה. נסו שוב.": "Неверное соответствие. Попробуйте снова.",
+    "נא למלא שם.": "Введите имя.",
+    "נא למלא ת.ז/מספר אישי.": "Введите номер удостоверения или личный номер.",
+    "נא לבחור מטבח.": "Выберите кухню.",
+    "נא להזין שם מלא (לפחות שתי מילים).": "Введите полное имя (минимум два слова).",
+    "ת.ז/מ.א חייב להיות 9 או 7 ספרות (ספרות בלבד).": "Номер должен содержать 9 или 7 цифр.",
+    "תעודת הזהות לא תקינה!": "Неверный номер удостоверения.",
+    "טוען תמונות…": "Загрузка картинок…",
+    "התוצאה כבר נשלחה בניסיון הזה ✅": "Результат уже отправлен ✅",
+    "שולח תוצאה…": "Отправка результата…",
+    "השליחה כבר התקבלה במערכת ✅": "Результат уже получен системой ✅",
+    "התוצאה נשלחה בהצלחה ✅": "Результат успешно отправлен ✅",
+    "שליחה נכשלה ❌ ": "Не удалось отправить ❌ ",
+    "(בדוק הרשאות Deploy / Anyone)": "(Проверьте права публикации)",
+    "נמצאה התקדמות קודמת": "Найден сохранённый прогресс",
+    "להמשיך מהמקום שעצרתי": "Продолжить с места остановки",
+    "להתחיל מחדש": "Начать заново",
+    "הועתק ✅": "Скопировано ✅",
+    "כיול: כבוי": "Калибровка: выключена",
+    "בטל נקודה": "Отменить точку",
+    "נקה נקודות (רביעייה)": "Очистить текущие точки",
+    "נקה הכל": "Очистить всё",
+    "העתק מרובע אחרון": "Скопировать последний прямоугольник",
+    "העתק ALL BOXES": "Скопировать все прямоугольники",
+    "כיול פעיל רק לשאלות hotspot. כל 4 לחיצות = מרובע. Toggle: Ctrl+K": "Калибровка только для hotspot. Каждые 4 нажатия создают прямоугольник. Ctrl+K",
+  },
   ar: {
-    "לומדת כשרות – צוות מטבח":
-    "تدريب كَشروت – طاقم المطبخ",
-
-  "אנא סובב חזרה לאורך":
-    "لو سمحت/ي لفّ/ي الشاشة للوضع الطولي",
-
-  "השאלון עובד רק לאורך":
-    "الاستبيان بشتغل بس بالوضع الطولي",
-
-  // headline: you said you removed !!
-  "הדרכת כשרות צוות מטבח":
-    "تدريب كَشروت لطاقم المطبخ",
-  // keep old just in case something still references it
-  "הדרכת כשרות צוות מטבח":
-    "تدريب كَشروت لطاقم المطبخ",
-
-  "מלא/י פרטים כדי להתחיל.":
-    "عبّ/ي التفاصيل عشان نبلّش.",
-
-  "שם מלא":
-    "الاسم الكامل",
-  "השם שלך...":
-    "اسمك...",
-
-  "תעודת זהות / מספר אישי":
-    "رقم الهوية / الرقم الشخصي",
-  "ספרות בלבד...":
-    "أرقام فقط...",
-
-  "מטבח":
-    "المطبخ",
-  "בחר/י מטבח":
-    "اختار/ي مطبخ",
-
-  "התחל":
-    "ابدأ/ي",
-
-  // ---------- Q1 ----------
-  "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?":
-    "وين ممنوع نحط السمك خلال الوجبة عشان يضل دافي؟",
-  "בתרמופורט נפרד.":
-    "بحافظة حرارية (ترموبورت) لحالها.",
-  "על פלטה או משטח חימום.":
-    "على صاج/سطح تسخين.",
-  "בתנור המקורי.":
-    "بفرنّه الأصلي.",
-  "בארון חימום הרגיל כשיש שם [B]בשר[/B] / [B]עוף[/B].":
-    "بخزانة التسخين العادية إذا كان فيها [B]لحم[/B] أو [B]دجاج[/B].",
-  "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].":
-    "❌ غلط. مسموح تحطّه بأي مكان ما فيه أكل [B]لحمي[/B].",
-
-  // ---------- Q2 ----------
-  "לחץ על התמונה הנכונה, איך צריך להגיש [B]בשר[/B] ודגים?":
-    "اكبس/ي على الصورة الصح: كيف لازم نقدّم [B]لحم[/B] وسمك؟",
-  "בתבניות נפרדות":
-    "بصواني/قوالب منفصلة.",
-  "עם הפרדה של פחמימה":
-    "مع فاصل كربوهيدرات (زي رز/بطاطا) بينهم.",
-  "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.":
-    "❌ ممنوع تحط اللحم والسمك جنب بعض أو بنفس خزانة التسخين.",
-
-  // ---------- Q3 (match) ----------
-  "מתחו קו בין הסקוטש לכלי המתאים":
-    "مِدّوا خط بين ليفة الجلي وأداة المطبخ المناسبة.",
-  "סקוטש אדום": "فيلكرو أحمر",
-  "סקוטש צהוב": "فيلكرو أصفر",
-  "סקוטש כחול": "فيلكرو أزرق",
-  "מגש": "صينية",
-  "צלחת": "صحن",
-  "סכין": "سكّين",
-  "❌ התאמה לא נכונה. נסו שוב.":
-    "❌ التطابق غلط. جرّب/ي مرة ثانية.",
-
-  // ---------- Q4 ----------
-  "האם ניתן להוציא כלים מהמטבח?":
-    "مسموح نطلع أدوات من المطبخ؟",
-  "כן, רק כשהאוכל כשר.":
-    "نعم، بس إذا الأكل كوشير.",
-  "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.":
-    "ممنوع دايمًا، إلا إذا بننقل معه أكل من مطبخ رئيسي لمطبخ فرعي.",
-  "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.":
-    "نعم، بموافقة رابي الوحدة، مع إنه ما في رقابة على الأدوات.",
-  "תשובות א ו-ג נכונות.":
-    "الإجابتين أ و ج صح.",
-  "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.":
-    "❌ غلط. بنطلع أدوات بس لغرض نقل أكل من مطبخ لمطبخ.",
-
-  // ---------- Q5 ----------
-  "מה צריך לעשות עם הכלים האלה?":
-    "شو لازم نعمل بهاي الأدوات؟",
-  "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.":
-    "عليها علامة أحمر — بنستعملها لأكل [B]لحمي[/B].",
-  "צריך לזרוק לפח וליידע את מנהל המטבח.":
-    "ارميها بالزبالة وبلّغ/ي مدير المطبخ.",
-  "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.":
-    "حسب الملصق هاي أدوات جديدة — لازم تبلّغ/ي مشغياح الكشروت (المشرف).",
-  "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.":
-    "هاي أدوات جديدة، فممكن تنستعمل كمان لـ[H]حليبي[/H] لحد ما تتعلَّم غير هيك.",
-  "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.":
-    "❌ غلط. ممنوع تستعمل أدوات جديدة قبل ما المشرف يغمّسها بالمِكڤيه.",
-
-  // ---------- Q6 (hotspot) ----------
-  "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)":
-    "اكبس/ي على أماكن الغلط بالصورة (لحد 5 كبسات)",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח":
-    "منتج [H]حليبي[/H] على عربة [P]بارڤه[/P] وكمان فوق أكل [P]بارڤه[/P] مكشوف",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]":
-    "منتج [H]حليبي[/H] على عربة [P]بارڤه[/P]",
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]":
-    "منتج [H]حليبي[/H] على عربة [P]بارڤه[/P] وفوق صينية [B]لحمية[/B]",
-  "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]":
-    "صينية [B]لحمية[/B] على عربة [P]بارڤه[/P] وتحت منتجات [H]حليبية[/H]",
-  "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?":
-    "❌ انتبه/ي للون العربة — شو حطّوا عليها بالغلط؟",
-
-  // ---------- Q7 ----------
-  "מצאת תבנית כזו, מה תעשה איתה?":
-    "لقيت/ي صينية زي هيك — شو بتعمل/ي؟",
-  "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].":
-    "صينية بدون ثقوب ممكن تنستعمل لـ[B]لحمي[/B].",
-  "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.":
-    "ممكن تنستعمل كقاعدة لصواني ثانية بالفرن.",
-  "היא לא מסומנת, יש לפנות למשגיח.":
-    "مش معلَّمة — لازم نتوجّه للمشرف.",
-  "היא לא מסומנת אבל ניתן להשתמש בכל זאת.":
-    "مش معلَّمة بس عادي نستعملها.",
-  "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.":
-    "❌ غلط. إذا الصينية مش معلَّمة — ما بنستعملها وبنراجع المشرف.",
-
-  // ---------- Q8 ----------
-  "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?":
-    "أي علامات لازم تكون على صينية [B]لحمية[/B]؟",
-  "שכל התחתית תהיה צבועה באדום":
-    "كل القاعدة مطلية أحمر",
-  "3 חורים בפינה":
-    "3 ثقوب بالزاوية",
-  "גם צבע וגם מדבקה":
-    "لون وكمان ملصق",
-  "4 חורים בפינה":
-    "4 ثقوب بالزاوية",
-  "מדבקה עם כיתוב '[B]בשרי[/B]'":
-    "ملصق مكتوب عليه '[B]لحمي[/B]'",
-  "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'.":
-    "❌ غلط. لازم يكون في ثقوب وكمان كتابة '[B]لحمي[/B]'.",
-
-  // ---------- Q9 ----------
-  "אילו מוצרים צריכים טיפול כשרותי?":
-    "أي منتجات بدها فحص/معالجة كَشروت؟",
-  "קטניות": "بقوليات",
-  "פסטה": "مكرونة",
-  "תבלינים": "بهارات",
-  "תפוחי אדמה": "بطاطا",
-  "גזר": "جزر",
-  "חציל": "باذنجان",
-  "פלפל צהוב": "فلفل أصفر",
-  "פלפל חריף": "فلفل حار",
-  "עגבניה": "بندورة",
-  "קישוא": "كوسا",
-  "❌ ניתן להשתמש ללא טיפול כשרותי":
-    "❌ ممكن بدون فحص كَشروت",
-  "❌ יש בחירה לא נכונה. נסו שוב.":
-    "❌ في اختيار غلط. جرّب/ي مرة ثانية.",
-
-  // ---------- Q10 ----------
-  "בחר את הכף [H]החלבית[/H]":
-    "اختار/ي الملعقة [H]الحليبية[/H]",
-  "כף עם חור":
-    "ملعقة فيها ثقب",
-  "כף בלי חור":
-    "ملعقة بدون ثقب",
-  "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.":
-    "❌ هاي مش الملعقة [H]الحليبية[/H]. انتبه/ي: فيها ثقب / بدون ثقب.",
-
-  // ---------- Q11 ----------
-  "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?":
-    "أي طبخ/تسخين/تبخير/قلي [H]حليبي[/H] مسموح بالمطبخ؟",
-  "אסור חלב ניגר אבל מותר חמאה ושמנת.":
-    "ممنوع حليب سائل، بس مسموح زبدة وقشطة.",
-  "רק בורקסים בצורת משולש.":
-    "بس بوركسات بشكل مثلث.",
-  "רק באישור מנהל המטבח.":
-    "بس بموافقة مدير المطبخ.",
-  "אף תשובה אינה נכונה.":
-    "ولا جواب صح.",
-  "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.":
-    "❌ غلط. ممنوع نطبخ/نسخّن أي نوع أكل [H]حليبي[/H] بالمطبخ.",
-
-  // ---------- Q12 ----------
-  "לאיפה מותר להכניס אוכל וכלים פרטיים?":
-    "وين مسموح ندخل أكل وأدوات شخصية؟",
-  "למטבח בהתאם לאפיון (בשר לבשרי וכו').":
-    "للمطبخ حسب التصنيف (لحمي للحمي… إلخ).",
-  "רק לחדר האוכל, ובהתאם לאפיון.":
-    "بس لغرفة الأكل، وحسب التصنيف.",
-  "רק אוכל כשר ועם מפית הפרדה מהשולחן.":
-    "بس أكل كوشير ومعه منديل للفصل عن الطاولة.",
-  "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.":
-    "ممنوع ندخل أدوات/أكل شخصي للمطبخ أو لغرفة أكل عسكرية.",
-  "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא":
-    "❌ غلط. ممنوع إدخال أشياء شخصية لمطابخ أو غرف أكل بالجيش.",
-
-  // ---------- Q13 (drag shelves) ----------
-  "התבוננו בתרשים ואז לחצו המשך.":
-    "اتفرّج/ي على الرسم وبعدين اضغط/ي «متابعة».",
-  "גררו כל מוצר למדף הנכון לפי התרשים שראיתם":
-    "اسحب/ي كل منتج للرف الصح حسب الرسم اللي شفت/يه.",
-
-  "חלב": "حليب",
-  "שתיה": "مشروب",
-  "חומוס": "حمّص",
-  "קוטג'": "جبنة قريش (كوتِج)",
-  "חלב סויה": "حليب صويا",
-  "מילקי": "ميلكي",
-  "גבינה צהובה": "جبنة صفراء",
-  "מעדן סויה": "حلوى/ديسرت صويا",
-
-  "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.":
-    "❌ الحليب [H]حليبي[/H]. لازم ينحط باليمين.",
-  "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.":
-    "❌ المشروبات الحلوة [P]بارڤه[/P]. لازم تنحط بالشمال.",
-  "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ حمّص/طحينة/سلطات [P]بارڤه[/P]. لازم تنحط بالشمال.",
-  "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.":
-    "❌ جبنة القريش [H]حليبية[/H]. حطّ/يها باليمين.",
-  "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ مع إنه اسمه حليب صويا، الصويا [P]بارڤه[/P]. لازم ينحط بالشمال.",
-  "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.":
-    "❌ الميلكي فيه حليب، يعني هو [H]حليبي[/H]. وبنحطّه باليمين.",
-  "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.":
-    "❌ الجبنة الصفراء فيها حليب، يعني [H]حليبية[/H]. لازم تنحط باليمين.",
-  "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.":
-    "❌ الصويا [P]بارڤه[/P]. لا تخلط/يها مع ديسرت حليبي… حطّ/يها بالشمال.",
-
-  // ---------- Q14 ----------
-  "איזה גסטרונום שייך ל[P]פרווה[/P]?":
-    "أي جاسترونوم تابع لـ[P]بارڤه[/P]؟",
-  "3 חורים": "3 ثقوب",
-  "2 חורים": "ثقبين",
-  "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).":
-    "❌ هذا مش جاسترونوم [P]بارڤه[/P]. تلميح: دايمًا في فصل بين [B]لحمي[/B] (3 ثقوب) و[H]حليبي[/H] (ثقب واحد).",
-
-  // ---------- Q15 ----------
-  "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?":
-    "كيف ممكن ندخل أدوات [B]لحمية[/B] لغرفة [P]بارڤه[/P]؟",
-  "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].":
-    "ممنوع ندخل أدوات [B]لحمية[/B] لغرفة [P]بارڤه[/P].",
-  "על עגלה [B]בשרית[/B] בלבד.":
-    "بس على عربة [B]لحمية[/B].",
-  "רק כאשר מניחים על הרצפה.":
-    "بس إذا انحطّت على الأرض.",
-  "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.":
-    "بس على سطح نظيف بعد ما نتأكد الأداة كمان نظيفة وناشفة.",
-  "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.":
-    "❌ غلط. إدخال أداة [B]لحمية[/B] لغرفة [P]بارڤه[/P] مسموح بس على عربة لحمية.",
-
-  // ---------- Q16 ----------
-  "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי":
-    "أي شغلات مسموح يعملها عامل مطبخ غير يهودي؟",
-  "חיתוך ירקות":
-    "تقطيع خضرة",
-  "הדלקת תנורים, ארונות חימום, מטגנות":
-    "تشغيل أفران/خزانات تسخين/قلايات",
-  "עירבוב סיר על האש":
-    "تحريك طنجرة على النار",
-  "הכנת טחינה":
-    "تحضير طحينة",
-  "הגשת מזון לפס":
-    "تقديم الأكل على خط التقديم",
-  "הדלקת איש וכיריים":
-    "توليع نار وتشغيل جاز",
-  "סגירת דלת תנור עם מזון":
-    "تسكير باب الفرن وفيه أكل",
-  "הדלקת סיר קיטור":
-    "تشغيل الستيمر",
-  "שטיפת כלים והחזרה למדפי ייבוש":
-    "غسيل أدوات ورجّعها لرفوف التجفيف",
-  "צליית / טיגון מזון על אש או פלאנצ'ה":
-    "شوي/قلي على النار أو على بلاّنچا",
-  "הנחת סירים עם מזון על אש או מקור חום":
-    "حطّ طناجر أكل على النار أو على مصدر حرارة",
-  "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.":
-    "❌ غلط. مسموح بس شغل اللي مش مرتبط بطبخ/تسخين/قلي.",
-
-  // ---------- Q17 ----------
-  "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]":
-    "اختار/ي كل المنتجات اللي ممكن تدخل لثلاجة [P]بارڤه[/P]",
-  "מלפפונים": "خيار",
-  "לורד סנדויץ'": "ساندويش لورد",
-  "שתיה מתוקה": "مشروب حلو",
-  "מעדן קרלו": "ديسرت كارلو",
-  "מעדן ג'לי": "ديسرت جِلّي",
-  "רוטב טריאקי": "صلصة تيرياكي",
-  "ביצים": "بيض",
-  "❌ אסור להכניס מעדנים חלביים!":
-    "❌ ممنوع تدخل ديسرتات حليبية!",
-  "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!":
-    "❌ انتبه/ي شو جوّا الساندويش — هو [H]حليبي[/H]!",
-  "❌ אסור להכניס מוצרי חלב מכל סוג!":
-    "❌ ممنوع تدخل أي نوع منتجات حليب!",
-  "❌ מעדן קרלו הוא חלבי!":
-    "❌ ديسرت كارلو [H]حليبي[/H]!",
-
-  // ---------- Q18 ----------
-  "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?":
-    "مسموح يكون بنفس الثلاجة [H]حليبي[/H] و[P]بارڤه[/P]؟",
-  "לא, אסור בשום אופן.":
-    "لا، ممنوع نهائيًا.",
-  "לא אלא אם כן המשגיח אישר.":
-    "لا، إلا إذا المشرف وافق.",
-  "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.":
-    "على رفوف بجهتين مختلفات، بشرط يكون في مخطط على الثلاجة ونرتّب حسبه.",
-  "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.":
-    "على رفوف بنفس الجهة، بس [P]بارڤه[/P] دايمًا فوق ومسكّر منيح.",
-  "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.":
-    "❌ غلط. مسموح بس إذا في فصل واضح وترتيب ثابت يمنع تقطير/ملامسة."
-  },//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    "לומדת כשרות – צוות מטבח": "تدريب كشروت – طاقم المطبخ",
+    "אנא סובב חזרה לאורך": "لفّ/ي التلفون للوضع الطولي.",
+    "השאלון עובד רק לאורך": "الاختبار بشتغل بس بالطول.",
+    "הדרכת כשרות צוות מטבח": "تدريب كشروت لطاقم المطبخ",
+    "מלא/י פרטים כדי להתחיל.": "عبّ/ي التفاصيل عشان نبلّش.",
+    "שם מלא": "الاسم الكامل",
+    "השם שלך...": "اسمك...",
+    "תעודת זהות / מספר אישי": "رقم الهوية / الرقم الشخصي",
+    "ספרות בלבד...": "أرقام فقط...",
+    "מטבח": "المطبخ",
+    "בחר/י מטבח": "اختار/ي مطبخ",
+    "התחל": "ابدأ/ي",
+    "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?": "وين ممنوع نحط السمك خلال الوجبة عشان يضل دافي؟",
+    "בתרמופורט נפרד.": "بحافظة حرارية (ترموبورت) لحالها.",
+    "על פלטה או משטח חימום.": "على صاج/سطح تسخين.",
+    "בתנור המקורי.": "بفرنّه الأصلي.",
+    "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].": "❌ غلط. مسموح تحطّه بأي مكان ما فيه أكل [B]لحمي[/B].",
+    "בתבניות נפרדות": "بصواني/قوالب منفصلة.",
+    "עם הפרדה של פחמימה": "مع فاصل كربوهيدرات (زي رز/بطاطا) بينهم.",
+    "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.": "❌ ممنوع تحط اللحم والسمك جنب بعض أو بنفس خزانة التسخين.",
+    "מתחו קו בין הסקוטש לכלי המתאים": "مِدّ/ي خط من كل ليفة جلي للأداة المناسبة.",
+    "סקוטש אדום": "ليفة جلي حمراء",
+    "סקוטש צהוב": "ليفة جلي صفراء",
+    "סקוטש כחול": "ليفة جلي زرقاء",
+    "מגש": "صينية",
+    "צלחת": "صحن",
+    "סכין": "سكّين",
+    "❌ התאמה לא נכונה. נסו שוב.": "❌ التطابق غلط. جرّب/ي مرة ثانية.",
+    "האם ניתן להוציא כלים מהמטבח?": "مسموح نطلع أدوات من المطبخ؟",
+    "כן, רק כשהאוכל כשר.": "نعم، بس إذا الأكل كوشير.",
+    "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.": "ممنوع دايمًا، إلا إذا بننقل معه أكل من مطبخ رئيسي لمطبخ فرعي.",
+    "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.": "نعم، بموافقة رابي الوحدة، مع إنه ما في رقابة على الأدوات.",
+    "תשובות א ו-ג נכונות.": "الإجابتين أ و ج صح.",
+    "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.": "❌ غلط. بنطلع أدوات بس لغرض نقل أكل من مطبخ لمطبخ.",
+    "מה צריך לעשות עם הכלים האלה?": "شو لازم نعمل بهاي الأدوات؟",
+    "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.": "عليها علامة أحمر — بنستعملها لأكل [B]لحمي[/B].",
+    "צריך לזרוק לפח וליידע את מנהל המטבח.": "ارميها بالزبالة وبلّغ/ي مدير المطبخ.",
+    "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.": "حسب الملصق هاي أدوات جديدة — لازم تبلّغ/ي مشغياح الكشروت (المشرف).",
+    "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.": "هاي أدوات جديدة، فممكن تنستعمل كمان لـ[H]حليبي[/H] لحد ما تتعلَّم غير هيك.",
+    "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.": "❌ غلط. ممنوع تستعمل أدوات جديدة قبل ما المشرف يغمّسها بالمِكڤيه.",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח": "منتج [H]حليبي[/H] على عربة [P]بارڤه[/P] وكمان فوق أكل [P]بارڤه[/P] مكشوف",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]": "منتج [H]حليبي[/H] على عربة [P]بارڤه[/P]",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]": "منتج [H]حليبي[/H] على عربة [P]بارڤه[/P] وفوق صينية [B]لحمية[/B]",
+    "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]": "صينية [B]لحمية[/B] على عربة [P]بارڤه[/P] وتحت منتجات [H]حليبية[/H]",
+    "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?": "❌ انتبه/ي للون العربة — شو حطّوا عليها بالغلط؟",
+    "מצאת תבנית כזו, מה תעשה איתה?": "لقيت/ي صينية زي هيك — شو بتعمل/ي؟",
+    "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].": "صينية بدون ثقوب ممكن تنستعمل لـ[B]لحمي[/B].",
+    "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.": "ممكن تنستعمل كقاعدة لصواني ثانية بالفرن.",
+    "היא לא מסומנת, יש לפנות למשגיח.": "مش معلَّمة — لازم نتوجّه للمشرف.",
+    "היא לא מסומנת אבל ניתן להשתמש בכל זאת.": "مش معلَّمة بس عادي نستعملها.",
+    "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.": "❌ غلط. إذا الصينية مش معلَّمة — ما بنستعملها وبنراجع المشرف.",
+    "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?": "أي علامات لازم تكون على صينية [B]لحمية[/B]؟",
+    "שכל התחתית תהיה צבועה באדום": "كل القاعدة مطلية أحمر",
+    "3 חורים בפינה": "3 ثقوب بالزاوية",
+    "גם צבע וגם מדבקה": "لون وكمان ملصق",
+    "4 חורים בפינה": "4 ثقوب بالزاوية",
+    "מדבקה עם כיתוב '[B]בשרי[/B]'": "ملصق مكتوب عليه '[B]لحمي[/B]'",
+    "אילו מוצרים צריכים טיפול כשרותי?": "أي منتجات بدها فحص أو معالجة كشروت؟",
+    "קטניות": "بقوليات",
+    "פסטה": "مكرونة",
+    "תבלינים": "بهارات",
+    "תפוחי אדמה": "بطاطا",
+    "גזר": "جزر",
+    "חציל": "باذنجان",
+    "פלפל צהוב": "فلفل أصفر",
+    "פלפל חריף": "فلفل حار",
+    "עגבניה": "بندورة",
+    "קישוא": "كوسا",
+    "❌ ניתן להשתמש ללא טיפול כשרותי": "❌ هذا المنتج ممكن بدون فحص أو معالجة كشروت.",
+    "❌ יש בחירה לא נכונה. נסו שוב.": "❌ في اختيار غلط. جرّب/ي مرة ثانية.",
+    "בחר את הכף [H]החלבית[/H]": "اختار/ي الملعقة [H]الحليبية[/H]",
+    "כף עם חור": "ملعقة فيها ثقب",
+    "כף בלי חור": "ملعقة بدون ثقب",
+    "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.": "❌ هاي مش الملعقة [H]الحليبية[/H]. تذكّر/ي: الملعقة الحليبية فيها ثقب.",
+    "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?": "أي طبخ/تسخين/تبخير/قلي [H]حليبي[/H] مسموح بالمطبخ؟",
+    "אסור חלב ניגר אבל מותר חמאה ושמנת.": "ممنوع حليب سائل، بس مسموح زبدة وقشطة.",
+    "רק בורקסים בצורת משולש.": "بس بوركسات بشكل مثلث.",
+    "רק באישור מנהל המטבח.": "بس بموافقة مدير المطبخ.",
+    "אף תשובה אינה נכונה.": "ولا جواب صح.",
+    "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.": "❌ غلط. ممنوع نطبخ/نسخّن أي نوع أكل [H]حليبي[/H] بالمطبخ.",
+    "לאיפה מותר להכניס אוכל וכלים פרטיים?": "وين مسموح ندخل أكل وأدوات شخصية؟",
+    "למטבח בהתאם לאפיון (בשר לבשרי וכו').": "للمطبخ حسب التصنيف (لحمي للحمي… إلخ).",
+    "רק לחדר האוכל, ובהתאם לאפיון.": "بس لغرفة الأكل، وحسب التصنيف.",
+    "רק אוכל כשר ועם מפית הפרדה מהשולחן.": "بس أكل كوشير ومعه منديل للفصل عن الطاولة.",
+    "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.": "ممنوع ندخل أدوات/أكل شخصي للمطبخ أو لغرفة أكل عسكرية.",
+    "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא": "❌ غلط. ممنوع إدخال أشياء شخصية لمطابخ أو غرف أكل بالجيش.",
+    "התבוננו בתרשים ואז לחצו המשך.": "اتفرّج/ي على الرسم وبعدين اضغط/ي «متابعة».",
+    "גררו כל מוצר למדף הנכון לפי התרשים שראיתם": "اسحب/ي كل منتج للرف الصح حسب الرسم اللي شفت/يه.",
+    "חלב": "حليب",
+    "שתיה": "مشروب",
+    "חומוס": "حمّص",
+    "קוטג'": "جبنة قريش (كوتِج)",
+    "חלב סויה": "حليب صويا",
+    "מילקי": "ميلكي",
+    "גבינה צהובה": "جبنة صفراء",
+    "מעדן סויה": "حلوى/ديسرت صويا",
+    "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.": "❌ الحليب [H]حليبي[/H]. لازم ينحط باليمين.",
+    "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.": "❌ المشروبات الحلوة [P]بارڤه[/P]. لازم تنحط بالشمال.",
+    "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ حمّص/طحينة/سلطات [P]بارڤه[/P]. لازم تنحط بالشمال.",
+    "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.": "❌ جبنة القريش [H]حليبية[/H]. حطّ/يها باليمين.",
+    "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ مع إنه اسمه حليب صويا، الصويا [P]بارڤه[/P]. لازم ينحط بالشمال.",
+    "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.": "❌ الميلكي فيه حليب، يعني هو [H]حليبي[/H]. وبنحطّه باليمين.",
+    "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.": "❌ الجبنة الصفراء فيها حليب، يعني [H]حليبية[/H]. لازم تنحط باليمين.",
+    "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.": "❌ الصويا [P]بارڤه[/P]. لا تخلط/يها مع ديسرت حليبي… حطّ/يها بالشمال.",
+    "איזה גסטרונום שייך ל[P]פרווה[/P]?": "أي جاسترونوم تابع لـ[P]بارڤه[/P]؟",
+    "3 חורים": "3 ثقوب",
+    "2 חורים": "ثقبين",
+    "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).": "❌ هذا مش جاسترونوم [P]بارڤه[/P]. تلميح: دايمًا في فصل بين [B]لحمي[/B] (3 ثقوب) و[H]حليبي[/H] (ثقب واحد).",
+    "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?": "كيف ممكن ندخل أدوات [B]لحمية[/B] لغرفة [P]بارڤه[/P]؟",
+    "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].": "ممنوع ندخل أدوات [B]لحمية[/B] لغرفة [P]بارڤه[/P].",
+    "על עגלה [B]בשרית[/B] בלבד.": "بس على عربة [B]لحمية[/B].",
+    "רק כאשר מניחים על הרצפה.": "بس إذا انحطّت على الأرض.",
+    "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.": "بس على سطح نظيف بعد ما نتأكد الأداة كمان نظيفة وناشفة.",
+    "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.": "❌ غلط. إدخال أداة [B]لحمية[/B] لغرفة [P]بارڤه[/P] مسموح بس على عربة لحمية.",
+    "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי": "أي شغلات مسموح يعملها عامل مطبخ غير يهودي؟",
+    "חיתוך ירקות": "تقطيع خضرة",
+    "הדלקת תנורים, ארונות חימום, מטגנות": "تشغيل أفران/خزانات تسخين/قلايات",
+    "עירבוב סיר על האש": "تحريك طنجرة على النار",
+    "הכנת טחינה": "تحضير طحينة",
+    "הגשת מזון לפס": "تقديم الأكل على خط التقديم",
+    "הדלקת איש וכיריים": "توليع نار وتشغيل جاز",
+    "סגירת דלת תנור עם מזון": "تسكير باب الفرن وفيه أكل",
+    "הדלקת סיר קיטור": "تشغيل الستيمر",
+    "שטיפת כלים והחזרה למדפי ייבוש": "غسيل أدوات ورجّعها لرفوف التجفيف",
+    "צליית / טיגון מזון על אש או פלאנצ'ה": "شوي/قلي على النار أو على بلاّنچا",
+    "הנחת סירים עם מזון על אש או מקור חום": "حطّ طناجر أكل على النار أو على مصدر حرارة",
+    "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.": "❌ غلط. مسموح بس شغل اللي مش مرتبط بطبخ/تسخين/قلي.",
+    "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]": "اختار/ي كل المنتجات اللي ممكن تدخل لثلاجة [P]بارڤه[/P]",
+    "מלפפונים": "خيار",
+    "לורד סנדויץ'": "ساندويش لورد",
+    "שתיה מתוקה": "مشروب حلو",
+    "מעדן קרלו": "ديسرت كارلو",
+    "מעדן ג'לי": "ديسرت جِلّي",
+    "רוטב טריאקי": "صلصة تيرياكي",
+    "ביצים": "بيض",
+    "❌ אסור להכניס מעדנים חלביים!": "❌ ممنوع تدخل ديسرتات حليبية!",
+    "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!": "❌ انتبه/ي شو جوّا الساندويش — هو [H]حليبي[/H]!",
+    "❌ אסור להכניס מוצרי חלב מכל סוג!": "❌ ممنوع تدخل أي نوع منتجات حليب!",
+    "❌ מעדן קרלו הוא חלבי!": "❌ ديسرت كارلو [H]حليبي[/H]!",
+    "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?": "مسموح يكون بنفس الثلاجة [H]حليبي[/H] و[P]بارڤه[/P]؟",
+    "לא, אסור בשום אופן.": "لا، ممنوع نهائيًا.",
+    "לא אלא אם כן המשגיח אישר.": "لا، إلا إذا المشرف وافق.",
+    "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.": "على رفوف بجهتين مختلفات، بشرط يكون في مخطط على الثلاجة ونرتّب حسبه.",
+    "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.": "على رفوف بنفس الجهة، بس [P]بارڤه[/P] دايمًا فوق ومسكّر منيح.",
+    "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.": "❌ غلط. مسموح بس إذا في فصل واضح وترتيب ثابت يمنع تقطير/ملامسة.",
+    "בארון חימום הרגיל כשיש שם בשר / עוף.": "بخزانة التسخين العادية إذا فيها لحم أو دجاج.",
+    "לחץ על התמונה הנכונה, איך צריך להגיש בשר ודגים?": "اكبس/ي على الصورة الصح: كيف نقدّم اللحم والسمك؟",
+    "מצא/י את 5 התקלות בתמונה": "لاقِ/ي 5 أخطاء بالصورة.",
+    "❌ לא נכון. חייבים רק 3 חורים וכיתוב '[B]בשרי[/B]'.": "❌ غلط. صينية [B]لحمية[/B] لازم يكون فيها بالضبط 3 ثقوب وكتابة '[B]لحمي[/B]'.",
+    "תסתכל/י על הסיטואציה ואז ענה/י": "اتفرّج/ي على الحالة وبعدين جاوب/ي.",
+    "שפה": "اللغة",
+    "המשך": "متابعة",
+    "סיום": "انتهى",
+    "שלח שוב": "إرسال مرة ثانية",
+    "הצג תרשים": "اعرض الرسم",
+    "חזרה לשאלה": "رجوع للسؤال",
+    "יש ללחוץ רק על תקלות וודאיות, יש כמה תקלות דומות.": "اكبس/ي بس على أخطاء واضحة. في أخطاء بتشبه بعض.",
+    "תמונה לשאלה": "صورة للسؤال",
+    "אפשרות א": "اختيار أ",
+    "אפשרות ב": "اختيار ب",
+    "תמונת תקלה": "صورة الأخطاء",
+    "תרשים הסבר": "رسم توضيحي",
+    "מדפים": "رفوف",
+    "מוצר": "منتج",
+    "טוען מטבחים…": "بنحمّل المطابخ…",
+    "בדוק את חיבור האינטרנט שלך, ונסה שוב": "افحص/ي الإنترنت وجرّب/ي مرة ثانية.",
+    "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.": "ما قدرنا نحمّل قائمة المطابخ. توجّه/ي للمسؤول.",
+    "לא נמצאו מטבחים מורשים לקישור זה. פנה לרב היחידה.": "ما لقينا مطابخ مسموحة لهذا الرابط. توجّه/ي لرابي الوحدة.",
+    "לא נכון ❌ נסו שוב.": "غلط ❌ جرّب/ي مرة ثانية.",
+    "את התקלה הזו כבר מצאת ✅": "لقيت/ي هذا الخطأ من قبل ✅",
+    "❌ לא נכון. נסו שוב.": "❌ غلط. جرّب/ي مرة ثانية.",
+    "נכון ✅": "صح ✅",
+    "❌ לפחות אחת מהבחירות אינה נכונה.": "❌ في اختيار واحد على الأقل غلط.",
+    "❌ המוצר שסומן אינו נכון. נסו שוב.": "❌ المنتج اللي اخترت/يه غلط. جرّب/ي مرة ثانية.",
+    "❌ יש כמה מוצרים שנבחרו לא נכון. הבחירות השגויות סומנו. תקנו ונסו שוב.": "❌ في أكثر من منتج غلط. الاختيارات الغلط معلَّمة. صحّح/ي وجرّب/ي مرة ثانية.",
+    "לא הגענו לתמונה בצד השני. נסו לשחרר את הקו מעט קרוב יותר לתמונה.": "الخط ما وصل للصورة بالجهة الثانية. اترك/يه أقرب للصورة.",
+    "יש למתוח את הקו לתמונה שבצד השני.": "مدّ/ي الخط لصورة بالجهة الثانية.",
+    "התמונה הזו כבר הותאמה. נסו יעד אחר.": "هاي الصورة متطابقة من قبل. جرّب/ي صورة ثانية.",
+    "התאמה לא נכונה. נסו שוב.": "التطابق غلط. جرّب/ي مرة ثانية.",
+    "נא למלא שם.": "اكتب/ي الاسم.",
+    "נא למלא ת.ז/מספר אישי.": "اكتب/ي رقم الهوية أو الرقم الشخصي.",
+    "נא לבחור מטבח.": "اختار/ي مطبخ.",
+    "נא להזין שם מלא (לפחות שתי מילים).": "اكتب/ي الاسم الكامل، كلمتين على الأقل.",
+    "ת.ז/מ.א חייב להיות 9 או 7 ספרות (ספרות בלבד).": "الرقم لازم يكون 9 أو 7 أرقام فقط.",
+    "תעודת הזהות לא תקינה!": "رقم الهوية غير صحيح.",
+    "טוען תמונות…": "بنحمّل الصور…",
+    "התוצאה כבר נשלחה בניסיון הזה ✅": "النتيجة انبعتت من قبل ✅",
+    "שולח תוצאה…": "بنرسل النتيجة…",
+    "השליחה כבר התקבלה במערכת ✅": "النتيجة وصلت للنظام من قبل ✅",
+    "התוצאה נשלחה בהצלחה ✅": "النتيجة انبعتت بنجاح ✅",
+    "שליחה נכשלה ❌ ": "الإرسال فشل ❌ ",
+    "(בדוק הרשאות Deploy / Anyone)": "(افحص صلاحيات النشر)",
+    "נמצאה התקדמות קודמת": "لقينا تقدّم محفوظ",
+    "להמשיך מהמקום שעצרתי": "كمّل/ي من وين وقفت",
+    "להתחיל מחדש": "ابدأ/ي من جديد",
+    "הועתק ✅": "تم النسخ ✅",
+    "כיול: כבוי": "المعايرة: مطفّية",
+    "בטל נקודה": "تراجع عن النقطة",
+    "נקה נקודות (רביעייה)": "امسح النقاط الحالية",
+    "נקה הכל": "امسح الكل",
+    "העתק מרובע אחרון": "انسخ آخر مربع",
+    "העתק ALL BOXES": "انسخ كل المربعات",
+    "כיול פעיל רק לשאלות hotspot. כל 4 לחיצות = מרובע. Toggle: Ctrl+K": "المعايرة بس لأسئلة الصورة. كل 4 كبسات بتعمل مربع. Ctrl+K",
+  },
   am: {
-    "לומדת כשרות – צוות מטבח":
-    "የኮሸር ስልጠና – የወጥ ቤት ሰራተኞች",
-
-  "אנא סובב חזרה לאורך":
-    "እባክዎ ስክሪኑን ወደ ቁመት (Portrait) ይመልሱ",
-
-  "השאלון עובד רק לאורך":
-    "ይህ ጥያቄ-ወረቀት በቁመት አቀማመጥ ብቻ ይሰራል",
-
-  // new (without !!) + keep old just in case
-  "הדרכת כשרות צוות מטבח":
-    "የኮሸር ስልጠና ለወጥ ቤት ሰራተኞች",
-  "הדרכת כשרות צוות מטבח!!":
-    "የኮሸር ስልጠና ለወጥ ቤት ሰራተኞች",
-
-  "מלא/י פרטים כדי להתחיל.":
-    "ለመጀመር መረጃዎትን ይሙሉ።",
-
-  "שם מלא":
-    "ሙሉ ስም",
-  "השם שלך...":
-    "ስምዎ...",
-
-  "תעודת זהות / מספר אישי":
-    "መታወቂያ ቁጥር / የግል ቁጥር",
-  "ספרות בלבד...":
-    "ቁጥሮች ብቻ...",
-
-  "מטבח":
-    "ወጥ ቤት",
-  "בחר/י מטבח":
-    "ወጥ ቤት ይምረጡ",
-
-  "התחל":
-    "ጀምር",
-
-  // ---------- Q1 ----------
-  "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?":
-    "በምግብ ጊዜ ዓሣን ሙቀቱን ለመጠበቅ ማንቀመጥ የተከለከለበት የት ነው?",
-  "בתרמופורט נפרד.":
-    "በተለየ ቴርሞፖርት ውስጥ።",
-  "על פלטה או משטח חימום.":
-    "በሙቀት መስጫ (ፕላታ) ወይም በማሞቂያ መሬት ላይ።",
-  "בתנור המקורי.":
-    "በዋናው ምድጃ ውስጥ።",
-  "בארון חימום הרגיל כשיש שם [B]בשר[/B] / [B]עוף[/B].":
-    "በመደበኛው የማሞቂያ ካቢኔ ውስጥ — በውስጡ [B]ሥጋ[/B] ወይም [B]ዶሮ[/B] ካለ።",
-  "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].":
-    "❌ ትክክል አይደለም። [B]የሥጋ[/B] ምግብ ባልነበረበት ቦታ ሁሉ ማስቀመጥ ይቻላል።",
-
-  // ---------- Q2 ----------
-  "לחץ על התמונה הנכונה, איך צריך להגיש [B]בשר[/B] ודגים?":
-    "ትክክለኛውን ምስል ይጫኑ፦ [B]ሥጋ[/B] እና ዓሣ እንዴት መቀርብ አለባቸው?",
-  "בתבניות נפרדות":
-    "በተለያዩ ትሬዎች/ታቦቶች ላይ።",
-  "עם הפרדה של פחמימה":
-    "በመካከላቸው ካርቦሃይድሬት እንዲሆን (መለያ)።",
-  "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.":
-    "❌ ስጋን እና ዓሣን አብሮ አጠገብ ወይም በአንድ የማሞቂያ ካቢኔ ውስጥ ማስቀመጥ ክልክል ነው።",
-
-  // ---------- Q3 ----------
-  "מתחו קו בין הסקוטש לכלי המתאים":
-    "በስኮች እና በሚስማማው የወጥ ቤት ዕቃ መካከል መስመር አስምሩ።",
-  "סקוטש אדום": "ቀይ ሊፑችካ",
-  "סקוטש צהוב": "ቢጫ ሊፑችካ",
-  "סקוטש כחול": "ሰማያዊ ሊፑችካ",
-  "מגש": "ትሬ",
-  "צלחת": "ሳህን",
-  "סכין": "ቢላ",
-  "❌ התאמה לא נכונה. נסו שוב.":
-    "❌ ትክክል አይደለም። እንደገና ይሞክሩ።",
-
-  // ---------- Q4 ----------
-  "האם ניתן להוציא כלים מהמטבח?":
-    "ከወጥ ቤት ውስጥ ዕቃዎችን ማውጣት ይፈቀዳል?",
-  "כן, רק כשהאוכל כשר.":
-    "አዎ — ምግቡ ኮሸር ሲሆን ብቻ።",
-  "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.":
-    "አይ — ሁልጊዜ ክልክል ነው፣ ነገር ግን ምግብን ከዋና ወጥ ቤት ወደ ሁለተኛ ወጥ ቤት ለማጓጓዝ ብቻ ይፈቀዳል።",
-  "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.":
-    "አዎ — በክፍሉ ራብ ፈቃድ እንኳን ቢሆን (በዕቃዎች ላይ ቁጥጥር የለም)።",
-  "תשובות א ו-ג נכונות.":
-    "አ እና ገ መልሶች ትክክል ናቸው።",
-  "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.":
-    "❌ ትክክል አይደለም። ዕቃ ማውጣት የሚፈቀደው ምግብን ከአንድ ወጥ ቤት ወደ ሌላ ለማጓጓዝ ብቻ ነው።",
-
-  // ---------- Q5 ----------
-  "מה צריך לעשות עם הכלים האלה?":
-    "ከእነዚህ ዕቃዎች ጋር ምን ማድረግ አለብዎት?",
-  "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.":
-    "በቀይ ተለይተዋል — ለ[B]የሥጋ[/B] ምግብ ብቻ ይጠቀሙባቸው።",
-  "צריך לזרוק לפח וליידע את מנהל המטבח.":
-    "ወደ ቆሻሻ ይጣሉ እና የወጥ ቤት አስተዳዳሪን ያሳውቁ።",
-  "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.":
-    "በምልክቱ መሠረት አዲስ ዕቃ ነው — የኮሸር ተቆጣጣሪውን ያሳውቁ።",
-  "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.":
-    "አዲስ ዕቃ ነው፣ ስለዚህ [H]የወተት[/H] እስኪለይ ድረስ መጠቀም ይቻላል።",
-  "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.":
-    "❌ ትክክል አይደለም። አዲስ ዕቃ ተቆጣጣሪው በሚክቫ እስካስጠመቀው ድረስ መጠቀም አይፈቀድም።",
-
-  // ---------- Q6 ----------
-  "לחץ/י על מקום התקלות בתמונה (עד 5 לחיצות)":
-    "በምስሉ ላይ የተሳሳቱትን ቦታዎች ይጫኑ (እስከ 5 ጊዜ)።",
-
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח":
-    "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ፣ እና ከፍት ያለ [P]ፓርቬ[/P] ምግብ በላይ",
-
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]":
-    "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ",
-
-  "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]":
-    "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ፣ እና ከ[B]የሥጋ[/B] ትሬ በላይ",
-
-  "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]":
-    "[B]የሥጋ[/B] ትሬ በ[P]ፓርቬ[/P] ጋሪ ላይ፣ እና ከ[H]የወተት[/H] ምርቶች በታች",
-
-  "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?":
-    "❌ የጋሪውን ቀለም ይመልከቱ — በስህተት ምን ተቀመጠበት?",
-
-  // ---------- Q7 ----------
-  "מצאת תבנית כזו, מה תעשה איתה?":
-    "እንደዚህ ያለ ትሬ አግኝተዋል — ምን ታደርጋላችሁ?",
-  "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].":
-    "ቀዳዳ የሌለው ትሬ ለ[B]የሥጋ[/B] ሊጠቀም ይችላል።",
-  "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.":
-    "በምድጃ ውስጥ ለሌሎች ትሬዎች እንደ መሠረት ሊጠቀም ይችላል።",
-  "היא לא מסומנת, יש לפנות למשגיח.":
-    "ምልክት የለበትም — ተቆጣጣሪውን ያነጋግሩ።",
-  "היא לא מסומנת אבל ניתן להשתמש בכל זאת.":
-    "ምልክት የለበትም ግን ማጠቀም ይቻላል።",
-  "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.":
-    "❌ ትክክል አይደለም። ትሬ ምልክት ካልነበረው — አትጠቀሙ እና ተቆጣጣሪውን ያነጋግሩ።",
-
-  // ---------- Q8 ----------
-  "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?":
-    "ለ[B]የሥጋ[/B] ትሬ የሚያስፈልጉ ምልክቶች ምን ናቸው?",
-  "שכל התחתית תהיה צבועה באדום":
-    "ታችኛው ክፍል ሙሉ በቀይ ቀለም የተቀባ",
-  "3 חורים בפינה":
-    "በማዕዘን 3 ቀዳዳ",
-  "גם צבע וגם מדבקה":
-    "ሁለቱም: ቀለም እና ስቲከር",
-  "4 חורים בפינה":
-    "በማዕዘን 4 ቀዳዳ",
-  "מדבקה עם כיתוב '[B]בשרי[/B]'":
-    "«[B]የሥጋ[/B]» የሚል ጽሑፍ ያለው ስቲከር",
-  "❌ לא נכון. חייבים גם חורים וגם כיתוב '[B]בשרי[/B]'.":
-    "❌ ትክክል አይደለም። ሁለቱም ያስፈልጋሉ: ቀዳዳ እና «[B]የሥጋ[/B]» ጽሑፍ።",
-
-  // ---------- Q9 ----------
-  "אילו מוצרים צריכים טיפול כשרותי?":
-    "የኮሸር ምርመራ/ማረጋገጫ የሚያስፈልጋቸው ምርቶች የትኞቹ ናቸው?",
-  "קטניות": "ጥራጥሬዎች",
-  "פסטה": "ፓስታ",
-  "תבלינים": "ቅመሞች",
-  "תפוחי אדמה": "ድንች",
-  "גזר": "ካሮት",
-  "חציל": "ኤግፕላንት (ባድምጃን)",
-  "פלפל צהוב": "ቢጫ በርበሬ",
-  "פלפל חריף": "ትኩስ በርበሬ",
-  "עגבניה": "ቲማቲም",
-  "קישוא": "ዙኪኒ",
-  "❌ ניתן להשתמש ללא טיפול כשרותי":
-    "❌ ያለ ኮሸር ምርመራ መጠቀም ይቻላል",
-  "❌ יש בחירה לא נכונה. נסו שוב.":
-    "❌ አንዳንድ ምርጫ ትክክል አይደለም። እንደገና ይሞክሩ።",
-
-  // ---------- Q10 ----------
-  "בחר את הכף [H]החלבית[/H]":
-    "[H]የወተት[/H] ማንኪያውን ይምረጡ",
-  "כף עם חור":
-    "ቀዳዳ ያለው ማንኪያ",
-  "כף בלי חור":
-    "ቀዳዳ የሌለው ማንኪያ",
-  "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.":
-    "❌ ይህ [H]የወተት[/H] ማንኪያ አይደለም። ልዩነቱን ይመልከቱ: ቀዳዳ ያለ / ቀዳዳ የሌለ።",
-
-  // ---------- Q11 ----------
-  "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?":
-    "በወጥ ቤት ውስጥ [H]የወተት[/H] መብሰል/ማሞቅ/እንፋሎት/መጥበስ የትኛው ይፈቀዳል?",
-  "אסור חלב ניגר אבל מותר חמאה ושמנת.":
-    "ፈሳሽ ወተት አይፈቀድም፣ ግን ቅቤ እና ክሬም ይፈቀዳሉ።",
-  "רק בורקסים בצורת משולש.":
-    "ትሪያንግል ቅርጽ ያላቸው ቡሬካስ ብቻ።",
-  "רק באישור מנהל המטבח.":
-    "በወጥ ቤት አስተዳዳሪ ፈቃድ ብቻ።",
-  "אף תשובה אינה נכונה.":
-    "ምንም መልስ ትክክል አይደለም።",
-  "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.":
-    "❌ ትክክል አይደለም። በወጥ ቤት ውስጥ ማንኛውንም [H]የወተት[/H] ምግብ መብሰል ወይም ማሞቅ ክልክል ነው።",
-
-  // ---------- Q12 ----------
-  "לאיפה מותר להכניס אוכל וכלים פרטיים?":
-    "የግል ምግብ እና የግል ዕቃዎች የት መግባት ይፈቀዳል?",
-  "למטבח בהתאם לאפיון (בשר לבשרי וכו').":
-    "ወደ ወጥ ቤት — እንደ መለያው (ሥጋ ለሥጋ ወዘተ)።",
-  "רק לחדר האוכל, ובהתאם לאפיון.":
-    "ለመመገቢያ ክፍል ብቻ — እና እንደ መለያው።",
-  "רק אוכל כשר ועם מפית הפרדה מהשולחן.":
-    "ኮሸር ምግብ ብቻ እና ከጠረጴዛ ለመለየት በናፕኪን ጋር።",
-  "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.":
-    "ወደ ወጥ ቤት ወይም ወታደራዊ መመገቢያ ክፍል የግል ምግብ/ዕቃ ማምጣት ክልክል ነው።",
-  "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא":
-    "❌ ትክክል አይደለም። በሠራዊት ውስጥ የግል ነገሮችን ወደ ወጥ ቤት ወይም መመገቢያ ክፍል ማምጣት ክልክል ነው።",
-
-  // ---------- Q13 ----------
-  "התבוננו בתרשים ואז לחצו המשך.":
-    "ምስሉን ይመልከቱ እና ከዚያ «ቀጥል» ይጫኑ።",
-  "גררו כל מוצר למדף הנכון לפי התרשים שראיתם":
-    "እያንዳንዱን ምርት በሰላሳ መሰረት ወደ ትክክለኛው መደርደሪያ ይጎትቱ።",
-
-  "חלב": "ወተት",
-  "שתיה": "መጠጥ",
-  "חומוס": "ሁሙስ",
-  "קוטג'": "ኮታጅ (cottage cheese)",
-  "חלב סויה": "የሶያ ወተት",
-  "מילקי": "ሚልኪ (የወተት ዲሰርት)",
-  "גבינה צהובה": "ቢጫ አይብ",
-  "מעדן סויה": "የሶያ ዲሰርት",
-
-  "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.":
-    "❌ ወተት [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
-  "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.":
-    "❌ ጣፋጭ መጠጦች [P]ፓርቬ[/P] ናቸው። በግራ ይያዙት።",
-  "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ ሁሙስ/ታሂኒ/ሰላጣ [P]ፓርቬ[/P] ናቸው። በግራ ይያዙት።",
-  "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.":
-    "❌ ኮታጅ [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
-  "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.":
-    "❌ የሶያ ወተት ቢባልም፣ ሶያ [P]ፓርቬ[/P] ነው። በግራ ይያዙት።",
-  "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.":
-    "❌ ሚልኪ ወተት ያለበት ዲሰርት ነው፣ ስለዚህ [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
-  "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.":
-    "❌ ቢጫ አይብ ወተት ይዟል፣ ስለዚህ [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
-  "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.":
-    "❌ ሶያ [P]ፓርቬ[/P] ነው። ከየወተት ዲሰርት ጋር አትቀላቀሉ — በግራ ይያዙት።",
-
-  // ---------- Q14 ----------
-  "איזה גסטרונום שייך ל[P]פרווה[/P]?":
-    "የ[P]ፓርቬ[/P] የትኛው ጋስትሮኖርም ነው?",
-  "3 חורים": "3 ቀዳዳ",
-  "2 חורים": "2 ቀዳዳ",
-  "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).":
-    "❌ ይህ የ[P]ፓርቬ[/P] ጋስትሮኖርም አይደለም። ፍንጭ: [B]የሥጋ[/B] (3 ቀዳዳ) እና [H]የወተት[/H] (1 ቀዳዳ) መካከል ሁልጊዜ መለያየት አለ።",
-
-  // ---------- Q15 ----------
-  "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?":
-    "[B]የሥጋ[/B] ዕቃዎችን ወደ [P]ፓርቬ[/P] ክፍል እንዴት ማስገባት ይቻላል?",
-  "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].":
-    "[B]የሥጋ[/B] ዕቃ ወደ [P]ፓርቬ[/P] ክፍል ማስገባት ክልክል ነው።",
-  "על עגלה [B]בשרית[/B] בלבד.":
-    "በ[B]የሥጋ[/B] ጋሪ ላይ ብቻ።",
-  "רק כאשר מניחים על הרצפה.":
-    "በመሬት ላይ ሲቀመጥ ብቻ።",
-  "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.":
-    "በንጹህ መሬት ላይ ብቻ — እቃውም ንጹህ እና ደረቅ መሆኑን ካረጋገጡ በኋላ።",
-  "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.":
-    "❌ ትክክል አይደለም። [B]የሥጋ[/B] ዕቃ ወደ [P]ፓርቬ[/P] ክፍል ማስገባት የሚፈቀደው በ[B]የሥጋ[/B] ጋሪ ላይ ብቻ ነው።",
-
-  // ---------- Q16 ----------
-  "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי":
-    "አይሁዳዊ ያልሆነ የወጥ ቤት ሰራተኛ የትኞቹን ስራዎች ሊሰራ ይችላል?",
-  "חיתוך ירקות":
-    "አትክልቶችን መቁረጥ",
-  "הדלקת תנורים, ארונות חימום, מטגנות":
-    "ምድጃ/የማሞቂያ ካቢኔ/ፍራይር መክፈት",
-  "עירבוב סיר על האש":
-    "ድስትን በእሳት ላይ ማነሳሳት",
-  "הכנת טחינה":
-    "ታሂኒ ማዘጋጀት",
-  "הגשת מזון לפס":
-    "ምግብን ወደ መካፈል መስመር ማቅረብ",
-  "הדלקת איש וכיריים":
-    "እሳት እና ምድጃ ማብራት",
-  "סגירת דלת תנור עם מזון":
-    "ምግብ ያለበትን የምድጃ በር መዝጋት",
-  "הדלקת סיר קיטור":
-    "ስቲመር ማብራት",
-  "שטיפת כלים והחזרה למדפי ייבוש":
-    "ዕቃዎችን ማጠብ እና ወደ ማድረቂያ መደርደሪያ መመለስ",
-  "צליית / טיגון מזון על אש או פלאנצ'ה":
-    "በእሳት ወይም በፕላንቻ ላይ መጥበስ/መጥለስ",
-  "הנחת סירים עם מזון על אש או מקור חום":
-    "ምግብ ያለባቸውን ድስቶች በእሳት ወይም በሙቀት ምንጭ ላይ ማስቀመጥ",
-  "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.":
-    "❌ ትክክል አይደለም። ከመብሰል/ማሞቅ/መጥበስ ጋር ያልተገናኙ ስራዎች ብቻ ይፈቀዳሉ።",
-
-  // ---------- Q17 ----------
-  "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]":
-    "በ[P]ፓርቬ[/P] ማቀዝቀዣ ውስጥ ሊገቡ የሚችሉትን ምርቶች ሁሉ ይምረጡ",
-  "מלפפונים": "ኩክምበር (መላፍ)",
-  "לורד סנדויץ'": "«ሎርድ» ሳንድዊች",
-  "שתיה מתוקה": "ጣፋጭ መጠጥ",
-  "מעדן קרלו": "«ካርሎ» ዲሰርት",
-  "מעדן ג'לי": "ጀሊ ዲሰርት",
-  "רוטב טריאקי": "ቴሪያኪ ሶስ",
-  "ביצים": "እንቁላል",
-  "❌ אסור להכניס מעדנים חלביים!":
-    "❌ የወተት ዲሰርቶች ማስገባት ክልክል ነው!",
-  "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!":
-    "❌ በሳንድዊች ውስጥ ያለውን ይመልከቱ — እሱ [H]የወተት[/H] ነው!",
-  "❌ אסור להכניס מוצרי חלב מכל סוג!":
-    "❌ ማንኛውንም የወተት ምርት ማስገባት አይፈቀድም!",
-  "❌ מעדן קרלו הוא חלבי!":
-    "❌ «ካርሎ» ዲሰርት [H]የወተት[/H] ነው!",
-
-  // ---------- Q18 ----------
-  "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?":
-    "በአንድ ማቀዝቀዣ ውስጥ [H]የወተት[/H] እና [P]ፓርቬ[/P] አብሮ መኖር ይፈቀዳል?",
-  "לא, אסור בשום אופן.":
-    "አይ — በፍጹም አይፈቀድም።",
-  "לא אלא אם כן המשגיח אישר.":
-    "አይ — ተቆጣጣሪው ካልፈቀደ በስተቀር።",
-  "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.":
-    "በተለያዩ ጎኖች ላይ ባሉ መደርደሪያዎች ላይ — በማቀዝቀዣው ላይ ንድፍ ካለ እና መሰረት እንዲደረግበት።",
-  "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.":
-    "በአንድ ጎን ላይ ባሉ መደርደሪያዎች ላይ — [P]ፓርቬ[/P] ሁልጊዜ በላይ እና በጥብቅ ተዘግቶ መሆን አለበት።",
-  "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.":
-    "❌ ትክክል አይደለም። በግልጽ መለያየት እና መነካካት/መንጠባጠብ የማይፈጠር ቋሚ አቀማመጥ ካለ ብቻ ይፈቀዳል።"
+    "לומדת כשרות – צוות מטבח": "የካሽሩት ስልጠና – የወጥ ቤት ሰራተኞች",
+    "אנא סובב חזרה לאורך": "ስልኩን በቁመት ይያዙ።",
+    "השאלון עובד רק לאורך": "ይህ ፈተና በቁመት ብቻ ይሰራል።",
+    "הדרכת כשרות צוות מטבח": "የካሽሩት ስልጠና ለወጥ ቤት ሰራተኞች",
+    "מלא/י פרטים כדי להתחיל.": "ለመጀመር መረጃዎን ያስገቡ።",
+    "שם מלא": "ሙሉ ስም",
+    "השם שלך...": "ስምዎ...",
+    "תעודת זהות / מספר אישי": "መታወቂያ / የግል ቁጥር",
+    "ספרות בלבד...": "ቁጥሮች ብቻ...",
+    "מטבח": "ወጥ ቤት",
+    "בחר/י מטבח": "ወጥ ቤት ይምረጡ",
+    "התחל": "ጀምር",
+    "איפה אסור לאחסן דגים בזמן הארוחה כדי לשמור על חומם?": "በምግብ ጊዜ ዓሣን ሙቀቱን ለመጠበቅ ማንቀመጥ የተከለከለበት የት ነው?",
+    "בתרמופורט נפרד.": "በተለየ ቴርሞፖርት ውስጥ።",
+    "על פלטה או משטח חימום.": "በሙቀት መስጫ (ፕላታ) ወይም በማሞቂያ መሬት ላይ።",
+    "בתנור המקורי.": "በዋናው ምድጃ ውስጥ።",
+    "❌ לא נכון. ניתן לאחסן בכל מקום שאין בו מזון [B]בשרי[/B].": "❌ ትክክል አይደለም። [B]የሥጋ[/B] ምግብ ባልነበረበት ቦታ ሁሉ ማስቀመጥ ይቻላል።",
+    "בתבניות נפרדות": "በተለያዩ ትሬዎች/ታቦቶች ላይ።",
+    "עם הפרדה של פחמימה": "በመካከላቸው ካርቦሃይድሬት እንዲሆን (መለያ)።",
+    "❌ אסור לשים בשר ודגים אחד ליד השני או באותו ארון חימום.": "❌ ስጋን እና ዓሣን አብሮ አጠገብ ወይም በአንድ የማሞቂያ ካቢኔ ውስጥ ማስቀመጥ ክልክል ነው።",
+    "מתחו קו בין הסקוטש לכלי המתאים": "ከእያንዳንዱ የማጠቢያ ስፖንጅ ወደ ትክክለኛው ዕቃ መስመር ይሳሉ።",
+    "סקוטש אדום": "ቀይ የማጠቢያ ስፖንጅ",
+    "סקוטש צהוב": "ቢጫ የማጠቢያ ስፖንጅ",
+    "סקוטש כחול": "ሰማያዊ የማጠቢያ ስፖንጅ",
+    "מגש": "ትሬ",
+    "צלחת": "ሳህን",
+    "סכין": "ቢላ",
+    "❌ התאמה לא נכונה. נסו שוב.": "❌ ትክክል አይደለም። እንደገና ይሞክሩ።",
+    "האם ניתן להוציא כלים מהמטבח?": "ከወጥ ቤት ውስጥ ዕቃዎችን ማውጣት ይፈቀዳል?",
+    "כן, רק כשהאוכל כשר.": "አዎ — ምግቡ ኮሸር ሲሆን ብቻ።",
+    "אסור תמיד, אלא אם כן מעבירים איתו מזון ממטבח ראשי למטבח משנה.": "አይ — ሁልጊዜ ክልክል ነው፣ ነገር ግን ምግብን ከዋና ወጥ ቤት ወደ ሁለተኛ ወጥ ቤት ለማጓጓዝ ብቻ ይፈቀዳል።",
+    "כן, באישור רב היחידה למרות שאין פיקוח על הכלים.": "አዎ — በክፍሉ ራብ ፈቃድ እንኳን ቢሆን (በዕቃዎች ላይ ቁጥጥር የለም)።",
+    "תשובות א ו-ג נכונות.": "አ እና ገ መልሶች ትክክል ናቸው።",
+    "❌ לא נכון. ניתן להוציא כלים רק לצורך הובלת מזון ממטבח אחד למשנהו.": "❌ ትክክል አይደለም። ዕቃ ማውጣት የሚፈቀደው ምግብን ከአንድ ወጥ ቤት ወደ ሌላ ለማጓጓዝ ብቻ ነው።",
+    "מה צריך לעשות עם הכלים האלה?": "ከእነዚህ ዕቃዎች ጋር ምን ማድረግ አለብዎት?",
+    "הם מסומנים באדום, יש להשתמש בהם למזון בשרי.": "በቀይ ተለይተዋል — ለ[B]የሥጋ[/B] ምግብ ብቻ ይጠቀሙባቸው።",
+    "צריך לזרוק לפח וליידע את מנהל המטבח.": "ወደ ቆሻሻ ይጣሉ እና የወጥ ቤት አስተዳዳሪን ያሳውቁ።",
+    "לפי המדבקה והתווית אלו כלים חדשים, יש ליידע את המשגיח.": "በምልክቱ መሠረት አዲስ ዕቃ ነው — የኮሸር ተቆጣጣሪውን ያሳውቁ።",
+    "אלו כלים חדשים, לכן ניתן להשתמש גם לחלבי עד שיסומן אחרת.": "አዲስ ዕቃ ነው፣ ስለዚህ [H]የወተት[/H] እስኪለይ ድረስ መጠቀም ይቻላል።",
+    "❌ לא נכון. אסור להשתמש בכלים חדשים עד שמשגיח הכשרות יטבול אותם במקווה.": "❌ ትክክል አይደለም። አዲስ ዕቃ ተቆጣጣሪው በሚክቫ እስካስጠመቀው ድረስ መጠቀም አይፈቀድም።",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] וגם מעל אוכל [P]פרווה[/P] פתוח": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ፣ እና ከፍት ያለ [P]ፓርቬ[/P] ምግብ በላይ",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P]": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ",
+    "מוצר [H]חלבי[/H] על עגלה [P]פרווה[/P] ומעל תבנית [B]בשרית[/B]": "[H]የወተት[/H] ምርት በ[P]ፓርቬ[/P] ጋሪ ላይ፣ እና ከ[B]የሥጋ[/B] ትሬ በላይ",
+    "תבנית [B]בשרית[/B] על עגלה [P]פרווה[/P] ומתחת למוצרים [H]חלביים[/H]": "[B]የሥጋ[/B] ትሬ በ[P]ፓርቬ[/P] ጋሪ ላይ፣ እና ከ[H]የወተት[/H] ምርቶች በታች",
+    "❌ שימו לב לצבע של העגלה, מה בטעות שמו עליה?": "❌ የጋሪውን ቀለም ይመልከቱ — በስህተት ምን ተቀመጠበት?",
+    "מצאת תבנית כזו, מה תעשה איתה?": "እንደዚህ ያለ ትሬ አግኝተዋል — ምን ታደርጋላችሁ?",
+    "תבנית בלי חורים יכולה לשמש ל-[B]בשרי[/B].": "ቀዳዳ የሌለው ትሬ ለ[B]የሥጋ[/B] ሊጠቀም ይችላል።",
+    "ניתן להשתמש בה כבסיס לתבניות אחרות בתנור.": "በምድጃ ውስጥ ለሌሎች ትሬዎች እንደ መሠረት ሊጠቀም ይችላል።",
+    "היא לא מסומנת, יש לפנות למשגיח.": "ምልክት የለበትም — ተቆጣጣሪውን ያነጋግሩ።",
+    "היא לא מסומנת אבל ניתן להשתמש בכל זאת.": "ምልክት የለበትም ግን ማጠቀም ይቻላል።",
+    "❌ לא נכון. כשהתבנית לא מסומנת – לא משתמשים ופונים למשגיח.": "❌ ትክክል አይደለም። ትሬ ምልክት ካልነበረው — አትጠቀሙ እና ተቆጣጣሪውን ያነጋግሩ።",
+    "אילו סימונים חייבים להיות לתבנית [B]בשרית[/B]?": "ለ[B]የሥጋ[/B] ትሬ የሚያስፈልጉ ምልክቶች ምን ናቸው?",
+    "שכל התחתית תהיה צבועה באדום": "ታችኛው ክፍል ሙሉ በቀይ ቀለም የተቀባ",
+    "3 חורים בפינה": "በማዕዘን 3 ቀዳዳ",
+    "גם צבע וגם מדבקה": "ሁለቱም: ቀለም እና ስቲከር",
+    "4 חורים בפינה": "በማዕዘን 4 ቀዳዳ",
+    "מדבקה עם כיתוב '[B]בשרי[/B]'": "«[B]የሥጋ[/B]» የሚል ጽሑፍ ያለው ስቲከር",
+    "אילו מוצרים צריכים טיפול כשרותי?": "የትኞቹ ምርቶች የካሽሩት ምርመራ ወይም ዝግጅት ይፈልጋሉ?",
+    "קטניות": "ጥራጥሬዎች",
+    "פסטה": "ፓስታ",
+    "תבלינים": "ቅመሞች",
+    "תפוחי אדמה": "ድንች",
+    "גזר": "ካሮት",
+    "חציל": "ኤግፕላንት (ባድምጃን)",
+    "פלפל צהוב": "ቢጫ በርበሬ",
+    "פלפל חריף": "ትኩስ በርበሬ",
+    "עגבניה": "ቲማቲም",
+    "קישוא": "ዙኪኒ",
+    "❌ ניתן להשתמש ללא טיפול כשרותי": "❌ ይህን ያለ የካሽሩት ምርመራ ወይም ዝግጅት መጠቀም ይቻላል።",
+    "❌ יש בחירה לא נכונה. נסו שוב.": "❌ አንዳንድ ምርጫ ትክክል አይደለም። እንደገና ይሞክሩ።",
+    "בחר את הכף [H]החלבית[/H]": "[H]የወተት[/H] ማንኪያውን ይምረጡ",
+    "כף עם חור": "ቀዳዳ ያለው ማንኪያ",
+    "כף בלי חור": "ቀዳዳ የሌለው ማንኪያ",
+    "❌ זו לא הכף [H]החלבית[/H]. שימו לב לאות הראשונה של המילים: חור / בלי חור.": "❌ ይህ [H]የወተት[/H] ማንኪያ አይደለም። ያስታውሱ፤ የወተት ማንኪያው ቀዳዳ አለው።",
+    "איזה בישול/חימום/אידוי/טיגון חלבי מותר במטבח?": "በወጥ ቤት ውስጥ [H]የወተት[/H] መብሰል/ማሞቅ/እንፋሎት/መጥበስ የትኛው ይፈቀዳል?",
+    "אסור חלב ניגר אבל מותר חמאה ושמנת.": "ፈሳሽ ወተት አይፈቀድም፣ ግን ቅቤ እና ክሬም ይፈቀዳሉ።",
+    "רק בורקסים בצורת משולש.": "ትሪያንግል ቅርጽ ያላቸው ቡሬካስ ብቻ።",
+    "רק באישור מנהל המטבח.": "በወጥ ቤት አስተዳዳሪ ፈቃድ ብቻ።",
+    "אף תשובה אינה נכונה.": "ምንም መልስ ትክክል አይደለም።",
+    "❌ לא נכון. אסור לבשל / לחמם כל סוג של מזון חלבי במטבח.": "❌ ትክክል አይደለም። በወጥ ቤት ውስጥ ማንኛውንም [H]የወተት[/H] ምግብ መብሰል ወይም ማሞቅ ክልክል ነው።",
+    "לאיפה מותר להכניס אוכל וכלים פרטיים?": "የግል ምግብ እና የግል ዕቃዎች የት መግባት ይፈቀዳል?",
+    "למטבח בהתאם לאפיון (בשר לבשרי וכו').": "ወደ ወጥ ቤት — እንደ መለያው (ሥጋ ለሥጋ ወዘተ)።",
+    "רק לחדר האוכל, ובהתאם לאפיון.": "ለመመገቢያ ክፍል ብቻ — እና እንደ መለያው።",
+    "רק אוכל כשר ועם מפית הפרדה מהשולחן.": "ኮሸር ምግብ ብቻ እና ከጠረጴዛ ለመለየት በናፕኪን ጋር።",
+    "אסור להכניס כלים / אוכל פרטי למטבח או לחדר אוכל צבאי.": "ወደ ወጥ ቤት ወይም ወታደራዊ መመገቢያ ክፍል የግል ምግብ/ዕቃ ማምጣት ክልክል ነው።",
+    "❌ לא נכון. אסור להכניס דברים פרטיים למטבחים או חדרי אוכל בצבא": "❌ ትክክል አይደለም። በሠራዊት ውስጥ የግል ነገሮችን ወደ ወጥ ቤት ወይም መመገቢያ ክፍል ማምጣት ክልክል ነው።",
+    "התבוננו בתרשים ואז לחצו המשך.": "ምስሉን ይመልከቱ እና ከዚያ «ቀጥል» ይጫኑ።",
+    "גררו כל מוצר למדף הנכון לפי התרשים שראיתם": "እያንዳንዱን ምርት በሰላሳ መሰረት ወደ ትክክለኛው መደርደሪያ ይጎትቱ።",
+    "חלב": "ወተት",
+    "שתיה": "መጠጥ",
+    "חומוס": "ሁሙስ",
+    "קוטג'": "ኮታጅ (cottage cheese)",
+    "חלב סויה": "የሶያ ወተት",
+    "מילקי": "ሚልኪ (የወተት ዲሰርት)",
+    "גבינה צהובה": "ቢጫ አይብ",
+    "מעדן סויה": "የሶያ ዲሰርት",
+    "❌ חלב הוא [H]חלבי[/H]. צריך לשים בצד ימין.": "❌ ወተት [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
+    "❌ בקבוקי שתיה מתוקה הם [P]פרווה[/P]. צריך לשים בצד שמאל.": "❌ ጣፋጭ መጠጦች [P]ፓርቬ[/P] ናቸው። በግራ ይያዙት።",
+    "❌ חומוס, טחינה וסלטים הם [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ ሁሙስ/ታሂኒ/ሰላጣ [P]ፓርቬ[/P] ናቸው። በግራ ይያዙት።",
+    "❌ קוטג' הוא [H]חלבי[/H]. לשים בצד ימין.": "❌ ኮታጅ [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
+    "❌למרות שזה נקרא חלב סויה, הסויה היא [P]פרווה[/P]. יש לשים בצד שמאל.": "❌ የሶያ ወተት ቢባልም፣ ሶያ [P]ፓርቬ[/P] ነው። በግራ ይያዙት።",
+    "❌ המילקי הוא מעדן המכיל חלב, ולכן הוא [H]חלבי[/H]. ושייך לצד ימין.": "❌ ሚልኪ ወተት ያለበት ዲሰርት ነው፣ ስለዚህ [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
+    "❌ גבינה צהובה מכילה חלב היא [H]חלבית[/H]. יש לשים בצד ימין.": "❌ ቢጫ አይብ ወተት ይዟል፣ ስለዚህ [H]የወተት[/H] ነው። በቀኝ ይያዙት።",
+    "❌ סויה הוא [P]פרווה[/P]. לא להתבלבל עם מעדן חלבי.. לשים בצד שמאל.": "❌ ሶያ [P]ፓርቬ[/P] ነው። ከየወተት ዲሰርት ጋር አትቀላቀሉ — በግራ ይያዙት።",
+    "איזה גסטרונום שייך ל[P]פרווה[/P]?": "የ[P]ፓርቬ[/P] የትኛው ጋስትሮኖርም ነው?",
+    "3 חורים": "3 ቀዳዳ",
+    "2 חורים": "2 ቀዳዳ",
+    "❌ זה לא הגסטרונום ה[P]פרווה[/P]. רמז - תמיד יש הפרדה בין [B]בשרי[/B] (3 חורים) [H]לחלבי[/H] (חור 1).": "❌ ይህ የ[P]ፓርቬ[/P] ጋስትሮኖርም አይደለም። ፍንጭ: [B]የሥጋ[/B] (3 ቀዳዳ) እና [H]የወተት[/H] (1 ቀዳዳ) መካከል ሁልጊዜ መለያየት አለ።",
+    "איך ניתן להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P]?": "[B]የሥጋ[/B] ዕቃዎችን ወደ [P]ፓርቬ[/P] ክፍል እንዴት ማስገባት ይቻላል?",
+    "אסור להכניס כלים [B]בשריים[/B] לחדר [P]פרווה[/P].": "[B]የሥጋ[/B] ዕቃ ወደ [P]ፓርቬ[/P] ክፍል ማስገባት ክልክል ነው።",
+    "על עגלה [B]בשרית[/B] בלבד.": "በ[B]የሥጋ[/B] ጋሪ ላይ ብቻ።",
+    "רק כאשר מניחים על הרצפה.": "በመሬት ላይ ሲቀመጥ ብቻ።",
+    "רק על משטחים נקיים אחרי ווידוא שגם הכלי נקי ויבש.": "በንጹህ መሬት ላይ ብቻ — እቃውም ንጹህ እና ደረቅ መሆኑን ካረጋገጡ በኋላ።",
+    "❌ לא נכון. הכנסת כלי [B]בשרי[/B] לחדר [P]פרווה[/P] מותרת רק על עגלה בשרית.": "❌ ትክክል አይደለም። [B]የሥጋ[/B] ዕቃ ወደ [P]ፓርቬ[/P] ክፍል ማስገባት የሚፈቀደው በ[B]የሥጋ[/B] ጋሪ ላይ ብቻ ነው።",
+    "איזה משימות רשאי לבצע עובד מטבח שאינו יהודי": "አይሁዳዊ ያልሆነ የወጥ ቤት ሰራተኛ የትኞቹን ስራዎች ሊሰራ ይችላል?",
+    "חיתוך ירקות": "አትክልቶችን መቁረጥ",
+    "הדלקת תנורים, ארונות חימום, מטגנות": "ምድጃ/የማሞቂያ ካቢኔ/ፍራይር መክፈት",
+    "עירבוב סיר על האש": "ድስትን በእሳት ላይ ማነሳሳት",
+    "הכנת טחינה": "ታሂኒ ማዘጋጀት",
+    "הגשת מזון לפס": "ምግብን ወደ መካፈል መስመር ማቅረብ",
+    "הדלקת איש וכיריים": "እሳት እና ምድጃ ማብራት",
+    "סגירת דלת תנור עם מזון": "ምግብ ያለበትን የምድጃ በር መዝጋት",
+    "הדלקת סיר קיטור": "ስቲመር ማብራት",
+    "שטיפת כלים והחזרה למדפי ייבוש": "ዕቃዎችን ማጠብ እና ወደ ማድረቂያ መደርደሪያ መመለስ",
+    "צליית / טיגון מזון על אש או פלאנצ'ה": "በእሳት ወይም በፕላንቻ ላይ መጥበስ/መጥለስ",
+    "הנחת סירים עם מזון על אש או מקור חום": "ምግብ ያለባቸውን ድስቶች በእሳት ወይም በሙቀት ምንጭ ላይ ማስቀመጥ",
+    "❌ לא נכון. מותרות רק עבודות שאינן קשורות לבישול/חימום/טיגון.": "❌ ትክክል አይደለም። ከመብሰል/ማሞቅ/መጥበስ ጋር ያልተገናኙ ስራዎች ብቻ ይፈቀዳሉ።",
+    "בחר/י את כל המוצרים שניתן להכניס למקרר [P]פרווה[/P]": "በ[P]ፓርቬ[/P] ማቀዝቀዣ ውስጥ ሊገቡ የሚችሉትን ምርቶች ሁሉ ይምረጡ",
+    "מלפפונים": "ኩክምበር (መላፍ)",
+    "לורד סנדויץ'": "«ሎርድ» ሳንድዊች",
+    "שתיה מתוקה": "ጣፋጭ መጠጥ",
+    "מעדן קרלו": "«ካርሎ» ዲሰርት",
+    "מעדן ג'לי": "ጀሊ ዲሰርት",
+    "רוטב טריאקי": "ቴሪያኪ ሶስ",
+    "ביצים": "እንቁላል",
+    "❌ אסור להכניס מעדנים חלביים!": "❌ የወተት ዲሰርቶች ማስገባት ክልክል ነው!",
+    "❌ שימו לב מה יש בסנדוויץ', הוא חלבי!": "❌ በሳንድዊች ውስጥ ያለውን ይመልከቱ — እሱ [H]የወተት[/H] ነው!",
+    "❌ אסור להכניס מוצרי חלב מכל סוג!": "❌ ማንኛውንም የወተት ምርት ማስገባት አይፈቀድም!",
+    "❌ מעדן קרלו הוא חלבי!": "❌ «ካርሎ» ዲሰርት [H]የወተት[/H] ነው!",
+    "האם מותר שיהיה במקרר אחד גם [H]חלבי[/H] וגם [P]פרווה[/P]?": "በአንድ ማቀዝቀዣ ውስጥ [H]የወተት[/H] እና [P]ፓርቬ[/P] አብሮ መኖር ይፈቀዳል?",
+    "לא, אסור בשום אופן.": "አይ — በፍጹም አይፈቀድም።",
+    "לא אלא אם כן המשגיח אישר.": "አይ — ተቆጣጣሪው ካልፈቀደ በስተቀር።",
+    "על מדפים בצדדים שונים, בתנאי שיש תרשים על המקרר ומסדרים לפיו.": "በተለያዩ ጎኖች ላይ ባሉ መደርደሪያዎች ላይ — በማቀዝቀዣው ላይ ንድፍ ካለ እና መሰረት እንዲደረግበት።",
+    "במדפים באותו צד, כשה[P]פרווה[/P] תמיד למעלה וסגור היטב.": "በአንድ ጎን ላይ ባሉ መደርደሪያዎች ላይ — [P]ፓርቬ[/P] ሁልጊዜ በላይ እና በጥብቅ ተዘግቶ መሆን አለበት።",
+    "❌ לא נכון. מותר לשלב במקרר רק אם יש הפרדה ברורה וסידור קבוע שמונע טפטוף/מגע.": "❌ ትክክል አይደለም። በግልጽ መለያየት እና መነካካት/መንጠባጠብ የማይፈጠር ቋሚ አቀማመጥ ካለ ብቻ ይፈቀዳል።",
+    "בארון חימום הרגיל כשיש שם בשר / עוף.": "በመደበኛ የማሞቂያ ካቢኔ ውስጥ ሥጋ ወይም ዶሮ ካለ።",
+    "לחץ על התמונה הנכונה, איך צריך להגיש בשר ודגים?": "ትክክለኛውን ምስል ይጫኑ፤ ሥጋና ዓሣ እንዴት መቅረብ አለባቸው?",
+    "מצא/י את 5 התקלות בתמונה": "በምስሉ ውስጥ 5 ችግኞችን ያግኙ።",
+    "❌ לא נכון. חייבים רק 3 חורים וכיתוב '[B]בשרי[/B]'.": "❌ ትክክል አይደለም። [B]የሥጋ[/B] ትሪ በትክክል 3 ቀዳዳዎች እና '[B]የሥጋ[/B]' የሚል ምልክት ሊኖረው ይገባል።",
+    "תסתכל/י על הסיטואציה ואז ענה/י": "ሁኔታውን ይመልከቱና መልስ ይስጡ።",
+    "שפה": "ቋንቋ",
+    "המשך": "ቀጥል",
+    "סיום": "ተጠናቀቀ",
+    "שלח שוב": "እንደገና ላክ",
+    "הצג תרשים": "ስዕሉን አሳይ",
+    "חזרה לשאלה": "ወደ ጥያቄው ተመለስ",
+    "יש ללחוץ רק על תקלות וודאיות, יש כמה תקלות דומות.": "ግልጽ የሆኑ ችግኞችን ብቻ ይጫኑ። አንዳንድ ችግኞች ይመሳሰላሉ።",
+    "תמונה לשאלה": "የጥያቄ ምስል",
+    "אפשרות א": "ምርጫ A",
+    "אפשרות ב": "ምርጫ B",
+    "תמונת תקלה": "የችግኝ ምስል",
+    "תרשים הסבר": "የማብራሪያ ስዕል",
+    "מדפים": "መደርደሪያዎች",
+    "מוצר": "ምርት",
+    "טוען מטבחים…": "ወጥ ቤቶችን በመጫን ላይ…",
+    "בדוק את חיבור האינטרנט שלך, ונסה שוב": "ኢንተርኔትዎን ያረጋግጡና እንደገና ይሞክሩ።",
+    "לא הצלחנו לטעון את רשימת המטבחים שלך מהמערכת. בדוק APPS_SCRIPT_URL / Deploy של Apps Script.": "የወጥ ቤቶችን ዝርዝር መጫን አልቻልንም። ኃላፊውን ያነጋግሩ።",
+    "לא נמצאו מטבחים מורשים לקישור זה. פנה לרב היחידה.": "ለዚህ ሊንክ የተፈቀዱ ወጥ ቤቶች አልተገኙም። የክፍሉን ረቢ ያነጋግሩ።",
+    "לא נכון ❌ נסו שוב.": "ትክክል አይደለም ❌ እንደገና ይሞክሩ።",
+    "את התקלה הזו כבר מצאת ✅": "ይህን ችግኝ ቀድሞ አግኝተዋል ✅",
+    "❌ לא נכון. נסו שוב.": "❌ ትክክል አይደለም። እንደገና ይሞክሩ።",
+    "נכון ✅": "ትክክል ✅",
+    "❌ לפחות אחת מהבחירות אינה נכונה.": "❌ ቢያንስ አንድ ምርጫ ትክክል አይደለም።",
+    "❌ המוצר שסומן אינו נכון. נסו שוב.": "❌ የመረጡት ምርት ትክክል አይደለም። እንደገና ይሞክሩ።",
+    "❌ יש כמה מוצרים שנבחרו לא נכון. הבחירות השגויות סומנו. תקנו ונסו שוב.": "❌ ብዙ የተሳሳቱ ምርቶች ተመርጠዋል። ተሳሳቱት ተለይተዋል። ያስተካክሉና እንደገና ይሞክሩ።",
+    "לא הגענו לתמונה בצד השני. נסו לשחרר את הקו מעט קרוב יותר לתמונה.": "መስመሩ ወደ ሌላው ወገን ምስል አልደረሰም። ወደ ምስሉ ቅርብ ይልቀቁት።",
+    "יש למתוח את הקו לתמונה שבצד השני.": "መስመሩን ወደ ሌላው ወገን ምስል ይሳቡ።",
+    "התמונה הזו כבר הותאמה. נסו יעד אחר.": "ይህ ምስል አስቀድሞ ተዛምዷል። ሌላ ይምረጡ።",
+    "התאמה לא נכונה. נסו שוב.": "ትክክል ያልሆነ ማዛመድ። እንደገና ይሞክሩ።",
+    "נא למלא שם.": "ስም ያስገቡ።",
+    "נא למלא ת.ז/מספר אישי.": "መታወቂያ ወይም የግል ቁጥር ያስገቡ።",
+    "נא לבחור מטבח.": "ወጥ ቤት ይምረጡ።",
+    "נא להזין שם מלא (לפחות שתי מילים).": "ሙሉ ስም ያስገቡ፣ ቢያንስ ሁለት ቃላት።",
+    "ת.ז/מ.א חייב להיות 9 או 7 ספרות (ספרות בלבד).": "ቁጥሩ 9 ወይም 7 አሃዞች መሆን አለበት።",
+    "תעודת הזהות לא תקינה!": "የመታወቂያ ቁጥሩ ትክክል አይደለም።",
+    "טוען תמונות…": "ምስሎችን በመጫን ላይ…",
+    "התוצאה כבר נשלחה בניסיון הזה ✅": "ውጤቱ ቀድሞ ተልኳል ✅",
+    "שולח תוצאה…": "ውጤቱን በመላክ ላይ…",
+    "השליחה כבר התקבלה במערכת ✅": "ውጤቱ ቀድሞ ደርሷል ✅",
+    "התוצאה נשלחה בהצלחה ✅": "ውጤቱ ተሳክቶ ተልኳል ✅",
+    "שליחה נכשלה ❌ ": "መላክ አልተሳካም ❌ ",
+    "(בדוק הרשאות Deploy / Anyone)": "(የማተም ፈቃድ ያረጋግጡ)",
+    "נמצאה התקדמות קודמת": "የተቀመጠ እድገት ተገኝቷል",
+    "להמשיך מהמקום שעצרתי": "ከቆምኩበት ቀጥል",
+    "להתחיל מחדש": "ከመጀመሪያ ጀምር",
+    "הועתק ✅": "ተቀድቷል ✅",
+    "כיול: כבוי": "ማስተካከያ: ጠፍቷል",
+    "בטל נקודה": "ነጥብ መልስ",
+    "נקה נקודות (רביעייה)": "የአሁኑን ነጥቦች አጥፋ",
+    "נקה הכל": "ሁሉንም አጥፋ",
+    "העתק מרובע אחרון": "የመጨረሻውን ሳጥን ቅዳ",
+    "העתק ALL BOXES": "ሁሉንም ሳጥኖች ቅዳ",
+    "כיול פעיל רק לשאלות hotspot. כל 4 לחיצות = מרובע. Toggle: Ctrl+K": "ማስተካከያው ለምስል ጥያቄዎች ብቻ ነው። 4 ጠቅታዎች አንድ ሳጥን ይፈጥራሉ። Ctrl+K",
   }
 };
 
-// 2) Glossary קבוע למונחי כשרות נפוצים – כדי למנוע טעויות כמו parve/fur וכו'
-//    ניתן להרחיב/לתקן כאן.
+// Dynamic sentences that contain numbers. app.js checks these before Google Translate.
+window.I18N_DYNAMIC = {
+  en: [
+    { re: new RegExp("^שאלה (\\d+) מתוך (\\d+)$"), replace: m => `Question ${m[1]} of ${m[2]}` },
+    { re: new RegExp("^ממשיכים משאלה (\\d+) מתוך (\\d+)$"), replace: m => `Continuing from question ${m[1]} of ${m[2]}` },
+    { re: new RegExp("^עצרת בשאלה (\\d+) מתוך (\\d+)\\. מה תרצה/י לעשות\\?$"), replace: m => `You stopped at question ${m[1]} of ${m[2]}. What do you want to do?` },
+    { re: new RegExp("^שימו ❤️: יש לבחור (\\d+) תשובות נכונות\\. נבחרו (\\d+)/(\\d+)\\.$"), replace: m => `Choose ${m[1]} correct answers. Selected: ${m[2]}/${m[3]}.` },
+    { re: new RegExp("^כבר נבחרו (\\d+) תשובות\\. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת\\.$"), replace: m => `You already selected ${m[1]} answers. Remove one before choosing another.` },
+    { re: new RegExp("^יש לבחור בדיוק (\\d+) תשובות\\.$"), replace: m => `Choose exactly ${m[1]} answers.` },
+    { re: new RegExp("^❌ חסרות (\\d+) בחירות נכונות\\. עברו שוב על המוצרים ונסו להשלים את הבחירה\\.$"), replace: m => `❌ ${m[1]} correct choices are still missing. Check the products again.` },
+    { re: new RegExp("^נמצאו: (\\d+)/(\\d+)$"), replace: m => `Found: ${m[1]}/${m[2]}` },
+    { re: new RegExp("^תקלה (\\d+)$"), replace: m => `Problem ${m[1]}` },
+    { re: new RegExp("^תמונה (\\d+)$"), replace: m => `Picture ${m[1]}` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות\\.$"), replace: m => `You selected ${m[1]} answers. Choose ${m[2]}.` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות בלבד\\.$"), replace: m => `You selected ${m[1]} answers. Choose only ${m[2]}.` },
+  ],
+  ru: [
+    { re: new RegExp("^שאלה (\\d+) מתוך (\\d+)$"), replace: m => `Вопрос ${m[1]} из ${m[2]}` },
+    { re: new RegExp("^ממשיכים משאלה (\\d+) מתוך (\\d+)$"), replace: m => `Продолжаем с вопроса ${m[1]} из ${m[2]}` },
+    { re: new RegExp("^עצרת בשאלה (\\d+) מתוך (\\d+)\\. מה תרצה/י לעשות\\?$"), replace: m => `Вы остановились на вопросе ${m[1]} из ${m[2]}. Что сделать?` },
+    { re: new RegExp("^שימו ❤️: יש לבחור (\\d+) תשובות נכונות\\. נבחרו (\\d+)/(\\d+)\\.$"), replace: m => `Выберите ${m[1]} правильных ответа. Выбрано: ${m[2]}/${m[3]}.` },
+    { re: new RegExp("^כבר נבחרו (\\d+) תשובות\\. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת\\.$"), replace: m => `Уже выбрано ${m[1]}. Сначала снимите один выбор.` },
+    { re: new RegExp("^יש לבחור בדיוק (\\d+) תשובות\\.$"), replace: m => `Нужно выбрать ровно ${m[1]}.` },
+    { re: new RegExp("^❌ חסרות (\\d+) בחירות נכונות\\. עברו שוב על המוצרים ונסו להשלים את הבחירה\\.$"), replace: m => `❌ Не хватает правильных вариантов: ${m[1]}. Проверьте продукты ещё раз.` },
+    { re: new RegExp("^נמצאו: (\\d+)/(\\d+)$"), replace: m => `Найдено: ${m[1]}/${m[2]}` },
+    { re: new RegExp("^תקלה (\\d+)$"), replace: m => `Ошибка ${m[1]}` },
+    { re: new RegExp("^תמונה (\\d+)$"), replace: m => `Картинка ${m[1]}` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות\\.$"), replace: m => `Вы выбрали ${m[1]}. Нужно выбрать ${m[2]}.` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות בלבד\\.$"), replace: m => `Вы выбрали ${m[1]}. Можно выбрать только ${m[2]}.` },
+  ],
+  ar: [
+    { re: new RegExp("^שאלה (\\d+) מתוך (\\d+)$"), replace: m => `سؤال ${m[1]} من ${m[2]}` },
+    { re: new RegExp("^ממשיכים משאלה (\\d+) מתוך (\\d+)$"), replace: m => `منكمّل من سؤال ${m[1]} من ${m[2]}` },
+    { re: new RegExp("^עצרת בשאלה (\\d+) מתוך (\\d+)\\. מה תרצה/י לעשות\\?$"), replace: m => `وقفت/ي عند سؤال ${m[1]} من ${m[2]}. شو بدك تعمل/ي؟` },
+    { re: new RegExp("^שימו ❤️: יש לבחור (\\d+) תשובות נכונות\\. נבחרו (\\d+)/(\\d+)\\.$"), replace: m => `اختار/ي ${m[1]} إجابات صحيحة. اخترت/ي: ${m[2]}/${m[3]}.` },
+    { re: new RegExp("^כבר נבחרו (\\d+) תשובות\\. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת\\.$"), replace: m => `اخترت/ي ${m[1]} إجابات. شيل/ي اختيار واحد قبل ما تختار/ي غيره.` },
+    { re: new RegExp("^יש לבחור בדיוק (\\d+) תשובות\\.$"), replace: m => `لازم تختار/ي بالضبط ${m[1]} إجابات.` },
+    { re: new RegExp("^❌ חסרות (\\d+) בחירות נכונות\\. עברו שוב על המוצרים ונסו להשלים את הבחירה\\.$"), replace: m => `❌ ناقص ${m[1]} اختيارات صحيحة. راجع/ي المنتجات مرة ثانية.` },
+    { re: new RegExp("^נמצאו: (\\d+)/(\\d+)$"), replace: m => `لقيت/ي: ${m[1]}/${m[2]}` },
+    { re: new RegExp("^תקלה (\\d+)$"), replace: m => `خطأ ${m[1]}` },
+    { re: new RegExp("^תמונה (\\d+)$"), replace: m => `صورة ${m[1]}` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות\\.$"), replace: m => `اخترت/ي ${m[1]}. لازم تختار/ي ${m[2]}.` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות בלבד\\.$"), replace: m => `اخترت/ي ${m[1]}. مسموح تختار/ي بس ${m[2]}.` },
+  ],
+  am: [
+    { re: new RegExp("^שאלה (\\d+) מתוך (\\d+)$"), replace: m => `ጥያቄ ${m[1]} ከ ${m[2]}` },
+    { re: new RegExp("^ממשיכים משאלה (\\d+) מתוך (\\d+)$"), replace: m => `ከጥያቄ ${m[1]} ከ ${m[2]} እንቀጥላለን` },
+    { re: new RegExp("^עצרת בשאלה (\\d+) מתוך (\\d+)\\. מה תרצה/י לעשות\\?$"), replace: m => `በጥያቄ ${m[1]} ከ ${m[2]} ቆመዋል። ምን ማድረግ ይፈልጋሉ?` },
+    { re: new RegExp("^שימו ❤️: יש לבחור (\\d+) תשובות נכונות\\. נבחרו (\\d+)/(\\d+)\\.$"), replace: m => `${m[1]} ትክክለኛ መልሶችን ይምረጡ። ተመርጠዋል: ${m[2]}/${m[3]}።` },
+    { re: new RegExp("^כבר נבחרו (\\d+) תשובות\\. כדי לבחור תשובה אחרת, בטל/י קודם בחירה אחת\\.$"), replace: m => `${m[1]} መልሶች ተመርጠዋል። ሌላ ለመምረጥ አንዱን ያስወግዱ።` },
+    { re: new RegExp("^יש לבחור בדיוק (\\d+) תשובות\\.$"), replace: m => `በትክክል ${m[1]} መልሶችን ይምረጡ።` },
+    { re: new RegExp("^❌ חסרות (\\d+) בחירות נכונות\\. עברו שוב על המוצרים ונסו להשלים את הבחירה\\.$"), replace: m => `❌ ${m[1]} ትክክለኛ ምርጫዎች ጎድለዋል። ምርቶቹን እንደገና ይመልከቱ።` },
+    { re: new RegExp("^נמצאו: (\\d+)/(\\d+)$"), replace: m => `ተገኝቷል: ${m[1]}/${m[2]}` },
+    { re: new RegExp("^תקלה (\\d+)$"), replace: m => `ችግኝ ${m[1]}` },
+    { re: new RegExp("^תמונה (\\d+)$"), replace: m => `ምስል ${m[1]}` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות\\.$"), replace: m => `${m[1]} መልሶችን መርጠዋል። ${m[2]} ይምረጡ።` },
+    { re: new RegExp("^בחרת (\\d+) תשובות\\. יש לבחור (\\d+) תשובות בלבד\\.$"), replace: m => `${m[1]} መልሶችን መርጠዋል። ${m[2]} ብቻ ይምረጡ።` },
+  ]
+};
+
 window.I18N_GLOSSARY = {
-  // English
-  en: {
-    MEAT: "meat",
-    DAIRY: "dairy",
-    PARVE: "parve",
-    // צירופים נפוצים עם תחילית בעברית (ל...)
-    FOR_MEAT: "for meat",
-    FOR_DAIRY: "for dairy",
-    FOR_PARVE: "for parve"
-  },
-  // Russian (בסיסי; כדאי לתת לדובר שפת אם לאשר)
-  ru: {
-    MEAT: "мясное",
-    DAIRY: "молочное",
-    PARVE: "парве",
-    FOR_MEAT: "для мясного",
-    FOR_DAIRY: "для молочного",
-    FOR_PARVE: "для парве"
-  },
-  // Arabic (בסיסי; מומלץ אימות ע"י דובר)
-  ar: {
-    MEAT: "لحمي",
-    DAIRY: "حليبي",
-    PARVE: "باريف",
-    FOR_MEAT: "للاستخدام اللحمي",
-    FOR_DAIRY: "للاستخدام الحليبي",
-    FOR_PARVE: "للاستخدام الباريف"
-  },
-  // Amharic (השאירי ריק והשלימי ידנית עם דובר/ת שפת אם)
-  am: {
-    MEAT: "",
-    DAIRY: "",
-    PARVE: "",
-    FOR_MEAT: "",
-    FOR_DAIRY: "",
-    FOR_PARVE: ""
-  }
+  en: { MEAT:"meat", DAIRY:"dairy", PARVE:"parve", FOR_MEAT:"for meat", FOR_DAIRY:"for dairy", FOR_PARVE:"for parve" },
+  ru: { MEAT:"мясное", DAIRY:"молочное", PARVE:"парве", FOR_MEAT:"для мясного", FOR_DAIRY:"для молочного", FOR_PARVE:"для парве" },
+  ar: { MEAT:"لحمي", DAIRY:"حليبي", PARVE:"بارڤه", FOR_MEAT:"للحمي", FOR_DAIRY:"للحليبي", FOR_PARVE:"للبارڤه" },
+  am: { MEAT:"ሥጋ", DAIRY:"የወተት", PARVE:"ፓርቬ", FOR_MEAT:"ለሥጋ", FOR_DAIRY:"ለወተት", FOR_PARVE:"ለፓርቬ" }
 };
